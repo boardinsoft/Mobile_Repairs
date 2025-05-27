@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_mobile_device_user,access_mobile_device_user,model_mobile_device,,1,0,0,0
+access_repair_order_user,access_repair_order_user,model_repair_order,,1,0,0,0
+access_mobile_device_manager,access_mobile_device_manager,model_mobile_device,,1,1,1,1
+access_repair_order_manager,access_repair_order_manager,model_repair_order,,1,1,1,1

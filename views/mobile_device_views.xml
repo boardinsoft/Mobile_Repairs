@@ -1,0 +1,38 @@
+<record id="view_mobile_device_tree" model="ir.ui.view">
+    <field name="name">mobile.device.tree</field>
+    <field name="model">mobile.device</field>
+    <field name="arch" type="xml">
+        <tree>
+            <field name="name"/>
+            <field name="brand"/>
+            <field name="model"/>
+            <field name="owner_id"/>
+        </tree>
+    </field>
+</record>
+
+<record id="view_mobile_device_form" model="ir.ui.view">
+    <field name="name">mobile.device.form</field>
+    <field name="model">mobile.device</field>
+    <field name="arch" type="xml">
+        <form>
+            <sheet>
+                <group>
+                    <field name="name"/>
+                    <field name="brand"/>
+                    <field name="model"/>
+                    <field name="owner_id"/>
+                </group>
+            </sheet>
+        </form>
+    </field>
+</record>
+
+<record id="action_mobile_device" model="ir.actions.act_window">
+    <field name="name">Mobile Devices</field>
+    <field name="res_model">mobile.device</field>
+    <field name="view_mode">tree,form</field>
+</record>
+
+<menuitem id="menu_mobile_device_root" name="Mobile Devices" sequence="10"/>
+<menuitem id="menu_mobile_device" name="Devices" parent="menu_mobile_device_root" action="action_mobile_device" sequence="10"/>

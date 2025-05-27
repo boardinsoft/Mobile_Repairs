@@ -1,0 +1,24 @@
+<templates xmlns="http://www.w3.org/1999/xhtml">
+    <t t-name="mobile_repair_orders.repair_order_template">
+        <div class="repair-order">
+            <h2>Repair Order: <t t-esc="order.name"/></h2>
+            <p><strong>Customer:</strong> <t t-esc="order.customer_id.name"/></p>
+            <p><strong>Device:</strong> <t t-esc="order.device_id.name"/></p>
+            <p><strong>Status:</strong> <t t-esc="order.status"/></p>
+            <t t-if="order.parts_used">
+                <h3>Parts Used:</h3>
+                <ul>
+                    <t t-foreach="order.parts_used" t-as="part">
+                        <li><t t-esc="part.name"/> - <t t-esc="part.quantity"/> units</li>
+                    </t>
+                </ul>
+            </t>
+            <t t-if="order.technician_id">
+                <p><strong>Technician:</strong> <t t-esc="order.technician_id.name"/></p>
+            </t>
+            <t t-if="order.invoice_id">
+                <p><strong>Invoice:</strong> <t t-esc="order.invoice_id.number"/></p>
+            </t>
+        </div>
+    </t>
+</templates>

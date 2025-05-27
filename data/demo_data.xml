@@ -1,0 +1,32 @@
+<contents of /mobile_repair_orders/mobile_repair_orders/data/demo_data.xml>
+<odoo>
+    <data noupdate="1">
+        <record id="demo_repair_order_1" model="mobile_repair_orders.repair_order">
+            <field name="name">Repair Order #001</field>
+            <field name="customer_id" ref="base.res_partner_1"/>
+            <field name="device_id" ref="demo_mobile_device_1"/>
+            <field name="status">in_progress</field>
+        </record>
+
+        <record id="demo_repair_order_2" model="mobile_repair_orders.repair_order">
+            <field name="name">Repair Order #002</field>
+            <field name="customer_id" ref="base.res_partner_2"/>
+            <field name="device_id" ref="demo_mobile_device_2"/>
+            <field name="status">completed</field>
+        </record>
+
+        <record id="demo_mobile_device_1" model="mobile_repair_orders.mobile_device">
+            <field name="name">iPhone 12</field>
+            <field name="brand">Apple</field>
+            <field name="model">iPhone 12</field>
+            <field name="owner_id" ref="base.res_partner_1"/>
+        </record>
+
+        <record id="demo_mobile_device_2" model="mobile_repair_orders.mobile_device">
+            <field name="name">Galaxy S21</field>
+            <field name="brand">Samsung</field>
+            <field name="model">Galaxy S21</field>
+            <field name="owner_id" ref="base.res_partner_2"/>
+        </record>
+    </data>
+</odoo>

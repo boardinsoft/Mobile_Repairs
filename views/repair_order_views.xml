@@ -1,0 +1,42 @@
+<record id="view_repair_order_tree" model="ir.ui.view">
+    <field name="name">repair.order.tree</field>
+    <field name="model">repair.order</field>
+    <field name="arch" type="xml">
+        <tree string="Repair Orders">
+            <field name="name"/>
+            <field name="customer_id"/>
+            <field name="device_id"/>
+            <field name="status"/>
+        </tree>
+    </field>
+</record>
+
+<record id="view_repair_order_form" model="ir.ui.view">
+    <field name="name">repair.order.form</field>
+    <field name="model">repair.order</field>
+    <field name="arch" type="xml">
+        <form string="Repair Order">
+            <sheet>
+                <group>
+                    <field name="name"/>
+                    <field name="customer_id"/>
+                    <field name="device_id"/>
+                    <field name="status"/>
+                </group>
+                <footer>
+                    <button string="Save" type="object" name="action_save" class="btn-primary"/>
+                    <button string="Cancel" type="object" name="action_cancel" class="btn-secondary"/>
+                </footer>
+            </sheet>
+        </form>
+    </field>
+</record>
+
+<record id="action_repair_order" model="ir.actions.act_window">
+    <field name="name">Repair Orders</field>
+    <field name="res_model">repair.order</field>
+    <field name="view_mode">tree,form</field>
+</record>
+
+<menuitem id="menu_repair_order_root" name="Repair Orders" sequence="10"/>
+<menuitem id="menu_repair_order" name="Repair Orders" parent="menu_repair_order_root" action="action_repair_order" sequence="10"/>
