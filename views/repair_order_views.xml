@@ -4,11 +4,11 @@
         <field name="model">mobile.repair.order</field>
         <field name="type">list</field>
         <field name="arch" type="xml">
-            <list string="Repair Orders">
-                <field name="name"/>
-                <field name="customer_id"/>
-                <field name="device_id"/>
-                <field name="status"/>
+            <list string="Órdenes de Reparación">
+                <field name="name" string="Referencia de Orden"/>
+                <field name="customer_id" string="Cliente"/>
+                <field name="device_id" string="Dispositivo"/>
+                <field name="status" string="Estado"/>
             </list>
         </field>
     </record>
@@ -17,13 +17,13 @@
         <field name="model">mobile.repair.order</field>
         <field name="type">form</field>
         <field name="arch" type="xml">
-            <form string="Repair Order">
+            <form string="Orden de Reparación">
                 <sheet>
                     <group>
-                        <field name="name"/>
-                        <field name="customer_id"/>
-                        <field name="device_id"/>
-                        <field name="status"/>
+                        <field name="name" string="Referencia de Orden"/>
+                        <field name="customer_id" string="Cliente"/>
+                        <field name="device_id" string="Dispositivo"/>
+                        <field name="status" string="Estado"/>
                     </group>
                 </sheet>
             </form>
