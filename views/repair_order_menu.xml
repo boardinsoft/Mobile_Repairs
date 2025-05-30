@@ -1,3 +1,40 @@
-<menuitem id="mobile_repair_orders_menu" name="Mobile Repair Orders" sequence="10"/>
-<menuitem id="repair_order_menu" name="Repair Orders" parent="mobile_repair_orders_menu" action="action_repair_order" sequence="1"/>
-<menuitem id="mobile_device_menu" name="Mobile Devices" parent="mobile_repair_orders_menu" action="action_mobile_device" sequence="2"/>
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Menú Principal -->
+        <menuitem
+            id="mobile_repair_orders_main_menu"
+            name="Reparaciones Móviles"
+            sequence="10"
+            web_icon="mobile_repair_orders,static/description/icon.png"
+            groups="base.group_user"
+        />
+
+        <!-- Submenús organizados por funcionalidad -->
+        <menuitem
+            id="repair_order_menu_item"
+            name="Órdenes de Reparación"
+            parent="mobile_repair_orders_main_menu"
+            action="action_repair_order_form_view" 
+            sequence="10"
+        />
+
+        <menuitem
+            id="mobile_device_menu_item"
+            name="Dispositivos Móviles"
+            parent="mobile_repair_orders_main_menu"
+            action="action_mobile_device" 
+            sequence="20"
+        />
+
+        <!-- Separador para secciones adicionales (comentado para futuro uso) -->
+        <!--
+        <menuitem
+            id="repair_config_menu"
+            name="Configuración"
+            parent="mobile_repair_orders_main_menu"
+            sequence="90"
+        />
+        -->
+    </data>
+</odoo>

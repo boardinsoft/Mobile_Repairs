@@ -1,38 +1,54 @@
-<record id="view_mobile_device_tree" model="ir.ui.view">
-    <field name="name">mobile.device.tree</field>
-    <field name="model">mobile.device</field>
-    <field name="arch" type="xml">
-        <tree>
-            <field name="name"/>
-            <field name="brand"/>
-            <field name="model"/>
-            <field name="owner_id"/>
-        </tree>
-    </field>
-</record>
+<odoo>
+    <record id="view_mobile_device_tree" model="ir.ui.view">
+        <field name="name">mobile.device.tree</field>
+        <field name="model">mobile.device</field>
+        <field name="type">list</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="brand_id"/>
+                <field name="model_id"/>
+                <field name="imei"/>
+                <field name="serial_number"/>
+                <field name="color"/>
+                <field name="enciende"/>
+                <field name="garantia"/>
+                <field name="owner_id"/>
+            </list>
+        </field>
+    </record>
 
-<record id="view_mobile_device_form" model="ir.ui.view">
-    <field name="name">mobile.device.form</field>
-    <field name="model">mobile.device</field>
-    <field name="arch" type="xml">
-        <form>
-            <sheet>
-                <group>
-                    <field name="name"/>
-                    <field name="brand"/>
-                    <field name="model"/>
-                    <field name="owner_id"/>
-                </group>
-            </sheet>
-        </form>
-    </field>
-</record>
+    <record id="view_mobile_device_form" model="ir.ui.view">
+        <field name="name">mobile.device.form</field>
+        <field name="model">mobile.device</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group string="Información básica">
+                        <field name="name"/>
+                        <field name="brand_id"/>
+                        <field name="model_id"/>
+                        <field name="owner_id"/>
+                    </group>
+                    <group string="Detalles">
+                        <field name="imei"/>
+                        <field name="serial_number"/>
+                        <field name="color"/>
+                        <field name="enciende"/>
+                        <field name="garantia"/>
+                    </group>
+                    <group string="Descripción">
+                        <field name="descripcion"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
 
-<record id="action_mobile_device" model="ir.actions.act_window">
-    <field name="name">Mobile Devices</field>
-    <field name="res_model">mobile.device</field>
-    <field name="view_mode">tree,form</field>
-</record>
-
-<menuitem id="menu_mobile_device_root" name="Mobile Devices" sequence="10"/>
-<menuitem id="menu_mobile_device" name="Devices" parent="menu_mobile_device_root" action="action_mobile_device" sequence="10"/>
+    <record id="action_mobile_device" model="ir.actions.act_window">
+        <field name="name">Dispositivos Móviles</field>
+        <field name="res_model">mobile.device</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

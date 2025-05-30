@@ -4,7 +4,7 @@ class RepairOrder(models.Model):
     _name = 'mobile.repair.order'
     _description = 'Repair Order'
 
-    name = fields.Char(string='Order Reference', required=True, copy=False, readonly=True, index=True, default=lambda self: self.env['ir.sequence'].next_by_code('mobile.repair.order'))
+    name = fields.Char(string='Order Reference', required=True, copy=False, readonly=True, index=True, default=lambda self: self.env['ir.sequence'].next_by_code('mobile_repair_order'))
     customer_id = fields.Many2one('res.partner', string='Customer', required=True)
     device_id = fields.Many2one('mobile.device', string='Device', required=True)
     status = fields.Selection([
@@ -19,11 +19,16 @@ class RepairOrder(models.Model):
 
     @api.model
     def create(self, vals):
-        record = super(RepairOrder, self).create(vals)
-        return record
+        if not vals.get('name'):
+            vals['name'] = self.env['ir.sequence'].next_by_code('mobile_repair_order')
+        return super(RepairOrder, self).create(vals)
 
     def action_complete(self):
         self.status = 'completed'
 
     def action_cancel(self):
         self.status = 'canceled'
+
+    def action_save(self):
+        # Método dummy para el botón Save
+        return True

@@ -1,5 +1,9 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_mobile_device_user,access_mobile_device_user,model_mobile_device,,1,0,0,0
-access_repair_order_user,access_repair_order_user,model_repair_order,,1,0,0,0
-access_mobile_device_manager,access_mobile_device_manager,model_mobile_device,,1,1,1,1
-access_repair_order_manager,access_repair_order_manager,model_repair_order,,1,1,1,1
+access_mobile_device_user,mobile.device.user,model_mobile_device,base.group_user,1,1,1,0
+access_mobile_repair_order_user,mobile.repair.order.user,model_mobile_repair_order,base.group_user,1,1,1,0
+access_mobile_device_manager,mobile.device.manager,model_mobile_device,base.group_system,1,1,1,1
+access_mobile_repair_order_manager,mobile.repair.order.manager,model_mobile_repair_order,base.group_system,1,1,1,1
+access_mobile_brand_user,mobile.brand.user,model_mobile_brand,base.group_user,1,1,1,0
+access_mobile_model_user,mobile.model.user,model_mobile_model,base.group_user,1,1,1,0
+access_mobile_brand_manager,mobile.brand.manager,model_mobile_brand,base.group_system,1,1,1,1
+access_mobile_model_manager,mobile.model.manager,model_mobile_model,base.group_system,1,1,1,1

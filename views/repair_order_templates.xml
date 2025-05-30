@@ -1,5 +1,5 @@
-<templates xmlns="http://www.w3.org/1999/xhtml">
-    <t t-name="mobile_repair_orders.repair_order_template">
+<odoo>
+    <template id="mobile_repair_orders.repair_order_template">
         <div class="repair-order">
             <h2>Repair Order: <t t-esc="order.name"/></h2>
             <p><strong>Customer:</strong> <t t-esc="order.customer_id.name"/></p>
@@ -20,5 +20,5 @@
                 <p><strong>Invoice:</strong> <t t-esc="order.invoice_id.number"/></p>
             </t>
         </div>
-    </t>
-</templates>
+    </template>
+</odoo>

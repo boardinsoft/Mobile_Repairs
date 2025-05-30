@@ -8,24 +8,28 @@
     """,
     'author': 'Gabriel Gutierrez',
     'website': 'http://www.boardinsoft.com',
-    'category': 'Servicios/Reparaciones',
+    'category': 'Services/Repair',
     'version': '1.0.0',
+    'sequence': 10,
     'depends': [
         'base',
-        'account',
-        'stock',
+        #'account',
+        #'stock',
         'contacts',
-        'product',
+        #'product',
     ],
     'data': [
+        # Primero: Datos maestros y configuraciones
         'security/ir.model.access.csv',
-        'security/mobile_repair_orders_security.xml',
-        'views/repair_order_views.xml',
-        'views/mobile_device_views.xml',
-        'views/repair_order_menu.xml',
-        'views/repair_order_templates.xml',
         'data/ir_sequence_data.xml',
-        'data/demo_data.xml',
+        
+        # Segundo: Vistas que contienen las acciones
+        'views/repair_order_views.xml',      # Contiene action_repair_order_form_view
+        'views/mobile_device_views.xml',     # Contiene action_mobile_device
+        'views/repair_order_templates.xml',  # Plantillas adicionales
+        
+        # Tercero: Menús que referencian las acciones (siempre al final)
+        'views/repair_order_menu.xml',       # Referencias: action_repair_order_form_view y action_mobile_device
     ],
     'installable': True,
     'application': True,

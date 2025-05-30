@@ -1,10 +1,10 @@
-<sequence xmlns="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.w3.org/2001/XMLSchema-instance">
+<odoo>
     <record id="seq_repair_order" model="ir.sequence">
         <field name="name">Repair Order</field>
-        <field name="code">repair.order</field>
+        <field name="code">mobile_repair_order</field>
         <field name="prefix">RO</field>
         <field name="padding">5</field>
         <field name="number_next">1</field>
         <field name="number_increment">1</field>
     </record>
-</sequence>
+</odoo>

@@ -11,7 +11,7 @@
 
     <record id="access_repair_order_manager" model="ir.model.access">
         <field name="name">repair.order.manager.access</field>
-        <field name="model_id" ref="model_repair_order"/>
+        <field name="model_id" ref="model_mobile_repair_order"/>
         <field name="group_id" ref="group_mobile_repair_manager"/>
         <field name="perm_read" eval="1"/>
         <field name="perm_write" eval="1"/>
@@ -21,7 +21,7 @@
 
     <record id="access_repair_order_user" model="ir.model.access">
         <field name="name">repair.order.user.access</field>
-        <field name="model_id" ref="model_repair_order"/>
+        <field name="model_id" ref="model_mobile_repair_order"/>
         <field name="group_id" ref="group_mobile_repair_user"/>
         <field name="perm_read" eval="1"/>
         <field name="perm_write" eval="0"/>
