@@ -5,7 +5,7 @@
         <field name="type">list</field>
         <field name="arch" type="xml">
             <list>
-                <field name="name"/>
+                <field name="display_name" string="Dispositivo"/>
                 <field name="brand_id"/>
                 <field name="model_id"/>
                 <field name="imei"/>
@@ -26,7 +26,7 @@
             <form>
                 <sheet>
                     <group string="Información básica">
-                        <field name="name"/>
+                        <field name="display_name" string="Dispositivo" readonly="1"/>
                         <field name="brand_id"/>
                         <field name="model_id"/>
                         <field name="owner_id"/>
