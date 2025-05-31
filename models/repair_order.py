@@ -18,10 +18,19 @@ class RepairOrder(models.Model):
     notes = fields.Text(string='Notas')
 
     @api.model
-    def create(self, vals):
-        if not vals.get('name'):
-            vals['name'] = self.env['ir.sequence'].next_by_code('mobile_repair_order')
-        return super(RepairOrder, self).create(vals)
+    def create(self, vals_list): # Ahora esperamos una lista de diccionarios
+        # Aseguramos que vals_list siempre sea una lista, incluso si se pasa un solo diccionario
+        if isinstance(vals_list, dict):
+            vals_list = [vals_list]
+
+        # Preprocesar los valores antes de la creación en lote
+        for vals in vals_list:
+            if not vals.get('name'):
+                vals['name'] = self.env['ir.sequence'].next_by_code('mobile_repair_order')
+
+        # Llamar al super método para la creación en lote
+        # Odoo base manejará la inserción eficiente en la base de datos
+        return super(RepairOrder, self).create(vals_list)
 
     def action_complete(self):
         self.status = 'completed'
