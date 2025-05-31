@@ -13,23 +13,22 @@
     'sequence': 10,
     'depends': [
         'base',
-        #'account',
-        #'stock',
         'contacts',
-        #'product',
+        'mail',  # Para el chatter
     ],
     'data': [
-        # Primero: Datos maestros y configuraciones
+        # Primero: Seguridad y datos maestros
         'security/ir.model.access.csv',
         'data/ir_sequence_data.xml',
         
-        # Segundo: Vistas que contienen las acciones
-        'views/repair_order_views.xml',      # Contiene action_repair_order_form_view
-        'views/mobile_device_views.xml',     # Contiene action_mobile_device
-        'views/repair_order_templates.xml',  # Plantillas adicionales
+        # Segundo: Vistas (que contienen las acciones)
+        'views/fault_config_views.xml',
+        'views/brand_model_views.xml',  # Nuevo archivo
+        'views/mobile_device_views.xml',     
+        'views/repair_order_views.xml',
         
-        # Tercero: Menús que referencian las acciones (siempre al final)
-        'views/repair_order_menu.xml',       # Referencias: action_repair_order_form_view y action_mobile_device
+        # Tercero: Menús (que referencian las acciones)
+        'views/repair_order_menu.xml',
     ],
     'installable': True,
     'application': True,
