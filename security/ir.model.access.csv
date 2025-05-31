@@ -7,3 +7,7 @@ access_mobile_brand_user,mobile.brand.user,model_mobile_brand,base.group_user,1,
 access_mobile_model_user,mobile.model.user,model_mobile_model,base.group_user,1,1,1,0
 access_mobile_brand_manager,mobile.brand.manager,model_mobile_brand,base.group_system,1,1,1,1
 access_mobile_model_manager,mobile.model.manager,model_mobile_model,base.group_system,1,1,1,1
+access_mobile_fault_user,mobile.fault.user,model_mobile_fault,base.group_user,1,1,1,0
+access_mobile_fault_manager,mobile.fault.manager,model_mobile_fault,base.group_system,1,1,1,1
+access_mobile_fault_category_user,mobile.fault.category.user,model_mobile_fault_category,base.group_user,1,1,1,0
+access_mobile_fault_category_manager,mobile.fault.category.manager,model_mobile_fault_category,base.group_system,1,1,1,1
