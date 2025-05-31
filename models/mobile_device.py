@@ -32,8 +32,6 @@ class MobileDevice(models.Model):
     color = fields.Char(string='Color')
     enciende = fields.Boolean(string='¿Enciende?')
     garantia = fields.Boolean(string='En garantía')
-    descripcion = fields.Text(string='Descripción adicional')
-    owner_id = fields.Many2one('res.partner', string='Propietario')
     display_name = fields.Char(string='Dispositivo', compute='_compute_display_name', store=True)
 
     @api.depends('brand_id', 'model_id')
