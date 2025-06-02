@@ -5,14 +5,16 @@
         <field name="model">mobile.device</field>
         <field name="arch" type="xml">
             <list>
-                <field name="display_name" string="Dispositivo"/>
                 <field name="brand_id"/>
                 <field name="model_id"/>
                 <field name="imei"/>
-                <field name="serial_number"/>
-                <field name="color"/>
-                <field name="enciende"/>
-                <field name="garantia"/>
+                <field name="serial_number" optional="hide"/>
+                <field name="color" optional="show"/>
+                <field name="enciende" widget="boolean_toggle"/>
+                <field name="garantia" widget="boolean_toggle"/>
+                <field name="condicion_id"/>
+                <field name="tipo_bloqueo"/>
+                <field name="display_name" string="Nombre Completo" optional="hide"/>
             </list>
         </field>
     </record>
@@ -23,23 +25,76 @@
         <field name="arch" type="xml">
             <form>
                 <sheet>
-                    <group string="Información básica">
-                        <field name="display_name" string="Dispositivo" readonly="1"/>
-                        <field name="brand_id"/>
-                        <field name="model_id"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="display_name" placeholder="Dispositivo..." readonly="1"/>
+                        </h1>
+                    </div>
+                    
+                    <group>
+                        <group string="Información Básica">
+                            <field name="brand_id"/>
+                            <field name="model_id" 
+                                   domain="[('brand_id', '=', brand_id)]" 
+                                   options="{'no_quick_create': True}"/>
+                            <field name="condicion_id"/>
+                        </group>
+                        <group string="Identificación">
+                            <field name="imei"/>
+                            <field name="serial_number"/>
+                            <field name="color"/>
+                        </group>
                     </group>
-                    <group string="Detalles">
-                        <field name="imei"/>
-                        <field name="serial_number"/>
-                        <field name="color"/>
-                        <field name="enciende"/>
-                        <field name="garantia"/>
+                    
+                    <group>
+                        <group string="Estado del Dispositivo">
+                            <field name="enciende"/>
+                            <field name="garantia"/>
+                        </group>
+                        <group string="Seguridad y Bloqueo">
+                            <field name="tipo_bloqueo"/>
+                            <field name="detalle_bloqueo" 
+                                   invisible="tipo_bloqueo == 'ninguno'"/>
+                        </group>
                     </group>
-                    <group string="Fallas">
-                        <field name="fault_ids" widget="many2many_tags"/>
+                    
+                    <group string="Fallas Reportadas">
+                        <field name="fault_ids" widget="many2many_tags" 
+                               placeholder="Selecciona las fallas del dispositivo..."/>
+                    </group>
+                    
+                    <group string="Accesorios Entregados">
+                        <field name="accesorios" 
+                               placeholder="Ej: Cargador, cable USB, funda, protector de pantalla, tarjeta SIM..."
+                               nolabel="1"/>
                     </group>
                 </sheet>
             </form>
+        </field>
+    </record>
+
+    <record id="view_mobile_device_search" model="ir.ui.view">
+        <field name="name">mobile.device.search</field>
+        <field name="model">mobile.device</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="brand_id"/>
+                <field name="model_id"/>
+                <field name="imei"/>
+                <field name="serial_number"/>
+                <field name="display_name"/>
+                
+                <filter string="En Garantía" name="warranty" domain="[('garantia', '=', True)]"/>
+                <filter string="Enciende" name="working" domain="[('enciende', '=', True)]"/>
+                <filter string="No Enciende" name="not_working" domain="[('enciende', '=', False)]"/>
+                
+                <group expand="0" string="Agrupar Por">
+                    <filter string="Marca" name="group_brand" context="{'group_by': 'brand_id'}"/>
+                    <filter string="Modelo" name="group_model" context="{'group_by': 'model_id'}"/>
+                    <filter string="Condición" name="group_condition" context="{'group_by': 'condicion_id'}"/>
+                    <filter string="Tipo de Bloqueo" name="group_lock" context="{'group_by': 'tipo_bloqueo'}"/>
+                </group>
+            </search>
         </field>
     </record>
 
@@ -47,5 +102,15 @@
         <field name="name">Dispositivos Móviles</field>
         <field name="res_model">mobile.device</field>
         <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_mobile_device_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Registrar un nuevo dispositivo móvil
+            </p>
+            <p>
+                Aquí puedes gestionar todos los dispositivos móviles que ingresan para reparación.
+                Incluye información detallada como marca, modelo, IMEI, estado y fallas reportadas.
+            </p>
+        </field>
     </record>
 </odoo>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista de lista para las líneas de reparación -->
+    <record id="mobile_repair_line_tree_view" model="ir.ui.view">
+        <field name="name">mobile.repair.line.tree</field>
+        <field name="model">mobile.repair.line</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <!-- Campo handle para reordenar elementos arrastrando -->
+                <field name="sequence" widget="handle"/>
+                
+                <!-- Campo de orden, oculto por defecto -->
+                <field name="order_id" optional="hide"/>
+                
+                <!-- Selector de producto con opciones y dominio corregido -->
+                <field name="product_id"
+                       options="{'no_create': True, 'no_create_edit': True}"
+                       domain="['|', ('purchase_ok', '=', True), ('sale_ok', '=', True)]"
+                       context="{'default_type': 'service'}"/>
+                
+                <!-- Descripción del producto/servicio -->
+                <field name="description"/>
+                
+                <!-- Cantidad del producto -->
+                <field name="quantity"/>
+                
+                <!-- Unidad de medida, visible solo si el grupo UoM está activo -->
+                <field name="product_uom_id" string="UdM" groups="uom.group_uom" optional="show"/>
+                
+                <!-- Precio unitario -->
+                <field name="price_unit"/>
+                
+                <!-- Subtotal con formato monetario -->
+                <field name="price_subtotal" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                
+                <!-- Campos auxiliares invisibles -->
+                <field name="currency_id" column_invisible="1"/>
+                <field name="is_service" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Vista de formulario para edición individual de líneas -->
+    <record id="mobile_repair_line_form_view" model="ir.ui.view">
+        <field name="name">mobile.repair.line.form</field>
+        <field name="model">mobile.repair.line</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="order_id"/>
+                            <field name="product_id" 
+                                   domain="['|', ('purchase_ok', '=', True), ('sale_ok', '=', True)]"/>
+                            <field name="quantity"/>
+                            <field name="product_uom_id" groups="uom.group_uom"/>
+                        </group>
+                        <group>
+                            <field name="price_unit"/>
+                            <field name="price_subtotal" widget="monetary"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="is_service"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="description" placeholder="Descripción detallada del producto o servicio..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Acción para líneas de reparación (si necesitas acceso directo) -->
+    <record id="action_mobile_repair_line" model="ir.actions.act_window">
+        <field name="name">Líneas de Reparación</field>
+        <field name="res_model">mobile.repair.line</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay líneas de reparación registradas
+            </p>
+            <p>
+                Las líneas de reparación se gestionan normalmente desde las órdenes de reparación.
+            </p>
+        </field>
+    </record>
+</odoo>

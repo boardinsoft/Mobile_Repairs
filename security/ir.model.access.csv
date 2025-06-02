@@ -11,3 +11,7 @@ access_mobile_fault_user,mobile.fault.user,model_mobile_fault,base.group_user,1,
 access_mobile_fault_manager,mobile.fault.manager,model_mobile_fault,base.group_system,1,1,1,1
 access_mobile_fault_category_user,mobile.fault.category.user,model_mobile_fault_category,base.group_user,1,1,1,0
 access_mobile_fault_category_manager,mobile.fault.category.manager,model_mobile_fault_category,base.group_system,1,1,1,1
+access_mobile_device_condition_user,mobile.device.condition.user,model_mobile_device_condition,base.group_user,1,1,1,0
+access_mobile_device_condition_manager,mobile.device.condition.manager,model_mobile_device_condition,base.group_system,1,1,1,1
+access_mobile_repair_line_user,mobile.repair.line.user,model_mobile_repair_line,base.group_user,1,1,1,0
+access_mobile_repair_line_manager,mobile.repair.line.manager,model_mobile_repair_line,base.group_system,1,1,1,1

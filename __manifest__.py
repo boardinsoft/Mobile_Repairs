@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 {
     'name': 'Mobile Repair Orders',
     'summary': 'Manage mobile phone repair orders and invoicing.',
@@ -14,21 +15,36 @@
     'depends': [
         'base',
         'contacts',
-        'mail',  # Para el chatter
+        'mail',
+        'product',
+        'sale_management',
+        'account',
+        'stock',
     ],
     'data': [
-        # Primero: Seguridad y datos maestros
+        # Seguridad (primero)
+        'security/mobile_repair_orders_security.xml',    # ← CORREGIDO: Usar el nombre real del archivo
         'security/ir.model.access.csv',
+        
+        # Datos maestros y secuencias
         'data/ir_sequence_data.xml',
         
-        # Segundo: Vistas (que contienen las acciones)
+        # Acciones (antes que los menús)
+        'views/repair_order_actions.xml',
+        
+        # Vistas de modelos
+        'views/brand_model_views.xml',
+        'views/device_condition_views.xml',
         'views/fault_config_views.xml',
-        'views/brand_model_views.xml',  # Nuevo archivo
-        'views/mobile_device_views.xml',     
+        'views/mobile_device_views.xml',
+        'views/repair_line_views.xml',
         'views/repair_order_views.xml',
         
-        # Tercero: Menús (que referencian las acciones)
+        # Menú principal (después de las acciones)
         'views/repair_order_menu.xml',
+        
+        # Plantillas y reportes
+        #'views/repair_order_templates.xml',
     ],
     'installable': True,
     'application': True,
