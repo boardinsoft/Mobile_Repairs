@@ -1,24 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <template id="mobile_repair_orders.repair_order_template">
-        <div class="repair-order">
-            <h2>Orden de Reparación: <t t-esc="order.name"/></h2>
-            <p><strong>Cliente:</strong> <t t-esc="order.customer_id.name"/></p>
-            <p><strong>Dispositivo:</strong> <t t-esc="order.device_id.name"/></p>
-            <p><strong>Estado:</strong> <t t-esc="order.status"/></p>
-            <t t-if="order.parts_used">
-                <h3>Partes Utilizadas:</h3>
-                <ul>
-                    <t t-foreach="order.parts_used" t-as="part">
-                        <li><t t-esc="part.name"/> - <t t-esc="part.quantity"/> unidades</li>
-                    </t>
-                </ul>
-            </t>
-            <t t-if="order.technician_id">
-                <p><strong>Técnico:</strong> <t t-esc="order.technician_id.name"/></p>
-            </t>
-            <t t-if="order.invoice_id">
-                <p><strong>Factura:</strong> <t t-esc="order.invoice_id.number"/></p>
-            </t>
+    <!-- Template básico para orden de reparación -->
+    <template id="repair_order_template" name="Repair Order Template">
+        <div class="repair-order-document">
+            <div class="header">
+                <h2>Orden de Reparación: <span t-esc="order.name"/></h2>
+                <p class="text-muted">Fecha: <span t-esc="order.repair_date"/></p>
+            </div>
+            
+            <div class="customer-info">
+                <h3>Información del Cliente</h3>
+                <p><strong>Cliente:</strong> <span t-esc="order.customer_id.name"/></p>
+                <p t-if="order.customer_id.email"><strong>Email:</strong> <span t-esc="order.customer_id.email"/></p>
+                <p t-if="order.customer_id.phone"><strong>Teléfono:</strong> <span t-esc="order.customer_id.phone"/></p>
+            </div>
+            
+            <div class="device-info">
+                <h3>Información del Dispositivo</h3>
+                <p><strong>Dispositivo:</strong> <span t-esc="order.device_id.display_name"/></p>
+                <p t-if="order.device_id.imei"><strong>IMEI:</strong> <span t-esc="order.device_id.imei"/></p>
+                <p t-if="order.device_id.serial_number"><strong>Serie:</strong> <span t-esc="order.device_id.serial_number"/></p>
+                <p t-if="order.device_id.color"><strong>Color:</strong> <span t-esc="order.device_id.color"/></p>
+            </div>
+            
+            <div class="repair-info">
+                <h3>Información de la Reparación</h3>
+                <p><strong>Estado:</strong> <span t-esc="order.status"/></p>
+                <p t-if="order.technician_id"><strong>Técnico:</strong> <span t-esc="order.technician_id.name"/></p>
+                <p t-if="order.priority"><strong>Prioridad:</strong> <span t-esc="order.priority"/></p>
+                <p t-if="order.description"><strong>Descripción del problema:</strong></p>
+                <p t-if="order.description"><span t-esc="order.description"/></p>
+            </div>
+            
+            <div t-if="order.repair_line_ids" class="repair-lines">
+                <h3>Productos y Servicios</h3>
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Producto/Servicio</th>
+                            <th>Descripción</th>
+                            <th class="text-right">Cantidad</th>
+                            <th class="text-right">Precio Unit.</th>
+                            <th class="text-right">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="order.repair_line_ids" t-as="line">
+                            <td><span t-esc="line.product_id.name"/></td>
+                            <td><span t-esc="line.description"/></td>
+                            <td class="text-right"><span t-esc="line.quantity"/></td>
+                            <td class="text-right"><span t-esc="line.price_unit"/></td>
+                            <td class="text-right"><span t-esc="line.price_subtotal"/></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="4" class="text-right"><strong>Total:</strong></td>
+                            <td class="text-right"><strong><span t-esc="order.total_amount"/></strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            
+            <div t-if="order.invoice_id" class="invoice-info">
+                <h3>Información de Facturación</h3>
+                <p><strong>Factura:</strong> <span t-esc="order.invoice_id.name"/></p>
+                <p><strong>Estado:</strong> <span t-esc="order.invoice_id.state"/></p>
+            </div>
+            
+            <div t-if="order.notes" class="notes">
+                <h3>Notas</h3>
+                <p><span t-esc="order.notes"/></p>
+            </div>
         </div>
     </template>
 </odoo>

@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Menú principal -->
+    <!-- Menú principal (sin icono hasta que se cree el archivo) -->
     <menuitem id="menu_mobile_repair_root" 
               name="Reparaciones Móviles" 
-              sequence="10" 
-              web_icon="mobile_repair_orders,static/description/icon.png"/>
+              sequence="10"/>
 
     <!-- Submenú de Órdenes -->
     <menuitem id="menu_mobile_repair_orders" 
@@ -53,4 +52,10 @@
               parent="menu_mobile_repair_config" 
               action="action_mobile_fault" 
               sequence="50"/>
+
+    <menuitem id="menu_device_condition" 
+              name="Condiciones de Dispositivo"
+              parent="menu_mobile_repair_config" 
+              sequence="60"
+              action="action_device_condition"/>
 </odoo>

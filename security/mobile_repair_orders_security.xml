@@ -1,51 +1,185 @@
-<security>
-    <record id="group_mobile_repair_manager" model="res.groups">
-        <field name="name">Mobile Repair Manager</field>
-        <field name="category_id" ref="base.module_category_services"/>
-    </record>
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Grupos de seguridad para Mobile Repair Orders -->
+        <record id="group_mobile_repair_manager" model="res.groups">
+            <field name="name">Mobile Repair Manager</field>
+            <field name="category_id" ref="base.module_category_services"/>
+            <field name="comment">Permite gestión completa de las órdenes de reparación móvil</field>
+        </record>
 
-    <record id="group_mobile_repair_user" model="res.groups">
-        <field name="name">Mobile Repair User</field>
-        <field name="category_id" ref="base.module_category_services"/>
-    </record>
+        <record id="group_mobile_repair_user" model="res.groups">
+            <field name="name">Mobile Repair User</field>
+            <field name="category_id" ref="base.module_category_services"/>
+            <field name="comment">Permite trabajar con órdenes de reparación móvil</field>
+        </record>
 
-    <record id="access_repair_order_manager" model="ir.model.access">
-        <field name="name">repair.order.manager.access</field>
-        <field name="model_id" ref="model_mobile_repair_order"/>
-        <field name="group_id" ref="group_mobile_repair_manager"/>
-        <field name="perm_read" eval="1"/>
-        <field name="perm_write" eval="1"/>
-        <field name="perm_create" eval="1"/>
-        <field name="perm_unlink" eval="1"/>
-    </record>
+        <!-- Permisos para Repair Orders -->
+        <record id="access_repair_order_manager" model="ir.model.access">
+            <field name="name">repair.order.manager.access</field>
+            <field name="model_id" ref="model_mobile_repair_order"/>
+            <field name="group_id" ref="group_mobile_repair_manager"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
 
-    <record id="access_repair_order_user" model="ir.model.access">
-        <field name="name">repair.order.user.access</field>
-        <field name="model_id" ref="model_mobile_repair_order"/>
-        <field name="group_id" ref="group_mobile_repair_user"/>
-        <field name="perm_read" eval="1"/>
-        <field name="perm_write" eval="0"/>
-        <field name="perm_create" eval="0"/>
-        <field name="perm_unlink" eval="0"/>
-    </record>
+        <record id="access_repair_order_user" model="ir.model.access">
+            <field name="name">repair.order.user.access</field>
+            <field name="model_id" ref="model_mobile_repair_order"/>
+            <field name="group_id" ref="group_mobile_repair_user"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
 
-    <record id="access_mobile_device_manager" model="ir.model.access">
-        <field name="name">mobile.device.manager.access</field>
-        <field name="model_id" ref="model_mobile_device"/>
-        <field name="group_id" ref="group_mobile_repair_manager"/>
-        <field name="perm_read" eval="1"/>
-        <field name="perm_write" eval="1"/>
-        <field name="perm_create" eval="1"/>
-        <field name="perm_unlink" eval="1"/>
-    </record>
+        <!-- Permisos para Mobile Device -->
+        <record id="access_mobile_device_manager" model="ir.model.access">
+            <field name="name">mobile.device.manager.access</field>
+            <field name="model_id" ref="model_mobile_device"/>
+            <field name="group_id" ref="group_mobile_repair_manager"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
 
-    <record id="access_mobile_device_user" model="ir.model.access">
-        <field name="name">mobile.device.user.access</field>
-        <field name="model_id" ref="model_mobile_device"/>
-        <field name="group_id" ref="group_mobile_repair_user"/>
-        <field name="perm_read" eval="1"/>
-        <field name="perm_write" eval="0"/>
-        <field name="perm_create" eval="0"/>
-        <field name="perm_unlink" eval="0"/>
-    </record>
-</security>
+        <record id="access_mobile_device_user" model="ir.model.access">
+            <field name="name">mobile.device.user.access</field>
+            <field name="model_id" ref="model_mobile_device"/>
+            <field name="group_id" ref="group_mobile_repair_user"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <!-- Permisos para Repair Lines -->
+        <record id="access_repair_line_manager" model="ir.model.access">
+            <field name="name">repair.line.manager.access</field>
+            <field name="model_id" ref="model_mobile_repair_line"/>
+            <field name="group_id" ref="group_mobile_repair_manager"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <record id="access_repair_line_user" model="ir.model.access">
+            <field name="name">repair.line.user.access</field>
+            <field name="model_id" ref="model_mobile_repair_line"/>
+            <field name="group_id" ref="group_mobile_repair_user"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <!-- Permisos para Brand -->
+        <record id="access_mobile_brand_manager" model="ir.model.access">
+            <field name="name">mobile.brand.manager.access</field>
+            <field name="model_id" ref="model_mobile_brand"/>
+            <field name="group_id" ref="group_mobile_repair_manager"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <record id="access_mobile_brand_user" model="ir.model.access">
+            <field name="name">mobile.brand.user.access</field>
+            <field name="model_id" ref="model_mobile_brand"/>
+            <field name="group_id" ref="group_mobile_repair_user"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="0"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <!-- Permisos para Model -->
+        <record id="access_mobile_model_manager" model="ir.model.access">
+            <field name="name">mobile.model.manager.access</field>
+            <field name="model_id" ref="model_mobile_model"/>
+            <field name="group_id" ref="group_mobile_repair_manager"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <record id="access_mobile_model_user" model="ir.model.access">
+            <field name="name">mobile.model.user.access</field>
+            <field name="model_id" ref="model_mobile_model"/>
+            <field name="group_id" ref="group_mobile_repair_user"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="0"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <!-- Permisos para Fault Category -->
+        <record id="access_fault_category_manager" model="ir.model.access">
+            <field name="name">fault.category.manager.access</field>
+            <field name="model_id" ref="model_mobile_fault_category"/>
+            <field name="group_id" ref="group_mobile_repair_manager"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <record id="access_fault_category_user" model="ir.model.access">
+            <field name="name">fault.category.user.access</field>
+            <field name="model_id" ref="model_mobile_fault_category"/>
+            <field name="group_id" ref="group_mobile_repair_user"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="0"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <!-- Permisos para Fault -->
+        <record id="access_fault_manager" model="ir.model.access">
+            <field name="name">fault.manager.access</field>
+            <field name="model_id" ref="model_mobile_fault"/>
+            <field name="group_id" ref="group_mobile_repair_manager"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <record id="access_fault_user" model="ir.model.access">
+            <field name="name">fault.user.access</field>
+            <field name="model_id" ref="model_mobile_fault"/>
+            <field name="group_id" ref="group_mobile_repair_user"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="0"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <!-- Permisos para Device Condition -->
+        <record id="access_device_condition_manager" model="ir.model.access">
+            <field name="name">device.condition.manager.access</field>
+            <field name="model_id" ref="model_mobile_device_condition"/>
+            <field name="group_id" ref="group_mobile_repair_manager"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <record id="access_device_condition_user" model="ir.model.access">
+            <field name="name">device.condition.user.access</field>
+            <field name="model_id" ref="model_mobile_device_condition"/>
+            <field name="group_id" ref="group_mobile_repair_user"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="0"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+    </data>
+</odoo>
