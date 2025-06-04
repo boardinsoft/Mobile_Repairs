@@ -16,6 +16,10 @@
                        widget="badge"/>
                 <field name="technician_id" optional="show"/>
                 <field name="repair_date"/>
+                <!-- ✅ CAMPOS NUEVOS EN LISTA -->
+                <field name="start_date" optional="hide" string="Fecha Inicio Real"/>
+                <field name="completion_date" optional="hide" string="Fecha Finalización"/>
+                <field name="duration_hours" optional="hide" string="Duración (h)" widget="float_time"/>
                 <field name="delivery_date" optional="show"/>
                 <field name="priority" optional="hide"/>
                 <field name="total_amount" widget="monetary" sum="Total"/>
@@ -68,6 +72,15 @@
                             <field name="technician_id"/>
                             <field name="repair_date"/>
                             <field name="delivery_date"/>
+                            <!-- ✅ CAMPOS NUEVOS EN FORMULARIO -->
+                            <field name="start_date" readonly="1" 
+                                   invisible="not start_date"
+                                   string="Fecha Inicio Real"
+                                   decoration-info="1"/>
+                            <field name="completion_date" readonly="1" 
+                                   invisible="not completion_date"
+                                   string="Fecha Finalización"
+                                   decoration-success="1"/>
                             <field name="currency_id" groups="base.group_multi_currency"/>
                         </group>
                     </group>
@@ -76,7 +89,7 @@
                         <page string="Líneas de Reparación" name="repair_lines">
                             <field name="repair_line_ids" 
                                    context="{'default_currency_id': currency_id}"
-                                   readonly="status == 'completed'">>
+                                   readonly="status == 'completed'">
                                 <list editable="bottom">
                                     <field name="sequence" widget="handle"/>
                                     <field name="product_id" 
@@ -117,10 +130,34 @@
                                            placeholder="Notas internas del técnico o para el taller..."/>
                                 </group>
                             </group>
+                            
+                            <!-- ✅ NUEVA SECCIÓN PARA TRACKING DE TIEMPOS -->
+                            <group string="Seguimiento de Tiempos" 
+                                   invisible="not start_date and not completion_date">
+                                <group>
+                                    <field name="start_date" readonly="1" widget="datetime"
+                                           decoration-info="1"/>
+                                    <field name="completion_date" readonly="1" widget="datetime"
+                                           decoration-success="1"/>
+                                </group>
+                                <group>
+                                    <!-- Campo calculado para mostrar duración -->
+                                    <div class="alert alert-info" role="alert" 
+                                         invisible="not start_date or not completion_date">
+                                        <strong>ℹ️ Información de Tiempos:</strong><br/>
+                                        <span invisible="not start_date">
+                                            📅 <strong>Iniciado:</strong> <field name="start_date" readonly="1" widget="datetime" nolabel="1"/>
+                                        </span><br/>
+                                        <span invisible="not completion_date">
+                                            ✅ <strong>Completado:</strong> <field name="completion_date" readonly="1" widget="datetime" nolabel="1"/>
+                                        </span>
+                                    </div>
+                                </group>
+                            </group>
                         </page>
                         
                         <page string="Facturación" name="invoicing" 
-                              invisible="not invoice_id">>
+                              invisible="not invoice_id">
                             <group>
                                 <field name="invoice_count" invisible="1"/>
                                 <field name="invoice_id" readonly="1"/>
@@ -129,12 +166,8 @@
                     </notebook>
                 </sheet>
                 
-                <!-- Chatter para seguimiento de actividades -->
-                <div class="oe_chatter">
-                    <field name="message_follower_ids"/>
-                    <field name="activity_ids"/>
-                    <field name="message_ids"/>
-                </div>
+                <!-- Chatter para Odoo 18 -->
+                <chatter/>
             </form>
         </field>
     </record>
@@ -168,6 +201,13 @@
                 <filter string="Urgentes" name="urgent" domain="[('priority', '=', 'urgent')]"/>
                 <filter string="Alta Prioridad" name="high_priority" domain="[('priority', '=', 'high')]"/>
                 
+                <!-- ✅ NUEVOS FILTROS PARA CAMPOS DE TIEMPO -->
+                <separator/>
+                <filter string="Iniciadas Hoy" name="started_today" 
+                        domain="[('start_date', '&gt;=', datetime.datetime.combine(context_today(), datetime.time(0,0,0))), ('start_date', '&lt;=', datetime.datetime.combine(context_today(), datetime.time(23,59,59)))]"/>
+                <filter string="Completadas Hoy" name="completed_today" 
+                        domain="[('completion_date', '&gt;=', datetime.datetime.combine(context_today(), datetime.time(0,0,0))), ('completion_date', '&lt;=', datetime.datetime.combine(context_today(), datetime.time(23,59,59)))]"/>
+                
                 <!-- Agrupaciones -->
                 <group expand="0" string="Agrupar Por">
                     <filter string="Estado" name="group_status" context="{'group_by': 'status'}"/>
@@ -175,6 +215,9 @@
                     <filter string="Técnico" name="group_technician" context="{'group_by': 'technician_id'}"/>
                     <filter string="Prioridad" name="group_priority" context="{'group_by': 'priority'}"/>
                     <filter string="Fecha de Reparación" name="group_repair_date" context="{'group_by': 'repair_date:month'}"/>
+                    <!-- ✅ NUEVAS AGRUPACIONES -->
+                    <filter string="Fecha de Inicio" name="group_start_date" context="{'group_by': 'start_date:day'}"/>
+                    <filter string="Fecha de Finalización" name="group_completion_date" context="{'group_by': 'completion_date:day'}"/>
                 </group>
             </search>
         </field>
@@ -192,6 +235,10 @@
                 <field name="status"/>
                 <field name="technician_id"/>
                 <field name="repair_date"/>
+                <!-- ✅ CAMPOS NUEVOS EN KANBAN -->
+                <field name="start_date"/>
+                <field name="completion_date"/>
+                <field name="progress"/>
                 <field name="total_amount"/>
                 <field name="priority"/>
                 <field name="currency_id"/>
@@ -217,6 +264,34 @@
                                     <div class="row" t-if="record.technician_id.raw_value">
                                         <div class="col-12">
                                             <i class="fa fa-wrench"/> <field name="technician_id"/>
+                                        </div>
+                                    </div>
+                                    <!-- ✅ INFORMACIÓN DE TIEMPOS EN KANBAN -->
+                                    <div class="row" t-if="record.start_date.raw_value">
+                                        <div class="col-12">
+                                            <i class="fa fa-play text-info"/> Iniciado: <field name="start_date" widget="datetime"/>
+                                        </div>
+                                    </div>
+                                    <div class="row" t-if="record.completion_date.raw_value">
+                                        <div class="col-12">
+                                            <i class="fa fa-check text-success"/> Completado: <field name="completion_date" widget="datetime"/>
+                                        </div>
+                                    </div>
+                                    <!-- ✅ BARRA DE PROGRESO VISUAL -->
+                                    <div class="row mt-2">
+                                        <div class="col-12">
+                                            <div class="progress" style="height: 8px;">
+                                                <div class="progress-bar" 
+                                                     t-att-style="'width: ' + record.progress.raw_value + '%;'"
+                                                     t-att-class="record.status.raw_value == 'completed' ? 'bg-success' : 
+                                                                 record.status.raw_value == 'in_progress' ? 'bg-warning' : 
+                                                                 record.status.raw_value == 'canceled' ? 'bg-danger' : 'bg-info'"
+                                                     role="progressbar">
+                                                </div>
+                                            </div>
+                                            <small class="text-muted">
+                                                <i class="fa fa-clock-o"/> <field name="progress"/>% Completado
+                                            </small>
                                         </div>
                                     </div>
                                 </div>
