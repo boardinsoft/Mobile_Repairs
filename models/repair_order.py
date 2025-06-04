@@ -121,6 +121,13 @@ class RepairOrder(models.Model):
         default='normal',
         help="Prioridad de la reparación"
     )
+    
+    # TIPO DE FALLA RELACIONADO
+    failure_type_id = fields.Many2one(
+        'mobile.fault',
+        string='Tipo de Falla',
+        help="Selecciona la falla principal reportada para esta orden"
+    )
 
     # Líneas de reparación y total
     repair_line_ids = fields.One2many(

@@ -1,61 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Menú principal (sin icono hasta que se cree el archivo) -->
+    <!-- ========================================= -->
+    <!-- MENÚ PRINCIPAL - REPARACIONES MÓVILES    -->
+    <!-- ========================================= -->
+    
+    <!-- Menú raíz -->
     <menuitem id="menu_mobile_repair_root" 
-              name="Reparaciones Móviles" 
-              sequence="10"/>
-
-    <!-- Submenú de Órdenes -->
-    <menuitem id="menu_mobile_repair_orders" 
-              name="Órdenes" 
-              parent="menu_mobile_repair_root" 
-              sequence="10"/>
-
-    <menuitem id="menu_repair_order" 
-              name="Órdenes de Reparación" 
-              parent="menu_mobile_repair_orders" 
-              action="action_repair_order_form_view" 
-              sequence="10"/>
-
-    <!-- Submenú de Configuración -->
-    <menuitem id="menu_mobile_repair_config" 
-              name="Configuración" 
-              parent="menu_mobile_repair_root" 
-              sequence="20"/>
-
-    <menuitem id="menu_mobile_devices" 
-              name="Dispositivos" 
-              parent="menu_mobile_repair_config" 
-              action="action_mobile_device" 
-              sequence="10"/>
-
-    <menuitem id="menu_mobile_brands" 
-              name="Marcas" 
-              parent="menu_mobile_repair_config" 
-              action="action_mobile_brand" 
-              sequence="20"/>
-
-    <menuitem id="menu_mobile_models" 
-              name="Modelos" 
-              parent="menu_mobile_repair_config" 
-              action="action_mobile_model" 
-              sequence="30"/>
-
-    <menuitem id="menu_mobile_fault_categories" 
-              name="Categorías de Fallas" 
-              parent="menu_mobile_repair_config" 
-              action="action_mobile_fault_category" 
-              sequence="40"/>
-
-    <menuitem id="menu_mobile_faults" 
-              name="Fallas" 
-              parent="menu_mobile_repair_config" 
-              action="action_mobile_fault" 
+              name="Reparaciones" 
               sequence="50"/>
 
-    <menuitem id="menu_device_condition" 
-              name="Condiciones de Dispositivo"
-              parent="menu_mobile_repair_config" 
-              sequence="60"
-              action="action_device_condition"/>
+    <!-- ========================================= -->
+    <!-- SECCIÓN 1: INFORMACIÓN GENERAL           -->
+    <!-- ========================================= -->
+    
+    <menuitem id="menu_repair_dashboard" 
+              name="Información General" 
+              parent="menu_mobile_repair_root" 
+              action="action_repair_dashboard" 
+              sequence="10"/>
+
+    <!-- ========================================= -->
+    <!-- SECCIÓN 2: ÓRDENES DE REPARACIÓN         -->
+    <!-- ========================================= -->
+    
+    <menuitem id="menu_repair_orders_section" 
+              name="Órdenes" 
+              parent="menu_mobile_repair_root" 
+              sequence="20"/>
+              
+    <menuitem id="menu_repair_orders_all" 
+              name="Todas" 
+              parent="menu_repair_orders_section" 
+              action="action_repair_order_main" 
+              sequence="21"/>
+              
+    <menuitem id="menu_repair_orders_draft" 
+              name="Borradores" 
+              parent="menu_repair_orders_section" 
+              action="action_mobile_repair_order_draft" 
+              sequence="22"/>
+              
+    <menuitem id="menu_repair_orders_progress" 
+              name="En Proceso" 
+              parent="menu_repair_orders_section" 
+              action="action_mobile_repair_order_progress" 
+              sequence="23"/>
+              
+    <menuitem id="menu_repair_orders_completed" 
+              name="Completadas" 
+              parent="menu_repair_orders_section" 
+              action="action_mobile_repair_order_completed" 
+              sequence="24"/>
+
+    <!-- ========================================= -->
+    <!-- SECCIÓN 3: DISPOSITIVOS                  -->
+    <!-- ========================================= -->
+    
+    <menuitem id="menu_devices_section" 
+              name="Dispositivos" 
+              parent="menu_mobile_repair_root" 
+              sequence="30"/>
+              
+    <menuitem id="menu_mobile_devices" 
+              name="Equipos" 
+              parent="menu_devices_section" 
+              action="action_mobile_device" 
+              sequence="31"/>
+              
+    <menuitem id="menu_device_brands" 
+              name="Marcas" 
+              parent="menu_devices_section" 
+              action="action_mobile_brand" 
+              sequence="32"/>
+              
+    <menuitem id="menu_device_models" 
+              name="Modelos" 
+              parent="menu_devices_section" 
+              action="action_mobile_model" 
+              sequence="33"/>
+
+    <!-- ========================================= -->
+    <!-- SECCIÓN 4: CONFIGURACIÓN                 -->
+    <!-- ========================================= -->
+    
+    <menuitem id="menu_technical_config" 
+              name="Configuración" 
+              parent="menu_mobile_repair_root" 
+              sequence="40"/>
+              
+    <menuitem id="menu_fault_categories" 
+              name="Categorías de Fallas" 
+              parent="menu_technical_config" 
+              action="action_mobile_fault_category" 
+              sequence="41"/>
+              
+    <menuitem id="menu_fault_types" 
+              name="Tipos de Fallas" 
+              parent="menu_technical_config" 
+              action="action_mobile_fault" 
+              sequence="42"/>
+              
+    <menuitem id="menu_device_conditions" 
+              name="Condiciones" 
+              parent="menu_technical_config" 
+              action="action_device_condition" 
+              sequence="43"/>
 </odoo>

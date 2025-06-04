@@ -9,6 +9,7 @@
                 <field name="name"/>
                 <field name="customer_id"/>
                 <field name="device_id"/>
+                <field name="failure_type_id" optional="show"/>
                 <field name="status" decoration-info="status == 'draft'" 
                        decoration-warning="status == 'in_progress'" 
                        decoration-success="status == 'completed'" 
@@ -16,18 +17,18 @@
                        widget="badge"/>
                 <field name="technician_id" optional="show"/>
                 <field name="repair_date"/>
-                <!-- ✅ CAMPOS NUEVOS EN LISTA -->
                 <field name="start_date" optional="hide" string="Fecha Inicio Real"/>
                 <field name="completion_date" optional="hide" string="Fecha Finalización"/>
                 <field name="duration_hours" optional="hide" string="Duración (h)" widget="float_time"/>
+                <field name="progress" optional="show" widget="progressbar"/>
                 <field name="delivery_date" optional="show"/>
-                <field name="priority" optional="hide"/>
+                <field name="priority" optional="hide" widget="priority"/>
                 <field name="total_amount" widget="monetary" sum="Total"/>
                 <field name="currency_id" column_invisible="1"/>
             </list>
         </field>
     </record>
-
+    
     <!-- Vista de formulario para órdenes de reparación -->
     <record id="mobile_repair_order_form_view" model="ir.ui.view">
         <field name="name">mobile.repair.order.form</field>
@@ -39,7 +40,7 @@
                             class="btn-primary"
                             invisible="status != 'draft'"/>
                     <button name="action_complete" string="Completar" type="object" 
-                            class="btn-primary"
+                            class="btn-success"
                             invisible="status != 'in_progress'"/>
                     <button name="action_create_invoice" string="Crear Factura" type="object" 
                             class="btn-primary"
@@ -48,8 +49,10 @@
                             class="btn-secondary"
                             invisible="not invoice_id"/>
                     <button name="action_cancel" string="Cancelar" type="object" 
+                            class="btn-warning"
                             invisible="status in ('completed', 'canceled')"/>
                     <button name="action_reset_to_draft" string="Regresar a Borrador" type="object" 
+                            class="btn-secondary"
                             invisible="status == 'draft'"/>
                     <field name="status" widget="statusbar" statusbar_visible="draft,in_progress,completed"/>
                 </header>
@@ -60,6 +63,11 @@
                         </h1>
                         <div class="o_row">
                             <field name="priority" widget="priority"/>
+                            <div class="ms-3">
+                                <span class="fw-bold text-primary">Progreso: </span>
+                                <field name="progress" widget="percentage" readonly="1" 
+                                       class="fw-bold text-primary" nolabel="1"/>
+                            </div>
                         </div>
                     </div>
                     
@@ -67,23 +75,35 @@
                         <group string="Información del Cliente">
                             <field name="customer_id" options="{'no_quick_create': True}"/>
                             <field name="device_id" domain="[]" options="{'no_quick_create': True}"/>
+                            <field name="failure_type_id" required="1" 
+                                   help="Selecciona la falla principal de la lista configurada en el sistema"/>
                         </group>
                         <group string="Asignación y Fechas">
-                            <field name="technician_id"/>
+                            <field name="technician_id" options="{'no_quick_create': True}"/>
                             <field name="repair_date"/>
                             <field name="delivery_date"/>
-                            <!-- ✅ CAMPOS NUEVOS EN FORMULARIO -->
-                            <field name="start_date" readonly="1" 
-                                   invisible="not start_date"
-                                   string="Fecha Inicio Real"
-                                   decoration-info="1"/>
-                            <field name="completion_date" readonly="1" 
-                                   invisible="not completion_date"
-                                   string="Fecha Finalización"
-                                   decoration-success="1"/>
                             <field name="currency_id" groups="base.group_multi_currency"/>
                         </group>
                     </group>
+
+                    <!-- Información de Tiempos -->
+                    <div class="alert alert-info" role="alert" 
+                         invisible="not start_date and not completion_date">
+                        <div class="row">
+                            <div class="col-md-4" invisible="not start_date">
+                                <strong>Fecha de Inicio:</strong><br/>
+                                <field name="start_date" readonly="1" widget="datetime" nolabel="1"/>
+                            </div>
+                            <div class="col-md-4" invisible="not completion_date">
+                                <strong>Fecha de Finalización:</strong><br/>
+                                <field name="completion_date" readonly="1" widget="datetime" nolabel="1"/>
+                            </div>
+                            <div class="col-md-4" invisible="not duration_hours or duration_hours == 0">
+                                <strong>Duración Total:</strong><br/>
+                                <field name="duration_hours" readonly="1" widget="float_time" nolabel="1"/>
+                            </div>
+                        </div>
+                    </div>
                     
                     <notebook>
                         <page string="Líneas de Reparación" name="repair_lines">
@@ -106,7 +126,7 @@
                             </field>
                             <group class="oe_subtotal_footer oe_right">
                                 <div class="oe_subtotal_footer_separator oe_inline o_td_label">
-                                    <label for="total_amount"/>
+                                    <span class="o_form_label">Total:</span>
                                 </div>
                                 <field name="total_amount" nolabel="1" class="oe_subtotal_footer_separator" widget="monetary"/>
                             </group>
@@ -116,41 +136,45 @@
                             <group>
                                 <group string="Descripción del Problema">
                                     <field name="description" nolabel="1" 
-                                           placeholder="Describa el problema reportado por el cliente..."/>
+                                           placeholder="Describa detalladamente el problema reportado por el cliente..."/>
                                 </group>
-                            </group>
-                            
-                            <group>
-                                <group string="Costos">
+                                <group string="Análisis de Costos">
                                     <field name="estimated_cost" widget="monetary"/>
                                     <field name="actual_cost" widget="monetary" readonly="1"/>
-                                </group>
-                                <group string="Notas Internas">
-                                    <field name="notes" nolabel="1" 
-                                           placeholder="Notas internas del técnico o para el taller..."/>
+                                    <div invisible="not estimated_cost or not actual_cost or estimated_cost == 0">
+                                        <span class="fw-bold">Variación de Costo:</span>
+                                        <span class="text-muted">
+                                            (Actual vs Estimado)
+                                        </span>
+                                    </div>
                                 </group>
                             </group>
                             
-                            <!-- ✅ NUEVA SECCIÓN PARA TRACKING DE TIEMPOS -->
-                            <group string="Seguimiento de Tiempos" 
-                                   invisible="not start_date and not completion_date">
-                                <group>
+                            <group string="Notas y Observaciones">
+                                <field name="notes" nolabel="1" 
+                                       placeholder="Notas internas del técnico, observaciones especiales, recomendaciones al cliente..."/>
+                            </group>
+                        </page>
+                        
+                        <page string="Seguimiento y Métricas" name="tracking" 
+                              invisible="status == 'draft'">
+                            <group>
+                                <group string="Timeline de la Reparación">
+                                    <field name="repair_date" readonly="1" widget="datetime"/>
                                     <field name="start_date" readonly="1" widget="datetime"
                                            decoration-info="1"/>
                                     <field name="completion_date" readonly="1" widget="datetime"
                                            decoration-success="1"/>
+                                    <field name="delivery_date" readonly="1"/>
                                 </group>
-                                <group>
-                                    <!-- Campo calculado para mostrar duración -->
-                                    <div class="alert alert-info" role="alert" 
-                                         invisible="not start_date or not completion_date">
-                                        <strong>ℹ️ Información de Tiempos:</strong><br/>
-                                        <span invisible="not start_date">
-                                            📅 <strong>Iniciado:</strong> <field name="start_date" readonly="1" widget="datetime" nolabel="1"/>
-                                        </span><br/>
-                                        <span invisible="not completion_date">
-                                            ✅ <strong>Completado:</strong> <field name="completion_date" readonly="1" widget="datetime" nolabel="1"/>
-                                        </span>
+                                <group string="Métricas de Rendimiento">
+                                    <field name="duration_hours" readonly="1" widget="float_time"/>
+                                    <field name="progress" readonly="1" widget="progressbar"/>
+                                    <div class="alert alert-light" role="alert">
+                                        <small class="text-muted">
+                                            <strong>Información:</strong> El progreso se calcula automáticamente 
+                                            basado en el estado, técnico asignado y líneas de reparación.
+                                        </small>
                                     </div>
                                 </group>
                             </group>
@@ -166,7 +190,7 @@
                     </notebook>
                 </sheet>
                 
-                <!-- Chatter para Odoo 18 -->
+                <!-- Chatter para seguimiento de comunicaciones -->
                 <chatter/>
             </form>
         </field>
@@ -182,31 +206,45 @@
                 <field name="customer_id" string="Cliente"/>
                 <field name="device_id" string="Dispositivo"/>
                 <field name="technician_id" string="Técnico"/>
+                <field name="failure_type_id" string="Tipo de Falla"/>
                 
-                <!-- Filtros predefinidos -->
+                <!-- Filtros por Estado -->
                 <filter string="Borradores" name="draft" domain="[('status', '=', 'draft')]"/>
                 <filter string="En Proceso" name="in_progress" domain="[('status', '=', 'in_progress')]"/>
                 <filter string="Completadas" name="completed" domain="[('status', '=', 'completed')]"/>
                 <filter string="Canceladas" name="canceled" domain="[('status', '=', 'canceled')]"/>
                 
                 <separator/>
-                <filter string="Sin Facturar" name="not_invoiced" domain="[('invoice_id', '=', False)]"/>
+                <!-- Filtros de Facturación -->
+                <filter string="Sin Facturar" name="not_invoiced" domain="[('invoice_id', '=', False), ('status', '=', 'completed')]"/>
                 <filter string="Facturadas" name="invoiced" domain="[('invoice_id', '!=', False)]"/>
                 
                 <separator/>
+                <!-- Filtros Personalizados -->
                 <filter string="Mis Reparaciones" name="my_repairs" 
                         domain="[('technician_id', '=', uid)]"/>
+                <filter string="Sin Técnico" name="no_technician" domain="[('technician_id', '=', False)]"/>
                 
                 <separator/>
+                <!-- Filtros por Prioridad -->
                 <filter string="Urgentes" name="urgent" domain="[('priority', '=', 'urgent')]"/>
                 <filter string="Alta Prioridad" name="high_priority" domain="[('priority', '=', 'high')]"/>
                 
-                <!-- ✅ NUEVOS FILTROS PARA CAMPOS DE TIEMPO -->
                 <separator/>
+                <!-- Filtros Temporales -->
                 <filter string="Iniciadas Hoy" name="started_today" 
                         domain="[('start_date', '&gt;=', datetime.datetime.combine(context_today(), datetime.time(0,0,0))), ('start_date', '&lt;=', datetime.datetime.combine(context_today(), datetime.time(23,59,59)))]"/>
                 <filter string="Completadas Hoy" name="completed_today" 
                         domain="[('completion_date', '&gt;=', datetime.datetime.combine(context_today(), datetime.time(0,0,0))), ('completion_date', '&lt;=', datetime.datetime.combine(context_today(), datetime.time(23,59,59)))]"/>
+                <filter string="Esta Semana" name="this_week" 
+                        domain="[('repair_date', '&gt;=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                
+                <separator/>
+                <!-- Filtros por Tipo de Falla -->
+                <filter string="Pantalla Dañada" name="screen_damage" domain="[('failure_type_id.name', 'ilike', 'Pantalla Dañada')]"/>
+                <filter string="Problemas de Batería" name="battery_issue" domain="[('failure_type_id.name', 'ilike', 'Batería')]"/>
+                <filter string="Daño por Agua" name="water_damage" domain="[('failure_type_id.name', 'ilike', 'Agua')]"/>
+                <filter string="Problemas de Software" name="software_issue" domain="[('failure_type_id.name', 'ilike', 'Software')]"/>
                 
                 <!-- Agrupaciones -->
                 <group expand="0" string="Agrupar Por">
@@ -214,10 +252,9 @@
                     <filter string="Cliente" name="group_customer" context="{'group_by': 'customer_id'}"/>
                     <filter string="Técnico" name="group_technician" context="{'group_by': 'technician_id'}"/>
                     <filter string="Prioridad" name="group_priority" context="{'group_by': 'priority'}"/>
-                    <filter string="Fecha de Reparación" name="group_repair_date" context="{'group_by': 'repair_date:month'}"/>
-                    <!-- ✅ NUEVAS AGRUPACIONES -->
-                    <filter string="Fecha de Inicio" name="group_start_date" context="{'group_by': 'start_date:day'}"/>
-                    <filter string="Fecha de Finalización" name="group_completion_date" context="{'group_by': 'completion_date:day'}"/>
+                    <filter string="Tipo de Falla" name="group_failure_type" context="{'group_by': 'failure_type_id'}"/>
+                    <filter string="Mes de Reparación" name="group_repair_date" context="{'group_by': 'repair_date:month'}"/>
+                    <filter string="Día de Inicio" name="group_start_date" context="{'group_by': 'start_date:day'}"/>
                 </group>
             </search>
         </field>
@@ -235,7 +272,7 @@
                 <field name="status"/>
                 <field name="technician_id"/>
                 <field name="repair_date"/>
-                <!-- ✅ CAMPOS NUEVOS EN KANBAN -->
+                <field name="failure_type_id"/>
                 <field name="start_date"/>
                 <field name="completion_date"/>
                 <field name="progress"/>
@@ -249,60 +286,72 @@
                             <div class="o_kanban_record_top">
                                 <div class="o_kanban_record_headings">
                                     <strong class="o_kanban_record_title">
+                                        <span t-if="record.priority.raw_value == 'urgent'" class="badge badge-danger me-1">URGENTE</span>
+                                        <span t-if="record.priority.raw_value == 'high'" class="badge badge-warning me-1">ALTA</span>
                                         <field name="name"/>
                                     </strong>
-                                </div>
-                                <div class="o_kanban_record_body">
-                                    <div class="row">
-                                        <div class="col-6">
-                                            <i class="fa fa-user"/> <field name="customer_id"/>
-                                        </div>
-                                        <div class="col-6">
-                                            <i class="fa fa-mobile"/> <field name="device_id"/>
-                                        </div>
-                                    </div>
-                                    <div class="row" t-if="record.technician_id.raw_value">
-                                        <div class="col-12">
-                                            <i class="fa fa-wrench"/> <field name="technician_id"/>
-                                        </div>
-                                    </div>
-                                    <!-- ✅ INFORMACIÓN DE TIEMPOS EN KANBAN -->
-                                    <div class="row" t-if="record.start_date.raw_value">
-                                        <div class="col-12">
-                                            <i class="fa fa-play text-info"/> Iniciado: <field name="start_date" widget="datetime"/>
-                                        </div>
-                                    </div>
-                                    <div class="row" t-if="record.completion_date.raw_value">
-                                        <div class="col-12">
-                                            <i class="fa fa-check text-success"/> Completado: <field name="completion_date" widget="datetime"/>
-                                        </div>
-                                    </div>
-                                    <!-- ✅ BARRA DE PROGRESO VISUAL -->
-                                    <div class="row mt-2">
-                                        <div class="col-12">
-                                            <div class="progress" style="height: 8px;">
-                                                <div class="progress-bar" 
-                                                     t-att-style="'width: ' + record.progress.raw_value + '%;'"
-                                                     t-att-class="record.status.raw_value == 'completed' ? 'bg-success' : 
-                                                                 record.status.raw_value == 'in_progress' ? 'bg-warning' : 
-                                                                 record.status.raw_value == 'canceled' ? 'bg-danger' : 'bg-info'"
-                                                     role="progressbar">
-                                                </div>
-                                            </div>
-                                            <small class="text-muted">
-                                                <i class="fa fa-clock-o"/> <field name="progress"/>% Completado
-                                            </small>
-                                        </div>
+                                    <div class="text-muted">
+                                        <field name="failure_type_id"/>
                                     </div>
                                 </div>
                             </div>
+                            
+                            <div class="o_kanban_record_body">
+                                <div class="row mb-2">
+                                    <div class="col-12">
+                                        <i class="fa fa-user text-primary"/> <field name="customer_id"/>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-12">
+                                        <i class="fa fa-mobile text-info"/> <field name="device_id"/>
+                                    </div>
+                                </div>
+                                <div class="row mb-2" t-if="record.technician_id.raw_value">
+                                    <div class="col-12">
+                                        <i class="fa fa-wrench text-success"/> <field name="technician_id"/>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-2" t-if="record.start_date.raw_value">
+                                    <div class="col-12">
+                                        <small class="text-muted">
+                                            <i class="fa fa-play text-info"/> Iniciado: <field name="start_date" widget="date"/>
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="row mb-2" t-if="record.completion_date.raw_value">
+                                    <div class="col-12">
+                                        <small class="text-muted">
+                                            <i class="fa fa-check text-success"/> Completado: <field name="completion_date" widget="date"/>
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="progress mb-1" style="height: 6px;">
+                                            <div class="progress-bar" 
+                                                 t-att-style="'width: ' + record.progress.raw_value + '%;'"
+                                                 t-att-class="record.status.raw_value == 'completed' ? 'bg-success' : 
+                                                             record.status.raw_value == 'in_progress' ? 'bg-warning' : 
+                                                             record.status.raw_value == 'canceled' ? 'bg-danger' : 'bg-info'"
+                                                 role="progressbar">
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">
+                                            <field name="progress"/>% Completado
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <div class="o_kanban_record_bottom">
                                 <div class="oe_kanban_bottom_left">
-                                    <field name="priority" widget="priority"/>
                                     <field name="repair_date" widget="date"/>
                                 </div>
                                 <div class="oe_kanban_bottom_right">
-                                    <field name="total_amount" widget="monetary"/>
+                                    <strong><field name="total_amount" widget="monetary"/></strong>
                                 </div>
                             </div>
                         </div>
@@ -312,8 +361,8 @@
         </field>
     </record>
 
-    <!-- Acción actualizada con todas las vistas -->
-    <record id="action_repair_order_form_view" model="ir.actions.act_window">
+    <!-- Acción principal -->
+    <record id="action_mobile_repair_order" model="ir.actions.act_window">
         <field name="name">Órdenes de Reparación</field>
         <field name="res_model">mobile.repair.order</field>
         <field name="view_mode">kanban,list,form</field>
@@ -324,12 +373,8 @@
         }</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Crear una nueva orden de reparación
-            </p>
-            <p>
-                Gestiona las órdenes de reparación de dispositivos móviles, desde el diagnóstico
-                hasta la facturación del cliente. Controla el estado de cada reparación y
-                asigna técnicos responsables.
+                Crea y gestiona órdenes de reparación de manera sencilla.<br/>
+                Asigna técnicos, controla el avance y factura al cliente.
             </p>
         </field>
     </record>
