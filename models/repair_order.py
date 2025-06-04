@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from odoo import models, fields, api
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ValidationError, UserError
 
 class RepairOrder(models.Model):
     _name = 'mobile.repair.order'
@@ -57,6 +57,34 @@ class RepairOrder(models.Model):
         required=True,
         help="Fecha y hora de inicio de la reparación"
     )
+    
+    # ✅ NUEVOS CAMPOS PARA TIMESTAMPS
+    start_date = fields.Datetime(
+        string='Fecha de Inicio Real',
+        readonly=True,
+        help="Fecha y hora real cuando se inició la reparación"
+    )
+    completion_date = fields.Datetime(
+        string='Fecha de Finalización',
+        readonly=True,
+        help="Fecha y hora cuando se completó la reparación"
+    )
+    
+    # ✅ CAMPO COMPUTADO PARA DURACIÓN
+    duration_hours = fields.Float(
+        string='Duración (Horas)',
+        compute='_compute_duration_hours',
+        store=True,
+        help="Duración total de la reparación en horas"
+    )
+    
+    # ✅ CAMPO DE PROGRESO VISUAL
+    progress = fields.Float(
+        string='Progreso (%)',
+        compute='_compute_progress',
+        help="Progreso visual de la reparación (0-100%)"
+    )
+    
     notes = fields.Text(
         string='Notas',
         help="Notas adicionales sobre la reparación"
@@ -149,6 +177,47 @@ class RepairOrder(models.Model):
                 vals['name'] = self._get_default_name()
         return super(RepairOrder, self).create(vals_list)
 
+    @api.depends('start_date', 'completion_date')
+    def _compute_duration_hours(self):
+        """
+        Calcula la duración de la reparación en horas.
+        """
+        for record in self:
+            if record.start_date and record.completion_date:
+                delta = record.completion_date - record.start_date
+                record.duration_hours = delta.total_seconds() / 3600
+            else:
+                record.duration_hours = 0.0
+
+    @api.depends('status', 'repair_line_ids', 'technician_id')
+    def _compute_progress(self):
+        """
+        Calcula el progreso visual basado en el estado y completitud.
+        """
+        for record in self:
+            if record.status == 'draft':
+                # Borrador: 0% base + 10% si tiene técnico + 15% si tiene líneas
+                progress = 0
+                if record.technician_id:
+                    progress += 15
+                if record.repair_line_ids:
+                    progress += 10
+                record.progress = progress
+            elif record.status == 'in_progress':
+                # En proceso: 25% base + puntos por completitud
+                progress = 25
+                if record.repair_line_ids:
+                    progress += 25  # Tiene trabajos definidos
+                if record.technician_id:
+                    progress += 25  # Tiene técnico asignado
+                record.progress = progress
+            elif record.status == 'completed':
+                record.progress = 100  # Completada = 100%
+            elif record.status == 'canceled':
+                record.progress = 0   # Cancelada = 0%
+            else:
+                record.progress = 0
+
     @api.depends('repair_line_ids.price_subtotal')
     def _compute_total_amount(self):
         """
@@ -195,45 +264,268 @@ class RepairOrder(models.Model):
             if record.estimated_cost < 0:
                 raise ValidationError("El costo estimado no puede ser negativo.")
 
+    # ✅ NUEVAS VALIDACIONES INTELIGENTES
+    
+    @api.constrains('start_date', 'completion_date')
+    def _check_completion_after_start(self):
+        """
+        Valida que la fecha de finalización sea posterior a la de inicio.
+        """
+        for record in self:
+            if record.start_date and record.completion_date:
+                if record.completion_date <= record.start_date:
+                    raise ValidationError(
+                        "La fecha de finalización debe ser posterior a la fecha de inicio."
+                    )
+
+    @api.constrains('repair_date')
+    def _check_repair_date_not_future(self):
+        """
+        Advierte si la fecha de reparación está muy en el futuro.
+        """
+        for record in self:
+            if record.repair_date:
+                days_diff = (record.repair_date.date() - fields.Date.today()).days
+                if days_diff > 30:
+                    # No ValidationError, solo log para el administrador
+                    record.message_post(
+                        body=f"⚠️ <b>Advertencia:</b> La fecha de reparación está programada "
+                             f"para {days_diff} días en el futuro ({record.repair_date.strftime('%d/%m/%Y')}). "
+                             f"Verifique si es correcto.",
+                        message_type='notification'
+                    )
+    
+    @api.constrains('total_amount', 'estimated_cost')
+    def _check_cost_variance(self):
+        """
+        Advierte si el costo real excede significativamente el estimado.
+        """
+        for record in self:
+            if record.estimated_cost > 0 and record.total_amount > 0:
+                variance = ((record.total_amount - record.estimated_cost) / record.estimated_cost) * 100
+                if variance > 50:  # Más del 50% de diferencia
+                    record.message_post(
+                        body=f"💰 <b>Variación de costo detectada:</b><br/>"
+                             f"• Costo estimado: {record.currency_id.symbol}{record.estimated_cost:,.2f}<br/>"
+                             f"• Costo real: {record.currency_id.symbol}{record.total_amount:,.2f}<br/>"
+                             f"• Variación: +{variance:.1f}%<br/>"
+                             f"Considere revisar el presupuesto inicial.",
+                        message_type='notification'
+                    )
+
+    @api.constrains('technician_id', 'status')
+    def _check_technician_workload(self):
+        """
+        Advierte si el técnico tiene muchas reparaciones activas.
+        """
+        for record in self:
+            if record.technician_id and record.status in ['draft', 'in_progress']:
+                active_repairs = self.env['mobile.repair.order'].search_count([
+                    ('technician_id', '=', record.technician_id.id),
+                    ('status', 'in', ['draft', 'in_progress']),
+                    ('id', '!=', record.id)
+                ])
+                
+                if active_repairs >= 5:  # Más de 5 reparaciones activas
+                    record.message_post(
+                        body=f"👷 <b>Carga de trabajo alta:</b><br/>"
+                             f"El técnico {record.technician_id.name} tiene {active_repairs + 1} "
+                             f"reparaciones activas. Considere redistribuir la carga de trabajo.",
+                        message_type='notification'
+                    )
+
+    # ✅ MÉTODOS DE ESTADO MEJORADOS
+
     def action_start_repair(self):
         """
         Cambia el estado de la orden a "en proceso".
+        ✅ MEJORADO: Agrega logs, timestamps y validaciones adicionales.
         """
         for record in self:
+            # Validación de estado previo
             if record.status != 'draft':
-                raise ValidationError("Solo se pueden iniciar órdenes en estado borrador.")
+                raise UserError("Solo se pueden iniciar órdenes en estado borrador.")
+            
+            # ✅ VALIDACIÓN ADICIONAL: Verificar que hay un técnico asignado
+            if not record.technician_id:
+                raise UserError(
+                    f"Debe asignar un técnico antes de iniciar la reparación de la orden {record.name}."
+                )
+            
+            # ✅ TIMESTAMP AUTOMÁTICO
+            record.start_date = fields.Datetime.now()
+            
+            # Cambiar estado
             record.status = 'in_progress'
-        return True
+            
+            # ✅ LOG AUTOMÁTICO AL CHATTER
+            record.message_post(
+                body=f"🔧 <b>Reparación iniciada</b><br/>"
+                     f"• Técnico asignado: {record.technician_id.name}<br/>"
+                     f"• Fecha de inicio: {record.start_date.strftime('%d/%m/%Y %H:%M')}<br/>"
+                     f"• Dispositivo: {record.device_id.display_name}",
+                message_type='notification'
+            )
+            
+            # ✅ NOTIFICAR AL TÉCNICO ASIGNADO
+            if record.technician_id:
+                record.message_post(
+                    body=f"🔔 <b>Nueva reparación asignada</b><br/>"
+                         f"Hola {record.technician_id.name}, se te ha asignado la reparación "
+                         f"<b>{record.name}</b> del dispositivo {record.device_id.display_name}.",
+                    partner_ids=[record.technician_id.partner_id.id],
+                    message_type='notification',
+                    subtype_xmlid='mail.mt_comment'
+                )
+            
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': '✅ Reparación Iniciada',
+                'message': f'La orden {self.name} ha sido iniciada correctamente.',
+                'type': 'success',
+                'sticky': False,
+            }
+        }
 
     def action_complete(self):
         """
         Cambia el estado de la orden a "completada".
+        ✅ MEJORADO: Agrega logs, timestamps y validaciones adicionales.
         """
         for record in self:
+            # Validación de estado previo
             if record.status not in ['draft', 'in_progress']:
-                raise ValidationError("Solo se pueden completar órdenes en borrador o en proceso.")
+                raise UserError("Solo se pueden completar órdenes en borrador o en proceso.")
+            
+            # ✅ VALIDACIÓN ADICIONAL: Verificar que hay líneas de reparación
+            if not record.repair_line_ids:
+                raise UserError(
+                    f"No se puede completar la orden {record.name} sin líneas de reparación. "
+                    "Agregue al menos un producto o servicio."
+                )
+            
+            # ✅ TIMESTAMP AUTOMÁTICO
+            record.completion_date = fields.Datetime.now()
+            
+            # Cambiar estado
             record.status = 'completed'
-        return True
+            
+            # ✅ LOG AUTOMÁTICO AL CHATTER con duración
+            duration_text = ""
+            if record.start_date and record.completion_date:
+                duration_text = f"<br/>• Duración: {record.duration_hours:.1f} horas"
+            
+            record.message_post(
+                body=f"✅ <b>Reparación completada</b><br/>"
+                     f"• Fecha de finalización: {record.completion_date.strftime('%d/%m/%Y %H:%M')}<br/>"
+                     f"• Monto total: {record.currency_id.symbol}{record.total_amount:,.2f}<br/>"
+                     f"• Técnico: {record.technician_id.name if record.technician_id else 'No asignado'}"
+                     f"{duration_text}",
+                message_type='notification'
+            )
+            
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': '🎉 Reparación Completada',
+                'message': f'La orden {self.name} ha sido completada exitosamente.',
+                'type': 'success',
+                'sticky': False,
+            }
+        }
 
     def action_cancel(self):
         """
         Cambia el estado de la orden a "cancelada".
+        ✅ MEJORADO: Agrega logs y validaciones adicionales.
         """
         for record in self:
+            # Validación de estado previo
             if record.status == 'completed':
-                raise ValidationError("No se pueden cancelar órdenes completadas.")
+                raise UserError("No se pueden cancelar órdenes completadas.")
+            
+            # ✅ VALIDACIÓN ADICIONAL: Confirmar si tiene factura
+            if record.invoice_id and record.invoice_id.state == 'posted':
+                raise UserError(
+                    f"No se puede cancelar la orden {record.name} porque tiene una "
+                    "factura confirmada. Cancele primero la factura."
+                )
+            
+            # Guardar estado anterior para el log
+            estado_anterior = dict(record._fields['status'].selection)[record.status]
+            
+            # Cambiar estado
             record.status = 'canceled'
-        return True
+            
+            # ✅ LOG AUTOMÁTICO AL CHATTER
+            record.message_post(
+                body=f"❌ <b>Reparación cancelada</b><br/>"
+                     f"• Estado anterior: {estado_anterior}<br/>"
+                     f"• Fecha de cancelación: {fields.Datetime.now().strftime('%d/%m/%Y %H:%M')}<br/>"
+                     f"• Usuario: {self.env.user.name}",
+                message_type='notification'
+            )
+            
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': '⚠️ Orden Cancelada',
+                'message': f'La orden {self.name} ha sido cancelada.',
+                'type': 'warning',
+                'sticky': False,
+            }
+        }
 
     def action_reset_to_draft(self):
         """
         Regresa el estado de la orden a "borrador".
+        ✅ MEJORADO: Agrega logs y validaciones adicionales.
         """
         for record in self:
+            # Validación existente
             if record.status == 'completed' and record.invoice_id:
-                raise ValidationError("No se puede regresar a borrador una orden completada con factura.")
+                raise UserError("No se puede regresar a borrador una orden completada con factura.")
+            
+            # ✅ VALIDACIÓN ADICIONAL: Confirmar con el usuario
+            if record.status == 'completed':
+                # Limpiar fechas de completion al regresar a draft
+                record.completion_date = False
+            
+            if record.status == 'in_progress':
+                # Limpiar fecha de inicio si regresa desde en proceso
+                record.start_date = False
+            
+            # Guardar estado anterior para el log
+            estado_anterior = dict(record._fields['status'].selection)[record.status]
+            
+            # Cambiar estado
             record.status = 'draft'
-        return True
+            
+            # ✅ LOG AUTOMÁTICO AL CHATTER
+            record.message_post(
+                body=f"🔄 <b>Orden regresada a borrador</b><br/>"
+                     f"• Estado anterior: {estado_anterior}<br/>"
+                     f"• Fecha de cambio: {fields.Datetime.now().strftime('%d/%m/%Y %H:%M')}<br/>"
+                     f"• Usuario: {self.env.user.name}",
+                message_type='notification'
+            )
+            
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': '🔄 Orden Reiniciada',
+                'message': f'La orden {self.name} ha regresado a estado borrador.',
+                'type': 'info',
+                'sticky': False,
+            }
+        }
+
+    # MÉTODOS EXISTENTES SIN CAMBIOS
 
     def action_create_invoice(self):
         """
