@@ -1,90 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- ========================================= -->
-    <!-- ACCIONES FILTRADAS PARA ÓRDENES          -->
-    <!-- ========================================= -->
-    
-    <!-- Acción principal para todas las órdenes -->
-    <record id="action_repair_order_main" model="ir.actions.act_window">
-        <field name="name">Órdenes de Reparación</field>
-        <field name="res_model">mobile.repair.order</field>
-        <field name="view_mode">kanban,list,form</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Crear una nueva orden de reparación
-            </p>
-            <p>
-                Gestiona las órdenes de reparación de dispositivos móviles, desde el diagnóstico
-                hasta la facturación del cliente.
-            </p>
-        </field>
-    </record>
+    <data>
+        <!-- ========================================= -->
+        <!-- ACCIONES FILTRADAS CON STATUS CORRECTO   -->
+        <!-- ========================================= -->
+        
+        <!-- Vista de búsqueda con filtros corregidos -->
+        <record id="view_repair_order_search" model="ir.ui.view">
+            <field name="name">mobile.repair.order.search</field>
+            <field name="model">mobile.repair.order</field>
+            <field name="arch" type="xml">
+                <search string="Buscar Órdenes de Reparación">
+                    <!-- Campos de búsqueda -->
+                    <field name="name" string="Referencia"/>
+                    <field name="customer_id" string="Cliente"/>
+                    <field name="device_id" string="Dispositivo"/>
+                    <field name="technician_id" string="Técnico"/>
+                    
+                    <!-- Filtros predeterminados CON STATUS CORRECTO -->
+                    <filter string="Borradores" name="draft" domain="[('status', '=', 'draft')]"/>
+                    <filter string="En Proceso" name="in_progress" domain="[('status', '=', 'in_progress')]"/>
+                    <filter string="Completadas" name="completed" domain="[('status', '=', 'completed')]"/>
+                    <filter string="Canceladas" name="canceled" domain="[('status', '=', 'canceled')]"/>
+                    
+                    <separator/>
+                    
+                    <!-- Filtros por fecha -->
+                    <filter string="Hoy" name="today" 
+                            domain="[('repair_date', '>=', context_today().strftime('%Y-%m-%d 00:00:00')), 
+                                   ('repair_date', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
+                    
+                    <separator/>
+                    
+                    <!-- Filtros por prioridad -->
+                    <filter string="Alta Prioridad" name="high_priority" 
+                            domain="[('priority', 'in', ['high', 'urgent'])]"/>
+                    <filter string="Con Técnico" name="with_technician" 
+                            domain="[('technician_id', '!=', False)]"/>
+                    <filter string="Sin Técnico" name="without_technician" 
+                            domain="[('technician_id', '=', False)]"/>
+                    
+                    <!-- Agrupación CON STATUS CORRECTO -->
+                    <group expand="0" string="Agrupar Por">
+                        <filter string="Estado" name="group_status" context="{'group_by': 'status'}"/>
+                        <filter string="Técnico" name="group_technician" context="{'group_by': 'technician_id'}"/>
+                        <filter string="Cliente" name="group_customer" context="{'group_by': 'customer_id'}"/>
+                        <filter string="Prioridad" name="group_priority" context="{'group_by': 'priority'}"/>
+                        <filter string="Fecha de Reparación" name="group_repair_date" context="{'group_by': 'repair_date:month'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
 
-    <!-- Acción para órdenes en borrador -->
-    <record id="action_mobile_repair_order_draft" model="ir.actions.act_window">
-        <field name="name">Órdenes en Borrador</field>
-        <field name="res_model">mobile.repair.order</field>
-        <field name="view_mode">kanban,list,form</field>
-        <field name="domain">[('state', '=', 'draft')]</field>
-        <field name="context">{'default_state': 'draft'}</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Crear una nueva orden de reparación
-            </p>
-            <p>
-                Órdenes de reparación que están en estado borrador y requieren confirmación.
-            </p>
-        </field>
-    </record>
+        <!-- Acciones adicionales si las necesitas -->
+        <record id="action_repair_order_by_technician" model="ir.actions.act_window">
+            <field name="name">Órdenes por Técnico</field>
+            <field name="res_model">mobile.repair.order</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('technician_id', '!=', False)]</field>
+            <field name="context">{'search_default_group_technician': 1}</field>
+        </record>
 
-    <!-- Acción para órdenes en proceso -->
-    <record id="action_mobile_repair_order_progress" model="ir.actions.act_window">
-        <field name="name">Órdenes en Proceso</field>
-        <field name="res_model">mobile.repair.order</field>
-        <field name="view_mode">kanban,list,form</field>
-        <field name="domain">[('state', 'in', ['confirmed', 'in_progress'])]</field>
-        <field name="context">{'default_state': 'confirmed'}</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                No hay órdenes en proceso
-            </p>
-            <p>
-                Órdenes de reparación que están siendo trabajadas actualmente por los técnicos.
-            </p>
-        </field>
-    </record>
-
-    <!-- Acción para órdenes completadas -->
-    <record id="action_mobile_repair_order_completed" model="ir.actions.act_window">
-        <field name="name">Órdenes Completadas</field>
-        <field name="res_model">mobile.repair.order</field>
-        <field name="view_mode">kanban,list,form</field>
-        <field name="domain">[('state', '=', 'completed')]</field>
-        <field name="context">{'default_state': 'completed'}</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                No hay órdenes completadas
-            </p>
-            <p>
-                Órdenes de reparación que han sido terminadas y están listas para entrega.
-            </p>
-        </field>
-    </record>
-
-    <!-- Acción para órdenes canceladas -->
-    <record id="action_mobile_repair_order_canceled" model="ir.actions.act_window">
-        <field name="name">Órdenes Canceladas</field>
-        <field name="res_model">mobile.repair.order</field>
-        <field name="view_mode">kanban,list,form</field>
-        <field name="domain">[('state', '=', 'canceled')]</field>
-        <field name="context">{'default_state': 'canceled'}</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                No hay órdenes canceladas
-            </p>
-            <p>
-                Órdenes de reparación que fueron canceladas por diferentes motivos.
-            </p>
-        </field>
-    </record>
+        <record id="action_repair_order_pending" model="ir.actions.act_window">
+            <field name="name">Órdenes Pendientes</field>
+            <field name="res_model">mobile.repair.order</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('status', 'in', ['draft', 'in_progress'])]</field>
+            <field name="context">{'search_default_group_status': 1}</field>
+        </record>
+    </data>
 </odoo>

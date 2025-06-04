@@ -111,7 +111,7 @@
             <field name="group_id" ref="group_mobile_repair_user"/>
             <field name="perm_read" eval="1"/>
             <field name="perm_write" eval="0"/>
-            <field name="perm_create" eval="0"/>
+            <field name="perm_create" eval="1"/>
             <field name="perm_unlink" eval="0"/>
         </record>
 
@@ -132,7 +132,7 @@
             <field name="group_id" ref="group_mobile_repair_user"/>
             <field name="perm_read" eval="1"/>
             <field name="perm_write" eval="0"/>
-            <field name="perm_create" eval="0"/>
+            <field name="perm_create" eval="1"/>
             <field name="perm_unlink" eval="0"/>
         </record>
 
@@ -153,12 +153,12 @@
             <field name="group_id" ref="group_mobile_repair_user"/>
             <field name="perm_read" eval="1"/>
             <field name="perm_write" eval="0"/>
-            <field name="perm_create" eval="0"/>
+            <field name="perm_create" eval="1"/>
             <field name="perm_unlink" eval="0"/>
         </record>
 
         <!-- ========================================= -->
-        <!-- PERMISOS PARA MARCAS                     -->
+        <!-- PERMISOS PARA MARCAS - SOLO MANAGERS     -->
         <!-- ========================================= -->
         
         <record id="access_mobile_brand_manager" model="ir.model.access">
@@ -171,18 +171,19 @@
             <field name="perm_unlink" eval="1"/>
         </record>
 
+        <!-- Los usuarios pueden VER marcas pero no modificar -->
         <record id="access_mobile_brand_user" model="ir.model.access">
             <field name="name">mobile.brand.user.access</field>
             <field name="model_id" ref="model_mobile_brand"/>
             <field name="group_id" ref="group_mobile_repair_user"/>
             <field name="perm_read" eval="1"/>
-            <field name="perm_write" eval="1"/>
-            <field name="perm_create" eval="1"/>
+            <field name="perm_write" eval="0"/>
+            <field name="perm_create" eval="0"/>
             <field name="perm_unlink" eval="0"/>
         </record>
 
         <!-- ========================================= -->
-        <!-- PERMISOS PARA MODELOS                    -->
+        <!-- PERMISOS PARA MODELOS - SOLO MANAGERS    -->
         <!-- ========================================= -->
         
         <record id="access_mobile_model_manager" model="ir.model.access">
@@ -195,13 +196,14 @@
             <field name="perm_unlink" eval="1"/>
         </record>
 
+        <!-- Los usuarios pueden VER modelos pero no modificar -->
         <record id="access_mobile_model_user" model="ir.model.access">
             <field name="name">mobile.model.user.access</field>
             <field name="model_id" ref="model_mobile_model"/>
             <field name="group_id" ref="group_mobile_repair_user"/>
             <field name="perm_read" eval="1"/>
-            <field name="perm_write" eval="1"/>
-            <field name="perm_create" eval="1"/>
+            <field name="perm_write" eval="0"/>
+            <field name="perm_create" eval="0"/>
             <field name="perm_unlink" eval="0"/>
         </record>
 
@@ -224,8 +226,8 @@
             <field name="model_id" ref="model_mobile_fault_category"/>
             <field name="group_id" ref="group_mobile_repair_user"/>
             <field name="perm_read" eval="1"/>
-            <field name="perm_write" eval="1"/>
-            <field name="perm_create" eval="1"/>
+            <field name="perm_write" eval="0"/>
+            <field name="perm_create" eval="0"/>
             <field name="perm_unlink" eval="0"/>
         </record>
 
@@ -248,8 +250,8 @@
             <field name="model_id" ref="model_mobile_fault"/>
             <field name="group_id" ref="group_mobile_repair_user"/>
             <field name="perm_read" eval="1"/>
-            <field name="perm_write" eval="1"/>
-            <field name="perm_create" eval="1"/>
+            <field name="perm_write" eval="0"/>
+            <field name="perm_create" eval="0"/>
             <field name="perm_unlink" eval="0"/>
         </record>
 
@@ -271,6 +273,47 @@
             <field name="name">device.condition.user.access</field>
             <field name="model_id" ref="model_mobile_device_condition"/>
             <field name="group_id" ref="group_mobile_repair_user"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="0"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <!-- ========================================= -->
+        <!-- REGLAS DE SEGURIDAD ADICIONALES          -->
+        <!-- ========================================= -->
+
+        <!-- Regla: Los técnicos solo pueden ver sus órdenes asignadas (opcional) -->
+        <record id="repair_order_technician_rule" model="ir.rule">
+            <field name="name">Técnico: solo órdenes asignadas</field>
+            <field name="model_id" ref="model_mobile_repair_order"/>
+            <field name="groups" eval="[(4, ref('group_mobile_repair_user'))]"/>
+            <field name="domain_force">[('technician_id', '=', user.id)]</field>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+            <field name="active" eval="False"/>  <!-- Desactivada por defecto -->
+        </record>
+
+        <!-- Regla: Los managers pueden ver todas las órdenes -->
+        <record id="repair_order_manager_rule" model="ir.rule">
+            <field name="name">Manager: todas las órdenes</field>
+            <field name="model_id" ref="model_mobile_repair_order"/>
+            <field name="groups" eval="[(4, ref('group_mobile_repair_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <!-- Regla: Los usuarios normales pueden ver todas las órdenes (por defecto) -->
+        <record id="repair_order_user_all_rule" model="ir.rule">
+            <field name="name">Usuario: todas las órdenes</field>
+            <field name="model_id" ref="model_mobile_repair_order"/>
+            <field name="groups" eval="[(4, ref('group_mobile_repair_user'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
             <field name="perm_read" eval="1"/>
             <field name="perm_write" eval="1"/>
             <field name="perm_create" eval="1"/>

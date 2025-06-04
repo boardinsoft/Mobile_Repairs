@@ -87,7 +87,7 @@ class RepairDashboard(models.TransientModel):
     @api.depends('date_from', 'date_to')
     def _compute_statistics(self):
         """
-        Calcula todas las estadísticas del dashboard.
+        Calcula todas las estadísticas del dashboard con protección robusta.
         """
         for record in self:
             # Dominio base para filtrar por fechas
@@ -98,38 +98,67 @@ class RepairDashboard(models.TransientModel):
 
             # Buscar todas las órdenes en el rango de fechas
             orders = self.env['mobile.repair.order'].search(domain)
+            total_orders_count = len(orders)
 
-            # ✅ ESTADÍSTICAS GENERALES
-            record.total_orders = len(orders)
+            # ✅ ESTADÍSTICAS GENERALES con protección
+            record.total_orders = total_orders_count
             record.orders_draft = len(orders.filtered(lambda o: o.status == 'draft'))
             record.orders_in_progress = len(orders.filtered(lambda o: o.status == 'in_progress'))
             record.orders_completed = len(orders.filtered(lambda o: o.status == 'completed'))
             record.orders_canceled = len(orders.filtered(lambda o: o.status == 'canceled'))
 
-            # ✅ ESTADÍSTICAS FINANCIERAS
-            record.total_revenue = sum(orders.mapped('total_amount'))
-            record.avg_order_value = record.total_revenue / len(orders) if orders else 0
+            # ✅ ESTADÍSTICAS FINANCIERAS con protección robusta
+            total_revenue = sum(orders.mapped('total_amount')) if orders else 0.0
+            record.total_revenue = total_revenue
+            
+            # Protección contra división por cero mejorada
+            if total_orders_count > 0 and total_revenue > 0:
+                record.avg_order_value = total_revenue / total_orders_count
+            else:
+                record.avg_order_value = 0.0
 
-            # ✅ ESTADÍSTICAS DE TIEMPO
-            completed_orders = orders.filtered(lambda o: o.status == 'completed' and o.duration_hours > 0)
-            record.avg_duration_hours = sum(completed_orders.mapped('duration_hours')) / len(completed_orders) if completed_orders else 0
+            # ✅ ESTADÍSTICAS DE TIEMPO con múltiples validaciones
+            completed_orders = orders.filtered(
+                lambda o: (
+                    o.status == 'completed' and 
+                    o.duration_hours is not False and 
+                    o.duration_hours > 0
+                )
+            )
+            
+            if completed_orders:
+                total_duration = sum(completed_orders.mapped('duration_hours'))
+                completed_count = len(completed_orders)
+                # Doble verificación para evitar división por cero
+                if completed_count > 0 and total_duration >= 0:
+                    record.avg_duration_hours = total_duration / completed_count
+                else:
+                    record.avg_duration_hours = 0.0
+            else:
+                record.avg_duration_hours = 0.0
 
-            # ✅ ESTADÍSTICAS DE FALLAS
-            record._compute_failure_statistics(orders)
-            record._compute_technician_statistics(orders)
+            # ✅ ESTADÍSTICAS DE FALLAS Y TÉCNICOS
+            record._compute_failure_statistics_safe(orders)
+            record._compute_technician_statistics_safe(orders)
 
-    def _compute_failure_statistics(self, orders):
+    def _compute_failure_statistics_safe(self, orders):
         """
-        Calcula estadísticas de tipos de fallas.
-        ✅ CORREGIDO: Usa failure_type_id en lugar de failure_type
+        Calcula estadísticas de tipos de fallas con protección completa.
         """
-        # Contar fallas por tipo
+        if not orders:
+            self.most_common_failure = "N/A"
+            self.failure_stats_ids = [(5, 0, 0)]  # Limpiar registros existentes
+            return
+        
+        # Contar fallas por tipo con validación
         failure_counts = {}
+        valid_orders_count = 0
+
         for order in orders:
-            # ✅ CORRECCIÓN: Usar failure_type_id que es un Many2one
-            if order.failure_type_id:
+            if order.failure_type_id and order.failure_type_id.name:
                 failure_name = order.failure_type_id.name
                 failure_counts[failure_name] = failure_counts.get(failure_name, 0) + 1
+                valid_orders_count += 1
 
         # Encontrar la falla más común
         if failure_counts:
@@ -137,54 +166,106 @@ class RepairDashboard(models.TransientModel):
         else:
             self.most_common_failure = "N/A"
 
-        # Crear registros de estadísticas de fallas (para gráficos futuros)
+        # Crear registros de estadísticas de fallas
         failure_stats = []
+        total_orders_with_failures = max(valid_orders_count, 1)  # Evitar división por cero
+    
         for failure_type, count in failure_counts.items():
-            percentage = (count / len(orders)) * 100 if orders else 0
+            # Protección robusta para el cálculo de porcentaje
+            try:
+                percentage = (count / total_orders_with_failures) * 100
+                # Validar que el porcentaje esté en rango válido
+                percentage = max(0.0, min(100.0, percentage))
+            except (ZeroDivisionError, TypeError, ValueError):
+                percentage = 0.0
+            
             failure_stats.append((0, 0, {
-                'failure_type': failure_type,
-                'count': count,
+                'failure_type': failure_type or 'Sin especificar',
+                'count': max(0, count),  # Asegurar que count no sea negativo
                 'percentage': percentage
             }))
+        
         self.failure_stats_ids = failure_stats
 
-    def _compute_technician_statistics(self, orders):
+    def _compute_technician_statistics_safe(self, orders):
         """
-        Calcula estadísticas de técnicos.
+        Calcula estadísticas de técnicos con protección completa contra errores.
         """
-        # Agrupar por técnico
+        if not orders:
+            self.technician_stats_ids = [(5, 0, 0)]  # Limpiar registros existentes
+            return
+
+        # Agrupar por técnico con validaciones
         technician_stats = {}
+        
         for order in orders:
-            if order.technician_id:
-                tech_name = order.technician_id.name
-                if tech_name not in technician_stats:
-                    technician_stats[tech_name] = {
-                        'orders_count': 0,
-                        'completed_count': 0,
-                        'total_duration': 0,
-                        'total_revenue': 0
-                    }
+            # Validar que el técnico existe y tiene nombre
+            if not order.technician_id or not order.technician_id.name:
+                continue
+                
+            tech_name = order.technician_id.name
+            
+            # Inicializar estadísticas del técnico si no existe
+            if tech_name not in technician_stats:
+                technician_stats[tech_name] = {
+                    'orders_count': 0,
+                    'completed_count': 0,
+                    'total_duration': 0.0,
+                    'total_revenue': 0.0
+                }
 
-                technician_stats[tech_name]['orders_count'] += 1
-                technician_stats[tech_name]['total_revenue'] += order.total_amount
+            # Actualizar contadores con validaciones
+            technician_stats[tech_name]['orders_count'] += 1
+            
+            # Validar y sumar ingresos
+            order_amount = order.total_amount if order.total_amount else 0.0
+            technician_stats[tech_name]['total_revenue'] += order_amount
 
-                if order.status == 'completed':
-                    technician_stats[tech_name]['completed_count'] += 1
-                    technician_stats[tech_name]['total_duration'] += order.duration_hours
+            # Procesar órdenes completadas
+            if order.status == 'completed':
+                technician_stats[tech_name]['completed_count'] += 1
+                
+                # Validar duración antes de sumar
+                duration = order.duration_hours if (
+                    order.duration_hours is not False and 
+                    order.duration_hours >= 0
+                ) else 0.0
+                technician_stats[tech_name]['total_duration'] += duration
 
         # Crear registros de estadísticas de técnicos
         tech_stats = []
         for tech_name, stats in technician_stats.items():
-            avg_duration = stats['total_duration'] / stats['completed_count'] if stats['completed_count'] else 0
-            completion_rate = (stats['completed_count'] / stats['orders_count']) * 100 if stats['orders_count'] else 0
+            # Cálculos con protección robusta
+            try:
+                # Duración promedio
+                if stats['completed_count'] > 0 and stats['total_duration'] >= 0:
+                    avg_duration = stats['total_duration'] / stats['completed_count']
+                    avg_duration = max(0.0, avg_duration)  # No puede ser negativo
+                else:
+                    avg_duration = 0.0
+                
+                # Tasa de finalización
+                if stats['orders_count'] > 0:
+                    completion_rate = (stats['completed_count'] / stats['orders_count']) * 100
+                    completion_rate = max(0.0, min(100.0, completion_rate))  # Entre 0 y 100
+                else:
+                    completion_rate = 0.0
+                    
+            except (ZeroDivisionError, TypeError, ValueError) as e:
+                # Log del error para debugging
+                import logging
+                _logger = logging.getLogger(__name__)
+                _logger.warning(f"Error calculando estadísticas para técnico {tech_name}: {e}")
+                avg_duration = 0.0
+                completion_rate = 0.0
 
             tech_stats.append((0, 0, {
                 'technician_name': tech_name,
-                'orders_count': stats['orders_count'],
-                'completed_count': stats['completed_count'],
+                'orders_count': max(0, stats['orders_count']),
+                'completed_count': max(0, stats['completed_count']),
                 'avg_duration': avg_duration,
                 'completion_rate': completion_rate,
-                'total_revenue': stats['total_revenue']
+                'total_revenue': max(0.0, stats['total_revenue'])
             }))
 
         self.technician_stats_ids = tech_stats

@@ -6,7 +6,7 @@ from odoo.exceptions import ValidationError, UserError
 class RepairOrder(models.Model):
     _name = 'mobile.repair.order'
     _description = 'Repair Order'
-    _inherit = ['mail.thread', 'mail.activity.mixin']  # Habilita el chatter y funcionalidades de actividad
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _rec_name = 'name'
     _order = 'name desc, id desc'
 
@@ -166,13 +166,87 @@ class RepairOrder(models.Model):
     )
 
     def _get_default_name(self):
-        """Genera el nombre por defecto de la orden"""
-        sequence = self.env['ir.sequence'].next_by_code('mobile.repair.order')
+        """
+        Genera el nombre por defecto de la orden con validación robusta.
+        Crea la secuencia automáticamente si no existe.
+        """
+        sequence_code = 'mobile.repair.order'
+        
+        # Intentar obtener la secuencia
+        sequence = self.env['ir.sequence'].next_by_code(sequence_code)
+        
         if not sequence:
-            # Fallback si no existe la secuencia
-            year = fields.Datetime.now().year
-            return f'REP/{year}/001'
-        return sequence
+            # La secuencia no existe, crearla automáticamente
+            try:
+                self.env['ir.sequence'].sudo().create({
+                    'name': 'Órdenes de Reparación Móvil',
+                    'code': sequence_code,
+                    'prefix': 'REP',
+                    'padding': 5,
+                    'company_id': False,  # Disponible para todas las compañías
+                    'implementation': 'standard',
+                    'active': True,
+                })
+                # Intentar nuevamente después de crear la secuencia
+                sequence = self.env['ir.sequence'].next_by_code(sequence_code)
+                
+            except Exception as e:
+                # Si falla la creación de secuencia, usar fallback seguro
+                import logging
+                _logger = logging.getLogger(__name__)
+                _logger.error(f"Error creando secuencia para órdenes de reparación: {e}")
+                
+                # Fallback seguro: buscar el último número usado
+                last_order = self.env['mobile.repair.order'].search(
+                    [('name', 'like', 'REP/%')], 
+                    order='name desc', 
+                    limit=1
+                )
+                
+                if last_order and last_order.name:
+                    try:
+                        # Extraer número del último registro (ej: REP/2024/00005 -> 5)
+                        import re
+                        match = re.search(r'REP/\d+/(\d+)', last_order.name)
+                        if match:
+                            last_number = int(match.group(1))
+                            new_number = last_number + 1
+                        else:
+                            new_number = 1
+                    except (ValueError, AttributeError):
+                        new_number = 1
+                else:
+                    new_number = 1
+                
+                # Generar nombre con año actual y número secuencial
+                year = fields.Datetime.now().year
+                return f'REP/{year}/{new_number:05d}'
+        
+        return sequence or f'REP/{fields.Datetime.now().year}/00001'
+
+    @api.model
+    def _ensure_sequence_exists(self):
+        """
+        Método utilitario para asegurar que la secuencia existe.
+        Puede ser llamado desde data/ir_sequence_data.xml
+        """
+        sequence_code = 'mobile.repair.order'
+        existing_sequence = self.env['ir.sequence'].search([
+            ('code', '=', sequence_code)
+        ], limit=1)
+        
+        if not existing_sequence:
+            self.env['ir.sequence'].sudo().create({
+                'name': 'Órdenes de Reparación Móvil',
+                'code': sequence_code,
+                'prefix': 'REP',
+                'padding': 5,
+                'company_id': False,
+                'implementation': 'standard',
+                'active': True,
+            })
+            return True
+        return False
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -271,8 +345,6 @@ class RepairOrder(models.Model):
             if record.estimated_cost < 0:
                 raise ValidationError("El costo estimado no puede ser negativo.")
 
-    # ✅ NUEVAS VALIDACIONES INTELIGENTES
-    
     @api.constrains('start_date', 'completion_date')
     def _check_completion_after_start(self):
         """
@@ -340,8 +412,6 @@ class RepairOrder(models.Model):
                              f"reparaciones activas. Considere redistribuir la carga de trabajo.",
                         message_type='notification'
                     )
-
-    # ✅ MÉTODOS DE ESTADO MEJORADOS
 
     def action_start_repair(self):
         """
@@ -531,8 +601,6 @@ class RepairOrder(models.Model):
                 'sticky': False,
             }
         }
-
-    # MÉTODOS EXISTENTES SIN CAMBIOS
 
     def action_create_invoice(self):
         """

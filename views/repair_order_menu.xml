@@ -4,105 +4,134 @@
     <!-- MENÚ PRINCIPAL - REPARACIONES MÓVILES    -->
     <!-- ========================================= -->
     
-    <!-- Menú raíz -->
+    <!-- Menú raíz - Solo usuarios del módulo -->
     <menuitem id="menu_mobile_repair_root" 
               name="Reparaciones" 
-              sequence="50"/>
+              sequence="50"
+              groups="group_mobile_repair_user,group_mobile_repair_manager"/>
 
     <!-- ========================================= -->
     <!-- SECCIÓN 1: INFORMACIÓN GENERAL           -->
     <!-- ========================================= -->
     
+    <!-- Dashboard - Todos los usuarios del módulo pueden ver -->
     <menuitem id="menu_repair_dashboard" 
               name="Información General" 
               parent="menu_mobile_repair_root" 
               action="action_repair_dashboard" 
-              sequence="10"/>
+              sequence="10"
+              groups="group_mobile_repair_user,group_mobile_repair_manager"/>
 
     <!-- ========================================= -->
     <!-- SECCIÓN 2: ÓRDENES DE REPARACIÓN         -->
     <!-- ========================================= -->
     
+    <!-- Sección de órdenes - Todos los usuarios -->
     <menuitem id="menu_repair_orders_section" 
               name="Órdenes" 
               parent="menu_mobile_repair_root" 
-              sequence="20"/>
+              sequence="20"
+              groups="group_mobile_repair_user,group_mobile_repair_manager"/>
               
+    <!-- Todas las órdenes - Todos los usuarios -->
     <menuitem id="menu_repair_orders_all" 
               name="Todas" 
               parent="menu_repair_orders_section" 
               action="action_repair_order_main" 
-              sequence="21"/>
+              sequence="21"
+              groups="group_mobile_repair_user,group_mobile_repair_manager"/>
               
+    <!-- Borradores - Todos los usuarios -->
     <menuitem id="menu_repair_orders_draft" 
               name="Borradores" 
               parent="menu_repair_orders_section" 
               action="action_mobile_repair_order_draft" 
-              sequence="22"/>
+              sequence="22"
+              groups="group_mobile_repair_user,group_mobile_repair_manager"/>
               
+    <!-- En proceso - Todos los usuarios -->
     <menuitem id="menu_repair_orders_progress" 
               name="En Proceso" 
               parent="menu_repair_orders_section" 
               action="action_mobile_repair_order_progress" 
-              sequence="23"/>
+              sequence="23"
+              groups="group_mobile_repair_user,group_mobile_repair_manager"/>
               
+    <!-- Completadas - Todos los usuarios -->
     <menuitem id="menu_repair_orders_completed" 
               name="Completadas" 
               parent="menu_repair_orders_section" 
               action="action_mobile_repair_order_completed" 
-              sequence="24"/>
+              sequence="24"
+              groups="group_mobile_repair_user,group_mobile_repair_manager"/>
 
     <!-- ========================================= -->
     <!-- SECCIÓN 3: DISPOSITIVOS                  -->
     <!-- ========================================= -->
     
+    <!-- Sección dispositivos - Todos los usuarios -->
     <menuitem id="menu_devices_section" 
               name="Dispositivos" 
               parent="menu_mobile_repair_root" 
-              sequence="30"/>
+              sequence="30"
+              groups="group_mobile_repair_user,group_mobile_repair_manager"/>
               
+    <!-- Equipos - Todos los usuarios -->
     <menuitem id="menu_mobile_devices" 
               name="Equipos" 
               parent="menu_devices_section" 
               action="action_mobile_device" 
-              sequence="31"/>
+              sequence="31"
+              groups="group_mobile_repair_user,group_mobile_repair_manager"/>
               
+    <!-- Marcas - Solo managers pueden crear/editar -->
     <menuitem id="menu_device_brands" 
               name="Marcas" 
               parent="menu_devices_section" 
               action="action_mobile_brand" 
-              sequence="32"/>
+              sequence="32"
+              groups="group_mobile_repair_manager"/>
               
+    <!-- Modelos - Solo managers pueden crear/editar -->
     <menuitem id="menu_device_models" 
               name="Modelos" 
               parent="menu_devices_section" 
               action="action_mobile_model" 
-              sequence="33"/>
+              sequence="33"
+              groups="group_mobile_repair_manager"/>
 
     <!-- ========================================= -->
     <!-- SECCIÓN 4: CONFIGURACIÓN                 -->
     <!-- ========================================= -->
     
+    <!-- Configuración - SOLO MANAGERS -->
     <menuitem id="menu_technical_config" 
               name="Configuración" 
               parent="menu_mobile_repair_root" 
-              sequence="40"/>
+              sequence="40"
+              groups="group_mobile_repair_manager"/>
               
+    <!-- Categorías de fallas - Solo managers -->
     <menuitem id="menu_fault_categories" 
               name="Categorías de Fallas" 
               parent="menu_technical_config" 
               action="action_mobile_fault_category" 
-              sequence="41"/>
+              sequence="41"
+              groups="group_mobile_repair_manager"/>
               
+    <!-- Tipos de fallas - Solo managers -->
     <menuitem id="menu_fault_types" 
               name="Tipos de Fallas" 
               parent="menu_technical_config" 
               action="action_mobile_fault" 
-              sequence="42"/>
+              sequence="42"
+              groups="group_mobile_repair_manager"/>
               
+    <!-- Condiciones - Solo managers -->
     <menuitem id="menu_device_conditions" 
               name="Condiciones" 
               parent="menu_technical_config" 
               action="action_device_condition" 
-              sequence="43"/>
+              sequence="43"
+              groups="group_mobile_repair_manager"/>
 </odoo>
