@@ -2,115 +2,58 @@
 
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError, UserError
+from datetime import datetime, timedelta
 
 class RepairOrder(models.Model):
     _name = 'mobile.repair.order'
     _description = 'Repair Order'
-    _inherit = ['mail.thread', 'mail.activity.mixin']  # Habilita el chatter y funcionalidades de actividad
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _rec_name = 'name'
-    _order = 'name desc, id desc'
+    _order = 'priority desc, repair_date desc, id desc'  # ✅ Priorizar urgentes
 
-    # Referencia única de la orden
+    # ✅ SECUENCIA SIMPLIFICADA Y ROBUSTA
     name = fields.Char(
-        string='Referencia de Orden', 
+        string='Referencia', 
         required=True, 
         copy=False, 
         readonly=True, 
         index=True, 
-        default=lambda self: self._get_default_name()
+        default='Nueva Orden'  # ✅ Simplificado
     )
     
-    # Información básica de la orden
+    # ✅ INFORMACIÓN BÁSICA MEJORADA
     customer_id = fields.Many2one(
         'res.partner', 
         string='Cliente', 
         required=True, 
         index=True,
+        tracking=True,  # ✅ Seguimiento en chatter
         help="Cliente propietario del dispositivo"
     )
+    
     device_id = fields.Many2one(
         'mobile.device', 
         string='Dispositivo', 
         required=True,
+        tracking=True,  # ✅ Seguimiento en chatter
         help="Dispositivo a reparar"
     )
+    
+    # ✅ ESTADOS SIMPLIFICADOS
     status = fields.Selection([
-        ('draft', 'Borrador'),
-        ('in_progress', 'En Proceso'),
-        ('completed', 'Completada'),
-        ('canceled', 'Cancelada'),
+        ('draft', 'Recibido'),  # ✅ Más claro que "Borrador"
+        ('in_progress', 'En Reparación'),  # ✅ Más específico
+        ('completed', 'Listo para Entrega'),  # ✅ Más claro
+        ('delivered', 'Entregado'),  # ✅ Nuevo estado
+        ('canceled', 'Cancelado'),
     ], 
         string='Estado', 
         default='draft', 
         tracking=True,
-        help="Estado actual de la orden de reparación"
+        help="Estado actual de la reparación"
     )
     
-    technician_id = fields.Many2one(
-        'res.users', 
-        string='Técnico',
-        help="Técnico asignado a la reparación"
-    )
-    repair_date = fields.Datetime(
-        string='Fecha de reparación', 
-        default=fields.Datetime.now,
-        required=True,
-        help="Fecha y hora de inicio de la reparación"
-    )
-    
-    # ✅ NUEVOS CAMPOS PARA TIMESTAMPS
-    start_date = fields.Datetime(
-        string='Fecha de Inicio Real',
-        readonly=True,
-        help="Fecha y hora real cuando se inició la reparación"
-    )
-    completion_date = fields.Datetime(
-        string='Fecha de Finalización',
-        readonly=True,
-        help="Fecha y hora cuando se completó la reparación"
-    )
-    
-    # ✅ CAMPO COMPUTADO PARA DURACIÓN
-    duration_hours = fields.Float(
-        string='Duración (Horas)',
-        compute='_compute_duration_hours',
-        store=True,
-        help="Duración total de la reparación en horas"
-    )
-    
-    # ✅ CAMPO DE PROGRESO VISUAL
-    progress = fields.Float(
-        string='Progreso (%)',
-        compute='_compute_progress',
-        help="Progreso visual de la reparación (0-100%)"
-    )
-    
-    notes = fields.Text(
-        string='Notas',
-        help="Notas adicionales sobre la reparación"
-    )
-
-    # Información adicional de la reparación
-    description = fields.Text(
-        string='Descripción del problema',
-        help="Descripción detallada del problema reportado por el cliente"
-    )
-    estimated_cost = fields.Monetary(
-        string='Costo estimado',
-        currency_field='currency_id',
-        help="Costo estimado de la reparación"
-    )
-    actual_cost = fields.Monetary(
-        string='Costo real', 
-        compute='_compute_actual_cost',
-        store=True,
-        currency_field='currency_id',
-        help="Costo real basado en las líneas de reparación"
-    )
-    delivery_date = fields.Date(
-        string='Fecha estimada de entrega',
-        help="Fecha estimada de entrega del dispositivo reparado"
-    )
+    # ✅ PRIORIDAD VISUAL MEJORADA
     priority = fields.Selection([
         ('low', 'Baja'),
         ('normal', 'Normal'),
@@ -119,500 +62,523 @@ class RepairOrder(models.Model):
     ], 
         string='Prioridad', 
         default='normal',
+        tracking=True,
         help="Prioridad de la reparación"
     )
     
-    # TIPO DE FALLA RELACIONADO
+    # ✅ CAMPOS DE TIEMPO OPTIMIZADOS
+    repair_date = fields.Datetime(
+        string='Fecha de Recepción', 
+        default=fields.Datetime.now,
+        required=True,
+        tracking=True,
+        help="Cuándo se recibió el dispositivo"
+    )
+    
+    start_date = fields.Datetime(
+        string='Inicio de Reparación',
+        readonly=True,
+        tracking=True,
+        help="Cuándo se inició la reparación"
+    )
+    
+    completion_date = fields.Datetime(
+        string='Reparación Completada',
+        readonly=True,
+        tracking=True,
+        help="Cuándo se completó la reparación"
+    )
+    
+    delivery_date = fields.Datetime(
+        string='Fecha de Entrega',
+        readonly=True,
+        tracking=True,
+        help="Cuándo se entregó al cliente"
+    )
+    
+    # ✅ TÉCNICO CON DOMINIO SIMPLIFICADO (para evitar errores de grupo)
+    technician_id = fields.Many2one(
+        'res.users', 
+        string='Técnico',
+        # Dominio simplificado para evitar errores
+        domain=[('active', '=', True)],
+        tracking=True,
+        help="Técnico asignado a la reparación"
+    )
+    
+    # ✅ TIPO DE FALLA OBLIGATORIO
     failure_type_id = fields.Many2one(
         'mobile.fault',
-        string='Tipo de Falla',
-        help="Selecciona la falla principal reportada para esta orden"
+        string='Tipo de Falla Principal',
+        required=True,  # ✅ Ahora obligatorio
+        tracking=True,
+        help="Falla principal reportada"
     )
-
-    # Líneas de reparación y total
-    repair_line_ids = fields.One2many(
-        'mobile.repair.line', 
-        'order_id', 
-        string='Líneas de Reparación',
-        help="Productos y servicios utilizados en la reparación"
+    
+    # ✅ PROGRESO AUTOMÁTICO MEJORADO
+    progress = fields.Float(
+        string='Progreso (%)',
+        compute='_compute_progress',
+        store=True,  # ✅ Almacenar para búsquedas
+        help="Progreso automático de la reparación"
     )
+    
+    # ✅ DURACIÓN MEJORADA
+    duration_hours = fields.Float(
+        string='Tiempo de Reparación (Horas)',
+        compute='_compute_duration_hours',
+        store=True,
+        help="Duración real de la reparación"
+    )
+    
+    # ✅ CAMPOS FINANCIEROS
+    estimated_cost = fields.Monetary(
+        string='Presupuesto',
+        currency_field='currency_id',
+        tracking=True,
+        help="Presupuesto inicial estimado"
+    )
+    
     total_amount = fields.Monetary(
-        string='Monto Total', 
+        string='Total Final', 
         compute='_compute_total_amount', 
         store=True, 
         currency_field='currency_id',
-        help="Monto total de la orden de reparación"
+        help="Costo total real de la reparación"
     )
+    
+    # ✅ CAMPOS DE FACTURACIÓN
+    invoice_id = fields.Many2one(
+        'account.move',
+        string='Factura',
+        readonly=True,
+        tracking=True,
+        help="Factura asociada a esta orden de reparación"
+    )
+    
+    invoice_count = fields.Integer(
+        string='Número de Facturas',
+        compute='_compute_invoice_count',
+        help="Número de facturas asociadas"
+    )
+    
+    # ✅ OTROS CAMPOS IMPORTANTES
+    description = fields.Text(
+        string='Problema Reportado',
+        help="Descripción del problema según el cliente"
+    )
+    
+    notes = fields.Text(
+        string='Notas del Técnico',
+        help="Notas internas del técnico durante la reparación"
+    )
+    
+    customer_notes = fields.Text(
+        string='Observaciones del Cliente',
+        help="Información adicional proporcionada por el cliente"
+    )
+    
+    # ✅ RELACIONES
+    repair_line_ids = fields.One2many(
+        'mobile.repair.line', 
+        'order_id', 
+        string='Repuestos y Servicios',
+        help="Productos y servicios utilizados"
+    )
+    
     currency_id = fields.Many2one(
         'res.currency', 
         string='Moneda', 
         default=lambda self: self.env.company.currency_id,
-        required=True,
-        help="Moneda utilizada en la orden"
+        required=True
     )
 
-    # Integración con facturación
-    invoice_id = fields.Many2one(
-        'account.move', 
-        string='Factura', 
-        readonly=True, 
-        copy=False,
-        help="Factura generada para esta orden"
-    )
-    invoice_count = fields.Integer(
-        string='Contador de Facturas', 
-        compute='_compute_invoice_count',
-        help="Número de facturas asociadas"
-    )
-
-    def _get_default_name(self):
-        """Genera el nombre por defecto de la orden"""
-        sequence = self.env['ir.sequence'].next_by_code('mobile.repair.order')
-        if not sequence:
-            # Fallback si no existe la secuencia
-            year = fields.Datetime.now().year
-            return f'REP/{year}/001'
-        return sequence
-
-    @api.model_create_multi
-    def create(self, vals_list):
-        """
-        Override del método create para asignar secuencia automáticamente.
-        """
-        for vals in vals_list:
-            if not vals.get('name') or vals.get('name') == 'New':
-                vals['name'] = self._get_default_name()
-        return super(RepairOrder, self).create(vals_list)
-
+    # ✅ MÉTODOS COMPUTADOS OPTIMIZADOS
     @api.depends('start_date', 'completion_date')
     def _compute_duration_hours(self):
-        """
-        Calcula la duración de la reparación en horas.
-        """
+        """Calcula duración real de reparación (sin contar recepción)"""
         for record in self:
             if record.start_date and record.completion_date:
                 delta = record.completion_date - record.start_date
-                record.duration_hours = delta.total_seconds() / 3600
+                record.duration_hours = round(delta.total_seconds() / 3600, 2)
             else:
                 record.duration_hours = 0.0
 
-    @api.depends('status', 'repair_line_ids', 'technician_id')
+    @api.depends('status', 'repair_line_ids', 'technician_id', 'failure_type_id')
     def _compute_progress(self):
-        """
-        Calcula el progreso visual basado en el estado y completitud.
-        """
+        """Progreso automático más inteligente"""
         for record in self:
+            progress = 0
+            
+            # Estado base
             if record.status == 'draft':
-                # Borrador: 0% base + 10% si tiene técnico + 15% si tiene líneas
-                progress = 0
-                if record.technician_id:
-                    progress += 15
-                if record.repair_line_ids:
-                    progress += 10
-                record.progress = progress
+                progress = 5  # Solo recibido
             elif record.status == 'in_progress':
-                # En proceso: 25% base + puntos por completitud
-                progress = 25
-                if record.repair_line_ids:
-                    progress += 25  # Tiene trabajos definidos
-                if record.technician_id:
-                    progress += 25  # Tiene técnico asignado
-                record.progress = progress
+                progress = 25  # Iniciado
             elif record.status == 'completed':
-                record.progress = 100  # Completada = 100%
+                progress = 85  # Listo
+            elif record.status == 'delivered':
+                progress = 100  # Terminado
             elif record.status == 'canceled':
-                record.progress = 0   # Cancelada = 0%
-            else:
-                record.progress = 0
+                progress = 0
+            
+            # Bonificaciones por completitud (solo si no está terminado)
+            if record.status not in ['delivered', 'canceled']:
+                if record.technician_id:
+                    progress += 10
+                if record.failure_type_id:
+                    progress += 5
+                if record.repair_line_ids:
+                    progress += 15
+                if record.estimated_cost > 0:
+                    progress += 5
+            
+            record.progress = min(progress, 100)
 
     @api.depends('repair_line_ids.price_subtotal')
     def _compute_total_amount(self):
-        """
-        Calcula el monto total sumando los subtotales de cada línea de reparación.
-        """
+        """Cálculo de total"""
         for order in self:
             order.total_amount = sum(line.price_subtotal for line in order.repair_line_ids)
 
-    @api.depends('total_amount')
-    def _compute_actual_cost(self):
-        """
-        El costo real es igual al monto total calculado.
-        """
-        for order in self:
-            order.actual_cost = order.total_amount
-
     @api.depends('invoice_id')
     def _compute_invoice_count(self):
-        """
-        Cuenta las facturas asociadas a la orden.
-        """
-        for order in self:
-            order.invoice_count = 1 if order.invoice_id else 0
+        """Calcular el número de facturas"""
+        for record in self:
+            record.invoice_count = 1 if record.invoice_id else 0
 
-    @api.constrains('delivery_date', 'repair_date')
-    def _check_dates(self):
-        """
-        Valida que la fecha de entrega no sea anterior a la fecha de reparación.
-        """
-        for record in self:
-            if record.delivery_date and record.repair_date:
-                repair_date_only = record.repair_date.date()
-                if record.delivery_date < repair_date_only:
-                    raise ValidationError(
-                        "La fecha de entrega no puede ser anterior a la fecha de reparación."
-                    )
-
-    @api.constrains('estimated_cost')
-    def _check_estimated_cost(self):
-        """
-        Valida que el costo estimado no sea negativo.
-        """
-        for record in self:
-            if record.estimated_cost < 0:
-                raise ValidationError("El costo estimado no puede ser negativo.")
-
-    # ✅ NUEVAS VALIDACIONES INTELIGENTES
-    
-    @api.constrains('start_date', 'completion_date')
-    def _check_completion_after_start(self):
-        """
-        Valida que la fecha de finalización sea posterior a la de inicio.
-        """
-        for record in self:
-            if record.start_date and record.completion_date:
-                if record.completion_date <= record.start_date:
-                    raise ValidationError(
-                        "La fecha de finalización debe ser posterior a la fecha de inicio."
-                    )
-
-    @api.constrains('repair_date')
-    def _check_repair_date_not_future(self):
-        """
-        Advierte si la fecha de reparación está muy en el futuro.
-        """
-        for record in self:
-            if record.repair_date:
-                days_diff = (record.repair_date.date() - fields.Date.today()).days
-                if days_diff > 30:
-                    # No ValidationError, solo log para el administrador
-                    record.message_post(
-                        body=f"⚠️ <b>Advertencia:</b> La fecha de reparación está programada "
-                             f"para {days_diff} días en el futuro ({record.repair_date.strftime('%d/%m/%Y')}). "
-                             f"Verifique si es correcto.",
-                        message_type='notification'
-                    )
-    
-    @api.constrains('total_amount', 'estimated_cost')
-    def _check_cost_variance(self):
-        """
-        Advierte si el costo real excede significativamente el estimado.
-        """
-        for record in self:
-            if record.estimated_cost > 0 and record.total_amount > 0:
-                variance = ((record.total_amount - record.estimated_cost) / record.estimated_cost) * 100
-                if variance > 50:  # Más del 50% de diferencia
-                    record.message_post(
-                        body=f"💰 <b>Variación de costo detectada:</b><br/>"
-                             f"• Costo estimado: {record.currency_id.symbol}{record.estimated_cost:,.2f}<br/>"
-                             f"• Costo real: {record.currency_id.symbol}{record.total_amount:,.2f}<br/>"
-                             f"• Variación: +{variance:.1f}%<br/>"
-                             f"Considere revisar el presupuesto inicial.",
-                        message_type='notification'
-                    )
-
-    @api.constrains('technician_id', 'status')
-    def _check_technician_workload(self):
-        """
-        Advierte si el técnico tiene muchas reparaciones activas.
-        """
-        for record in self:
-            if record.technician_id and record.status in ['draft', 'in_progress']:
-                active_repairs = self.env['mobile.repair.order'].search_count([
-                    ('technician_id', '=', record.technician_id.id),
-                    ('status', 'in', ['draft', 'in_progress']),
-                    ('id', '!=', record.id)
-                ])
+    # ✅ SECUENCIA AUTOMÁTICA MEJORADA
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Secuencia automática simplificada"""
+        for vals in vals_list:
+            if vals.get('name', 'Nueva Orden') == 'Nueva Orden':
+                # Crear secuencia si no existe
+                sequence = self.env['ir.sequence'].search([('code', '=', 'mobile.repair.order')], limit=1)
+                if not sequence:
+                    sequence = self.env['ir.sequence'].create({
+                        'name': 'Secuencia Orden de Reparación',
+                        'code': 'mobile.repair.order',
+                        'prefix': 'REP',
+                        'padding': 5,
+                        'number_next': 1,
+                        'number_increment': 1,
+                    })
                 
-                if active_repairs >= 5:  # Más de 5 reparaciones activas
-                    record.message_post(
-                        body=f"👷 <b>Carga de trabajo alta:</b><br/>"
-                             f"El técnico {record.technician_id.name} tiene {active_repairs + 1} "
-                             f"reparaciones activas. Considere redistribuir la carga de trabajo.",
-                        message_type='notification'
-                    )
+                vals['name'] = sequence.next_by_id() or 'REP-ERROR'
+        return super().create(vals_list)
 
-    # ✅ MÉTODOS DE ESTADO MEJORADOS
-
+    # ✅ ACCIONES MEJORADAS CON VALIDACIONES INTELIGENTES
     def action_start_repair(self):
-        """
-        Cambia el estado de la orden a "en proceso".
-        ✅ MEJORADO: Agrega logs, timestamps y validaciones adicionales.
-        """
+        """Iniciar reparación con validaciones"""
         for record in self:
-            # Validación de estado previo
             if record.status != 'draft':
-                raise UserError("Solo se pueden iniciar órdenes en estado borrador.")
+                raise UserError("Solo se pueden iniciar reparaciones recibidas.")
             
-            # ✅ VALIDACIÓN ADICIONAL: Verificar que hay un técnico asignado
             if not record.technician_id:
-                raise UserError(
-                    f"Debe asignar un técnico antes de iniciar la reparación de la orden {record.name}."
-                )
+                raise UserError("Debe asignar un técnico antes de iniciar.")
             
-            # ✅ TIMESTAMP AUTOMÁTICO
-            record.start_date = fields.Datetime.now()
+            if not record.failure_type_id:
+                raise UserError("Debe especificar el tipo de falla antes de iniciar.")
             
-            # Cambiar estado
-            record.status = 'in_progress'
+            record.write({
+                'status': 'in_progress',
+                'start_date': fields.Datetime.now()
+            })
             
-            # ✅ LOG AUTOMÁTICO AL CHATTER
             record.message_post(
                 body=f"🔧 <b>Reparación iniciada</b><br/>"
-                     f"• Técnico asignado: {record.technician_id.name}<br/>"
-                     f"• Fecha de inicio: {record.start_date.strftime('%d/%m/%Y %H:%M')}<br/>"
-                     f"• Dispositivo: {record.device_id.display_name}",
+                     f"Técnico: {record.technician_id.name}<br/>"
+                     f"Falla: {record.failure_type_id.name}",
                 message_type='notification'
             )
-            
-            # ✅ NOTIFICAR AL TÉCNICO ASIGNADO
-            if record.technician_id:
-                record.message_post(
-                    body=f"🔔 <b>Nueva reparación asignada</b><br/>"
-                         f"Hola {record.technician_id.name}, se te ha asignado la reparación "
-                         f"<b>{record.name}</b> del dispositivo {record.device_id.display_name}.",
-                    partner_ids=[record.technician_id.partner_id.id],
-                    message_type='notification',
-                    subtype_xmlid='mail.mt_comment'
-                )
-            
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': '✅ Reparación Iniciada',
-                'message': f'La orden {self.name} ha sido iniciada correctamente.',
-                'type': 'success',
-                'sticky': False,
-            }
-        }
 
     def action_complete(self):
-        """
-        Cambia el estado de la orden a "completada".
-        ✅ MEJORADO: Agrega logs, timestamps y validaciones adicionales.
-        """
+        """Completar reparación"""
         for record in self:
-            # Validación de estado previo
-            if record.status not in ['draft', 'in_progress']:
-                raise UserError("Solo se pueden completar órdenes en borrador o en proceso.")
+            if record.status != 'in_progress':
+                raise UserError("Solo se pueden completar reparaciones en progreso.")
             
-            # ✅ VALIDACIÓN ADICIONAL: Verificar que hay líneas de reparación
             if not record.repair_line_ids:
-                raise UserError(
-                    f"No se puede completar la orden {record.name} sin líneas de reparación. "
-                    "Agregue al menos un producto o servicio."
+                # ✅ Warning en lugar de error crítico
+                record.message_post(
+                    body="⚠️ <b>Atención:</b> Se completó sin líneas de reparación.",
+                    message_type='notification'
                 )
             
-            # ✅ TIMESTAMP AUTOMÁTICO
-            record.completion_date = fields.Datetime.now()
-            
-            # Cambiar estado
-            record.status = 'completed'
-            
-            # ✅ LOG AUTOMÁTICO AL CHATTER con duración
-            duration_text = ""
-            if record.start_date and record.completion_date:
-                duration_text = f"<br/>• Duración: {record.duration_hours:.1f} horas"
+            record.write({
+                'status': 'completed',
+                'completion_date': fields.Datetime.now()
+            })
             
             record.message_post(
                 body=f"✅ <b>Reparación completada</b><br/>"
-                     f"• Fecha de finalización: {record.completion_date.strftime('%d/%m/%Y %H:%M')}<br/>"
-                     f"• Monto total: {record.currency_id.symbol}{record.total_amount:,.2f}<br/>"
-                     f"• Técnico: {record.technician_id.name if record.technician_id else 'No asignado'}"
-                     f"{duration_text}",
+                     f"Duración: {record.duration_hours:.1f} horas<br/>"
+                     f"Total: {record.currency_id.symbol}{record.total_amount:,.2f}",
                 message_type='notification'
             )
+
+    def action_deliver(self):
+        """Nueva acción: Entregar al cliente"""
+        for record in self:
+            if record.status != 'completed':
+                raise UserError("Solo se pueden entregar reparaciones completadas.")
             
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': '🎉 Reparación Completada',
-                'message': f'La orden {self.name} ha sido completada exitosamente.',
-                'type': 'success',
-                'sticky': False,
-            }
-        }
+            record.write({
+                'status': 'delivered',
+                'delivery_date': fields.Datetime.now()
+            })
+            
+            record.message_post(
+                body="📦 <b>Dispositivo entregado al cliente</b>",
+                message_type='notification'
+            )
 
     def action_cancel(self):
-        """
-        Cambia el estado de la orden a "cancelada".
-        ✅ MEJORADO: Agrega logs y validaciones adicionales.
-        """
+        """Cancelar orden de reparación"""
         for record in self:
-            # Validación de estado previo
-            if record.status == 'completed':
-                raise UserError("No se pueden cancelar órdenes completadas.")
+            if record.status in ['delivered', 'canceled']:
+                raise UserError("No se puede cancelar una orden entregada o ya cancelada.")
             
-            # ✅ VALIDACIÓN ADICIONAL: Confirmar si tiene factura
-            if record.invoice_id and record.invoice_id.state == 'posted':
-                raise UserError(
-                    f"No se puede cancelar la orden {record.name} porque tiene una "
-                    "factura confirmada. Cancele primero la factura."
-                )
+            if record.invoice_id:
+                raise UserError("No se puede cancelar una orden que ya tiene factura. Cancele primero la factura.")
             
-            # Guardar estado anterior para el log
-            estado_anterior = dict(record._fields['status'].selection)[record.status]
-            
-            # Cambiar estado
-            record.status = 'canceled'
-            
-            # ✅ LOG AUTOMÁTICO AL CHATTER
+            record.write({'status': 'canceled'})
             record.message_post(
-                body=f"❌ <b>Reparación cancelada</b><br/>"
-                     f"• Estado anterior: {estado_anterior}<br/>"
-                     f"• Fecha de cancelación: {fields.Datetime.now().strftime('%d/%m/%Y %H:%M')}<br/>"
-                     f"• Usuario: {self.env.user.name}",
+                body="❌ <b>Orden de reparación cancelada</b>",
                 message_type='notification'
             )
-            
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': '⚠️ Orden Cancelada',
-                'message': f'La orden {self.name} ha sido cancelada.',
-                'type': 'warning',
-                'sticky': False,
-            }
-        }
 
     def action_reset_to_draft(self):
-        """
-        Regresa el estado de la orden a "borrador".
-        ✅ MEJORADO: Agrega logs y validaciones adicionales.
-        """
+        """Regresar a borrador"""
         for record in self:
-            # Validación existente
-            if record.status == 'completed' and record.invoice_id:
-                raise UserError("No se puede regresar a borrador una orden completada con factura.")
+            if record.status == 'draft':
+                raise UserError("La orden ya está en estado borrador.")
             
-            # ✅ VALIDACIÓN ADICIONAL: Confirmar con el usuario
-            if record.status == 'completed':
-                # Limpiar fechas de completion al regresar a draft
-                record.completion_date = False
+            if record.invoice_id:
+                raise UserError("No se puede regresar a borrador una orden que tiene factura.")
             
-            if record.status == 'in_progress':
-                # Limpiar fecha de inicio si regresa desde en proceso
-                record.start_date = False
+            record.write({
+                'status': 'draft',
+                'start_date': False,
+                'completion_date': False,
+                'delivery_date': False
+            })
             
-            # Guardar estado anterior para el log
-            estado_anterior = dict(record._fields['status'].selection)[record.status]
-            
-            # Cambiar estado
-            record.status = 'draft'
-            
-            # ✅ LOG AUTOMÁTICO AL CHATTER
             record.message_post(
-                body=f"🔄 <b>Orden regresada a borrador</b><br/>"
-                     f"• Estado anterior: {estado_anterior}<br/>"
-                     f"• Fecha de cambio: {fields.Datetime.now().strftime('%d/%m/%Y %H:%M')}<br/>"
-                     f"• Usuario: {self.env.user.name}",
+                body="🔄 <b>Orden regresada a borrador</b>",
                 message_type='notification'
             )
-            
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': '🔄 Orden Reiniciada',
-                'message': f'La orden {self.name} ha regresado a estado borrador.',
-                'type': 'info',
-                'sticky': False,
-            }
-        }
 
-    # MÉTODOS EXISTENTES SIN CAMBIOS
-
+    # ✅ MÉTODOS DE FACTURACIÓN RÁPIDA
     def action_create_invoice(self):
-        """
-        Genera una factura basada en las líneas de reparación.
-        """
+        """Crear factura para la orden de reparación - MÉTODO RÁPIDO"""
         self.ensure_one()
         
+        # ✅ Validaciones previas
+        if self.status != 'completed':
+            raise UserError("Solo se pueden facturar órdenes completadas.")
+            
         if self.invoice_id:
-            raise ValidationError("Esta orden ya tiene una factura asociada.")
+            raise UserError("Esta orden ya tiene una factura asociada.")
             
         if not self.repair_line_ids:
-            raise ValidationError("No puedes crear una factura sin líneas de reparación.")
+            raise UserError("La orden debe tener al menos una línea de reparación para facturar.")
 
-        if self.status != 'completed':
-            raise ValidationError("Solo se pueden facturar órdenes completadas.")
+        # ✅ Buscar diario de ventas
+        journal = self.env['account.journal'].search([
+            ('type', '=', 'sale'),
+            ('company_id', '=', self.env.company.id)
+        ], limit=1)
+        
+        if not journal:
+            raise UserError("No se encontró un diario de ventas configurado.")
 
-        # Preparar los valores para la factura
-        invoice_vals = {
-            'partner_id': self.customer_id.id,
-            'move_type': 'out_invoice',
-            'ref': self.name,
-            'invoice_date': fields.Date.today(),
-            'currency_id': self.currency_id.id,
-            'invoice_line_ids': [],
+        # ✅ Crear la factura con datos optimizados
+        invoice_vals = self._prepare_invoice_values(journal)
+        invoice = self.env['account.move'].create(invoice_vals)
+        
+        # ✅ Crear líneas de factura
+        self._create_invoice_lines(invoice)
+        
+        # ✅ Asociar factura con la orden
+        self.invoice_id = invoice.id
+        
+        # ✅ Mensaje de éxito con información útil
+        self.message_post(
+            body=f"💰 <b>Factura creada</b><br/>"
+                 f"Número: {invoice.name}<br/>"
+                 f"Total: {self.currency_id.symbol}{self.total_amount:,.2f}<br/>"
+                 f"Cliente: {self.customer_id.name}",
+            message_type='notification'
+        )
+        
+        # ✅ Retornar acción para mostrar la factura inmediatamente
+        return {
+            'type': 'ir.actions.act_window',
+            'name': f'Factura - {self.name}',
+            'res_model': 'account.move',
+            'res_id': invoice.id,
+            'view_mode': 'form',
+            'target': 'current',
+            'context': {'create': False}  # Evitar crear nueva factura accidentalmente
         }
 
-        # Crear las líneas de factura basadas en las líneas de reparación
+    def _prepare_invoice_values(self, journal):
+        """Preparar valores para crear la factura"""
+        self.ensure_one()
+        
+        return {
+            'move_type': 'out_invoice',
+            'partner_id': self.customer_id.id,
+            'invoice_date': fields.Date.today(),
+            'journal_id': journal.id,
+            'payment_term_id': self.customer_id.property_payment_term_id.id if self.customer_id.property_payment_term_id else False,
+            'invoice_origin': self.name,
+            'currency_id': self.currency_id.id,
+            'ref': f'Reparación {self.name} - {self.device_id.display_name or "Dispositivo"}',
+            'narration': f'Reparación de {self.device_id.display_name or "dispositivo"}\n'
+                        f'Problema: {self.failure_type_id.name}\n'
+                        f'Técnico: {self.technician_id.name or "No asignado"}'
+        }
+
+    def _create_invoice_lines(self, invoice):
+        """Crear líneas de factura basadas en las líneas de reparación"""
+        self.ensure_one()
+        
         for line in self.repair_line_ids:
+            # ✅ Obtener cuenta contable
+            account = self._get_invoice_line_account(line)
+            
+            # ✅ Preparar valores de la línea
             invoice_line_vals = {
-                'product_id': line.product_id.id,
-                'name': line.description or line.product_id.display_name,
+                'move_id': invoice.id,
+                'product_id': line.product_id.id if line.product_id else False,
+                'name': self._format_invoice_line_description(line),
                 'quantity': line.quantity,
+                'product_uom_id': line.product_uom_id.id if line.product_uom_id else False,
                 'price_unit': line.price_unit,
+                'account_id': account,
             }
             
-            # Agregar impuestos si el producto los tiene
-            if line.product_id.taxes_id:
+            # ✅ Aplicar impuestos automáticamente
+            if line.product_id and line.product_id.taxes_id:
                 invoice_line_vals['tax_ids'] = [(6, 0, line.product_id.taxes_id.ids)]
-                
-            invoice_vals['invoice_line_ids'].append((0, 0, invoice_line_vals))
+            
+            # ✅ Crear línea de factura
+            self.env['account.move.line'].create(invoice_line_vals)
 
-        # Crear la factura y asociarla a la orden
-        invoice = self.env['account.move'].create(invoice_vals)
-        self.invoice_id = invoice.id
+    def _format_invoice_line_description(self, repair_line):
+        """Formatear descripción de línea de factura"""
+        if repair_line.description:
+            return repair_line.description
+        elif repair_line.product_id:
+            return repair_line.product_id.display_name
+        else:
+            return 'Servicio de Reparación'
 
-        return {
-            'name': 'Factura de Cliente',
-            'type': 'ir.actions.act_window',
-            'res_model': 'account.move',
-            'view_mode': 'form',
-            'res_id': invoice.id,
-            'target': 'current',
-        }
+    def _get_invoice_line_account(self, repair_line):
+        """Obtener cuenta contable para línea de factura - INTELIGENTE"""
+        account = False
+        
+        # ✅ 1. Intentar cuenta del producto
+        if repair_line.product_id:
+            account = repair_line.product_id.property_account_income_id
+            if not account:
+                account = repair_line.product_id.categ_id.property_account_income_categ_id
+        
+        # ✅ 2. Buscar cuenta por defecto de ingresos
+        if not account:
+            account = self.env['account.account'].search([
+                ('company_id', '=', self.env.company.id),
+                ('account_type', 'in', ['income', 'income_other']),
+            ], limit=1)
+        
+        # ✅ 3. Última opción: cuenta de ventas general
+        if not account:
+            account = self.env['account.account'].search([
+                ('company_id', '=', self.env.company.id),
+                ('code', '=like', '70%'),
+            ], limit=1)
+        
+        # ✅ Error descriptivo si no se encuentra cuenta
+        if not account:
+            product_name = repair_line.product_id.display_name if repair_line.product_id else repair_line.description
+            raise UserError(
+                f"No se pudo determinar la cuenta contable para: {product_name}\n\n"
+                f"Soluciones:\n"
+                f"• Configure una cuenta de ingresos en el producto\n"
+                f"• Configure una cuenta de ingresos en la categoría del producto\n"
+                f"• Verifique que exista un plan contable válido"
+            )
+        
+        return account.id
 
     def action_view_invoice(self):
-        """
-        Abre la vista de la factura asociada a la orden.
-        """
+        """Ver la factura asociada"""
         self.ensure_one()
         
         if not self.invoice_id:
-            raise ValidationError("Esta orden no tiene factura asociada.")
-            
+            raise UserError("Esta orden no tiene una factura asociada.")
+        
         return {
-            'name': 'Factura de Cliente',
             'type': 'ir.actions.act_window',
+            'name': f'Factura - {self.name}',
             'res_model': 'account.move',
-            'view_mode': 'form',
             'res_id': self.invoice_id.id,
+            'view_mode': 'form',
             'target': 'current',
         }
 
+    def action_quick_invoice_and_deliver(self):
+        """ACCIÓN SÚPER RÁPIDA: Facturar y marcar como entregado"""
+        self.ensure_one()
+        
+        # ✅ Crear factura
+        invoice_action = self.action_create_invoice()
+        
+        # ✅ Marcar como entregado automáticamente
+        self.action_deliver()
+        
+        # ✅ Mensaje de éxito completo
+        self.message_post(
+            body=f"🚀 <b>Proceso completo</b><br/>"
+                 f"✅ Factura creada: {self.invoice_id.name}<br/>"
+                 f"✅ Dispositivo marcado como entregado<br/>"
+                 f"💰 Total: {self.currency_id.symbol}{self.total_amount:,.2f}",
+            message_type='notification'
+        )
+        
+        return invoice_action
+
+    # ✅ VALIDACIONES SIMPLIFICADAS
+    @api.constrains('estimated_cost')
+    def _check_estimated_cost(self):
+        for record in self:
+            if record.estimated_cost < 0:
+                raise ValidationError("El presupuesto no puede ser negativo.")
+
+    @api.constrains('repair_date')
+    def _check_repair_date(self):
+        for record in self:
+            if record.repair_date > fields.Datetime.now():
+                # ✅ Solo advertencia, no error
+                record.message_post(
+                    body="⚠️ La fecha de recepción está en el futuro. Verifique si es correcto.",
+                    message_type='notification'
+                )
+
     def name_get(self):
-        """
-        Personaliza la visualización del nombre de las órdenes.
-        """
+        """Nombre con información útil"""
         result = []
         for record in self:
-            name = record.name
+            name = f"{record.name}"
             if record.customer_id:
                 name += f" - {record.customer_id.name}"
+            if record.device_id:
+                brand = record.device_id.brand_id.name if record.device_id.brand_id else ""
+                model = record.device_id.model_id.name if record.device_id.model_id else ""
+                if brand or model:
+                    name += f" ({brand} {model})".strip()
             result.append((record.id, name))
         return result

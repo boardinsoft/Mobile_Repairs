@@ -3,228 +3,318 @@
 from odoo import models, fields, api
 from datetime import datetime, timedelta
 
-
-class RepairDashboard(models.TransientModel):
-    """
-    Modelo para el dashboard de estadísticas de reparaciones.
-    """
+class MobileRepairDashboard(models.TransientModel):
+    """Dashboard para órdenes de reparación móvil"""
     _name = 'mobile.repair.dashboard'
-    _description = 'Dashboard de Reparaciones'
+    _description = 'Dashboard de Reparaciones Móviles'
 
-    # ✅ FILTROS DE FECHA
-    date_from = fields.Date(
-        string='Desde',
-        default=lambda self: fields.Date.today().replace(day=1),  # Primer día del mes
-        required=True
-    )
-    date_to = fields.Date(
-        string='Hasta',
-        default=fields.Date.today,
-        required=True
-    )
-
-    # ✅ ESTADÍSTICAS GENERALES
+    # Campos básicos de KPIs
     total_orders = fields.Integer(
-        string='Total Órdenes',
-        compute='_compute_statistics'
+        string='Total de Órdenes',
+        compute='_compute_dashboard_data',
+        store=False
     )
+    
     orders_draft = fields.Integer(
-        string='Borradores',
-        compute='_compute_statistics'
+        string='Órdenes en Borrador',
+        compute='_compute_dashboard_data',
+        store=False
     )
+    
     orders_in_progress = fields.Integer(
-        string='En Proceso',
-        compute='_compute_statistics'
+        string='Órdenes en Proceso',
+        compute='_compute_dashboard_data',
+        store=False
     )
+    
     orders_completed = fields.Integer(
-        string='Completadas',
-        compute='_compute_statistics'
+        string='Órdenes Completadas',
+        compute='_compute_dashboard_data',
+        store=False
     )
+    
     orders_canceled = fields.Integer(
-        string='Canceladas',
-        compute='_compute_statistics'
+        string='Órdenes Canceladas',
+        compute='_compute_dashboard_data',
+        store=False
     )
-
-    # ✅ ESTADÍSTICAS DE TIEMPO
-    avg_duration_hours = fields.Float(
-        string='Duración Promedio (Horas)',
-        compute='_compute_statistics'
-    )
+    
     total_revenue = fields.Monetary(
         string='Ingresos Totales',
-        compute='_compute_statistics'
+        compute='_compute_dashboard_data',
+        currency_field='currency_id',
+        store=False
     )
+    
+    avg_duration_hours = fields.Float(
+        string='Duración Promedio (Horas)',
+        compute='_compute_dashboard_data',
+        store=False
+    )
+    
     avg_order_value = fields.Monetary(
         string='Valor Promedio por Orden',
-        compute='_compute_statistics'
+        compute='_compute_dashboard_data',
+        currency_field='currency_id',
+        store=False
     )
-
-    # ✅ ESTADÍSTICAS DE FALLAS
+    
     most_common_failure = fields.Char(
         string='Falla Más Común',
-        compute='_compute_statistics'
+        compute='_compute_dashboard_data',
+        store=False
     )
-    failure_stats_ids = fields.One2many(
-        'mobile.repair.failure.stat',
-        'dashboard_id',
-        string='Estadísticas de Fallas',
-        compute='_compute_statistics'
+    
+    # Campos para filtros
+    date_from = fields.Date(
+        string='Fecha Desde',
+        default=lambda self: fields.Date.today().replace(day=1)
     )
-
-    # ✅ ESTADÍSTICAS DE TÉCNICOS
-    technician_stats_ids = fields.One2many(
-        'mobile.repair.technician.stat',
-        'dashboard_id',
-        string='Estadísticas de Técnicos',
-        compute='_compute_statistics'
+    
+    date_to = fields.Date(
+        string='Fecha Hasta',
+        default=fields.Date.today
     )
-
+    
     currency_id = fields.Many2one(
         'res.currency',
+        string='Moneda',
         default=lambda self: self.env.company.currency_id
     )
 
+    @api.model
+    def default_get(self, fields_list):
+        """Establecer valores por defecto al crear el dashboard"""
+        res = super().default_get(fields_list)
+        
+        # Establecer fechas por defecto (primer día del mes hasta hoy)
+        today = fields.Date.today()
+        first_day_of_month = today.replace(day=1)
+        
+        if 'date_from' in fields_list:
+            res['date_from'] = first_day_of_month
+        if 'date_to' in fields_list:
+            res['date_to'] = today
+            
+        return res
+
     @api.depends('date_from', 'date_to')
-    def _compute_statistics(self):
-        """
-        Calcula todas las estadísticas del dashboard.
-        """
+    def _compute_dashboard_data(self):
+        """Computar todos los datos del dashboard"""
         for record in self:
-            # Dominio base para filtrar por fechas
-            domain = [
-                ('repair_date', '>=', record.date_from),
-                ('repair_date', '<=', record.date_to)
-            ]
-
-            # Buscar todas las órdenes en el rango de fechas
-            orders = self.env['mobile.repair.order'].search(domain)
-
-            # ✅ ESTADÍSTICAS GENERALES
-            record.total_orders = len(orders)
-            record.orders_draft = len(orders.filtered(lambda o: o.status == 'draft'))
-            record.orders_in_progress = len(orders.filtered(lambda o: o.status == 'in_progress'))
-            record.orders_completed = len(orders.filtered(lambda o: o.status == 'completed'))
-            record.orders_canceled = len(orders.filtered(lambda o: o.status == 'canceled'))
-
-            # ✅ ESTADÍSTICAS FINANCIERAS
-            record.total_revenue = sum(orders.mapped('total_amount'))
-            record.avg_order_value = record.total_revenue / len(orders) if orders else 0
-
-            # ✅ ESTADÍSTICAS DE TIEMPO
-            completed_orders = orders.filtered(lambda o: o.status == 'completed' and o.duration_hours > 0)
-            record.avg_duration_hours = sum(completed_orders.mapped('duration_hours')) / len(completed_orders) if completed_orders else 0
-
-            # ✅ ESTADÍSTICAS DE FALLAS
-            record._compute_failure_statistics(orders)
-            record._compute_technician_statistics(orders)
-
-    def _compute_failure_statistics(self, orders):
-        """
-        Calcula estadísticas de tipos de fallas.
-        ✅ CORREGIDO: Usa failure_type_id en lugar de failure_type
-        """
-        # Contar fallas por tipo
-        failure_counts = {}
-        for order in orders:
-            # ✅ CORRECCIÓN: Usar failure_type_id que es un Many2one
-            if order.failure_type_id:
-                failure_name = order.failure_type_id.name
-                failure_counts[failure_name] = failure_counts.get(failure_name, 0) + 1
-
-        # Encontrar la falla más común
-        if failure_counts:
-            self.most_common_failure = max(failure_counts, key=failure_counts.get)
-        else:
-            self.most_common_failure = "N/A"
-
-        # Crear registros de estadísticas de fallas (para gráficos futuros)
-        failure_stats = []
-        for failure_type, count in failure_counts.items():
-            percentage = (count / len(orders)) * 100 if orders else 0
-            failure_stats.append((0, 0, {
-                'failure_type': failure_type,
-                'count': count,
-                'percentage': percentage
-            }))
-        self.failure_stats_ids = failure_stats
-
-    def _compute_technician_statistics(self, orders):
-        """
-        Calcula estadísticas de técnicos.
-        """
-        # Agrupar por técnico
-        technician_stats = {}
-        for order in orders:
-            if order.technician_id:
-                tech_name = order.technician_id.name
-                if tech_name not in technician_stats:
-                    technician_stats[tech_name] = {
-                        'orders_count': 0,
-                        'completed_count': 0,
-                        'total_duration': 0,
-                        'total_revenue': 0
-                    }
-
-                technician_stats[tech_name]['orders_count'] += 1
-                technician_stats[tech_name]['total_revenue'] += order.total_amount
-
-                if order.status == 'completed':
-                    technician_stats[tech_name]['completed_count'] += 1
-                    technician_stats[tech_name]['total_duration'] += order.duration_hours
-
-        # Crear registros de estadísticas de técnicos
-        tech_stats = []
-        for tech_name, stats in technician_stats.items():
-            avg_duration = stats['total_duration'] / stats['completed_count'] if stats['completed_count'] else 0
-            completion_rate = (stats['completed_count'] / stats['orders_count']) * 100 if stats['orders_count'] else 0
-
-            tech_stats.append((0, 0, {
-                'technician_name': tech_name,
-                'orders_count': stats['orders_count'],
-                'completed_count': stats['completed_count'],
-                'avg_duration': avg_duration,
-                'completion_rate': completion_rate,
-                'total_revenue': stats['total_revenue']
-            }))
-
-        self.technician_stats_ids = tech_stats
+            try:
+                # Verificar si el modelo existe
+                if 'mobile.repair.order' not in self.env:
+                    record._set_default_values()
+                    continue
+                
+                # Dominio base para filtrar órdenes (usando repair_date que es el campo real)
+                domain = []
+                if record.date_from:
+                    domain.append(('repair_date', '>=', fields.Datetime.combine(record.date_from, datetime.min.time())))
+                if record.date_to:
+                    domain.append(('repair_date', '<=', fields.Datetime.combine(record.date_to, datetime.max.time())))
+                
+                # Obtener todas las órdenes
+                orders = self.env['mobile.repair.order'].search(domain)
+                
+                # KPIs básicos (usando los campos reales del modelo)
+                record.total_orders = len(orders)
+                record.orders_draft = len(orders.filtered(lambda o: o.status == 'draft'))
+                record.orders_in_progress = len(orders.filtered(lambda o: o.status == 'in_progress'))
+                record.orders_completed = len(orders.filtered(lambda o: o.status in ['completed', 'delivered']))
+                record.orders_canceled = len(orders.filtered(lambda o: o.status == 'canceled'))
+                
+                # Ingresos totales (usando total_amount que es el campo real)
+                record.total_revenue = sum(orders.mapped('total_amount'))
+                
+                # Duración promedio (usando duration_hours que existe en el modelo)
+                completed_orders = orders.filtered(lambda o: o.duration_hours > 0)
+                record.avg_duration_hours = (
+                    sum(completed_orders.mapped('duration_hours')) / len(completed_orders)
+                    if completed_orders else 0
+                )
+                
+                # Valor promedio por orden
+                record.avg_order_value = (
+                    record.total_revenue / record.total_orders
+                    if record.total_orders else 0
+                )
+                
+                # Falla más común (usando failure_type_id que es el campo real)
+                if orders.mapped('failure_type_id'):
+                    failure_counts = {}
+                    for order in orders:
+                        if order.failure_type_id:
+                            failure = order.failure_type_id.name
+                            failure_counts[failure] = failure_counts.get(failure, 0) + 1
+                    
+                    if failure_counts:
+                        most_common = max(failure_counts, key=failure_counts.get)
+                        record.most_common_failure = f"{most_common} ({failure_counts[most_common]})"
+                    else:
+                        record.most_common_failure = "Sin datos"
+                else:
+                    record.most_common_failure = "Sin datos"
+                    
+            except Exception as e:
+                # En caso de error, establecer valores por defecto
+                record._set_default_values()
+    
+    def _set_default_values(self):
+        """Establecer valores por defecto en caso de error"""
+        self.total_orders = 0
+        self.orders_draft = 0
+        self.orders_in_progress = 0
+        self.orders_completed = 0
+        self.orders_canceled = 0
+        self.total_revenue = 0.0
+        self.avg_duration_hours = 0.0
+        self.avg_order_value = 0.0
+        self.most_common_failure = "Sin datos"
 
     def action_refresh_data(self):
-        """
-        Acción para refrescar los datos del dashboard.
-        """
-        self._compute_statistics()
+        """Actualizar datos del dashboard"""
+        # Recomputar los campos
+        self._compute_dashboard_data()
         return {
-            'type': 'ir.actions.client',
-            'tag': 'reload'
+            'type': 'ir.actions.act_window',
+            'res_model': self._name,
+            'res_id': self.id,
+            'view_mode': 'form',
+            'target': 'current',
         }
 
-
-class RepairFailureStat(models.TransientModel):
-    """
-    Modelo auxiliar para estadísticas de fallas.
-    """
-    _name = 'mobile.repair.failure.stat'
-    _description = 'Estadística de Fallas'
-
-    dashboard_id = fields.Many2one('mobile.repair.dashboard')
-    failure_type = fields.Char(string='Tipo de Falla')
-    count = fields.Integer(string='Cantidad')
-    percentage = fields.Float(string='Porcentaje')
-
-
-class RepairTechnicianStat(models.TransientModel):
-    """
-    Modelo auxiliar para estadísticas de técnicos.
-    """
-    _name = 'mobile.repair.technician.stat'
-    _description = 'Estadística de Técnicos'
-
-    dashboard_id = fields.Many2one('mobile.repair.dashboard')
-    technician_name = fields.Char(string='Técnico')
-    orders_count = fields.Integer(string='Total Órdenes')
-    completed_count = fields.Integer(string='Completadas')
-    avg_duration = fields.Float(string='Duración Promedio (h)')
-    completion_rate = fields.Float(string='Tasa de Finalización (%)')
-    total_revenue = fields.Monetary(string='Ingresos Generados')
-    currency_id = fields.Many2one('res.currency', related='dashboard_id.currency_id')
+    # Métodos para los botones de navegación del dashboard
+    def action_view_repair_orders(self):
+        """Ver todas las órdenes de reparación"""
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Órdenes de Reparación',
+            'res_model': 'mobile.repair.order',
+            'view_mode': 'tree,form',
+            'target': 'current',
+            'domain': self._get_date_domain(),
+        }
+    
+    def action_view_draft_orders(self):
+        """Ver órdenes en borrador (usando status del modelo real)"""
+        domain = self._get_date_domain()
+        domain.append(('status', '=', 'draft'))
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Órdenes Recibidas',
+            'res_model': 'mobile.repair.order',
+            'view_mode': 'tree,form',
+            'target': 'current',
+            'domain': domain,
+        }
+    
+    def action_view_progress_orders(self):
+        """Ver órdenes en proceso (usando status del modelo real)"""
+        domain = self._get_date_domain()
+        domain.append(('status', '=', 'in_progress'))
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Órdenes en Reparación',
+            'res_model': 'mobile.repair.order',
+            'view_mode': 'tree,form',
+            'target': 'current',
+            'domain': domain,
+        }
+    
+    def action_view_completed_orders(self):
+        """Ver órdenes completadas (usando status del modelo real)"""
+        domain = self._get_date_domain()
+        domain.append(('status', 'in', ['completed', 'delivered']))
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Órdenes Completadas',
+            'res_model': 'mobile.repair.order',
+            'view_mode': 'tree,form',
+            'target': 'current',
+            'domain': domain,
+        }
+    
+    def action_create_repair_order(self):
+        """Crear nueva orden de reparación"""
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Nueva Orden de Reparación',
+            'res_model': 'mobile.repair.order',
+            'view_mode': 'form',
+            'target': 'current',
+        }
+    
+    def action_view_urgent_orders(self):
+        """Ver órdenes urgentes (usando priority del modelo real)"""
+        domain = self._get_date_domain()
+        domain.append(('priority', '=', 'urgent'))
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Órdenes Urgentes',
+            'res_model': 'mobile.repair.order',
+            'view_mode': 'tree,form',
+            'target': 'current',
+            'domain': domain,
+        }
+    
+    def action_view_this_week_orders(self):
+        """Ver órdenes de esta semana"""
+        from datetime import datetime, timedelta
+        today = fields.Date.today()
+        week_start = today - timedelta(days=today.weekday())
+        week_end = week_start + timedelta(days=6)
+        
+        domain = [
+            ('repair_date', '>=', fields.Datetime.combine(week_start, datetime.min.time())),
+            ('repair_date', '<=', fields.Datetime.combine(week_end, datetime.max.time()))
+        ]
+        
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Órdenes de Esta Semana',
+            'res_model': 'mobile.repair.order',
+            'view_mode': 'tree,form',
+            'target': 'current',
+            'domain': domain,
+        }
+    
+    def action_view_devices(self):
+        """Ver dispositivos móviles"""
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Dispositivos Móviles',
+            'res_model': 'mobile.device',
+            'view_mode': 'tree,form',
+            'target': 'current',
+        }
+    
+    def action_view_fault_categories(self):
+        """Ver categorías de fallas"""
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Categorías de Fallas',
+            'res_model': 'mobile.fault.category',
+            'view_mode': 'tree,form',
+            'target': 'current',
+        }
+    
+    def action_view_faults(self):
+        """Ver tipos de fallas"""
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Tipos de Fallas',
+            'res_model': 'mobile.fault',
+            'view_mode': 'tree,form',
+            'target': 'current',
+        }
+    
+    def _get_date_domain(self):
+        """Obtener dominio de fechas basado en los filtros (usando repair_date)"""
+        domain = []
+        if self.date_from:
+            domain.append(('repair_date', '>=', fields.Datetime.combine(self.date_from, datetime.min.time())))
+        if self.date_to:
+            domain.append(('repair_date', '<=', fields.Datetime.combine(self.date_to, datetime.max.time())))
+        return domain
