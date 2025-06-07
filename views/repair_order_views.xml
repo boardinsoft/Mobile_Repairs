@@ -45,16 +45,23 @@
                     <button name="action_create_invoice" string="Crear Factura" type="object" 
                             class="btn-primary"
                             invisible="status != 'completed' or invoice_id"/>
+                    <button name="action_quick_invoice_and_deliver" string="Facturar y Entregar" type="object" 
+                            class="btn-success"
+                            invisible="status != 'completed' or invoice_id"
+                            help="Crear factura y marcar como entregado en un solo paso"/>
                     <button name="action_view_invoice" string="Ver Factura" type="object" 
                             class="btn-secondary"
                             invisible="not invoice_id"/>
+                    <button name="action_deliver" string="Entregar" type="object" 
+                            class="btn-info"
+                            invisible="status != 'completed'"/>
                     <button name="action_cancel" string="Cancelar" type="object" 
                             class="btn-warning"
-                            invisible="status in ('completed', 'canceled')"/>
+                            invisible="status in ['delivered', 'canceled']"/>
                     <button name="action_reset_to_draft" string="Regresar a Borrador" type="object" 
                             class="btn-secondary"
                             invisible="status == 'draft'"/>
-                    <field name="status" widget="statusbar" statusbar_visible="draft,in_progress,completed"/>
+                    <field name="status" widget="statusbar" statusbar_visible="draft,in_progress,completed,delivered"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
@@ -109,7 +116,7 @@
                         <page string="Líneas de Reparación" name="repair_lines">
                             <field name="repair_line_ids" 
                                    context="{'default_currency_id': currency_id}"
-                                   readonly="status == 'completed'">
+                                   readonly="status == 'completed'">>
                                 <list editable="bottom">
                                     <field name="sequence" widget="handle"/>
                                     <field name="product_id" 
@@ -138,13 +145,13 @@
                                     <field name="description" nolabel="1" 
                                            placeholder="Describa detalladamente el problema reportado por el cliente..."/>
                                 </group>
-                                <group string="Análisis de Costos">
+                                <group string="Presupuesto">
                                     <field name="estimated_cost" widget="monetary"/>
-                                    <field name="actual_cost" widget="monetary" readonly="1"/>
-                                    <div invisible="not estimated_cost or not actual_cost or estimated_cost == 0">
-                                        <span class="fw-bold">Variación de Costo:</span>
+                                    <field name="total_amount" string="Costo Real" widget="monetary" readonly="1"/>
+                                    <div invisible="not estimated_cost or estimated_cost == 0">
+                                        <span class="fw-bold">Diferencia:</span>
                                         <span class="text-muted">
-                                            (Actual vs Estimado)
+                                            Real vs Estimado
                                         </span>
                                     </div>
                                 </group>
@@ -154,10 +161,14 @@
                                 <field name="notes" nolabel="1" 
                                        placeholder="Notas internas del técnico, observaciones especiales, recomendaciones al cliente..."/>
                             </group>
+                            
+                            <group string="Observaciones del Cliente" invisible="not customer_notes">
+                                <field name="customer_notes" nolabel="1" readonly="1"/>
+                            </group>
                         </page>
                         
                         <page string="Seguimiento y Métricas" name="tracking" 
-                              invisible="status == 'draft'">
+                              invisible="status == 'draft'">>
                             <group>
                                 <group string="Timeline de la Reparación">
                                     <field name="repair_date" readonly="1" widget="datetime"/>
@@ -181,7 +192,7 @@
                         </page>
                         
                         <page string="Facturación" name="invoicing" 
-                              invisible="not invoice_id">
+                              invisible="not invoice_id">>
                             <group>
                                 <field name="invoice_count" invisible="1"/>
                                 <field name="invoice_id" readonly="1"/>

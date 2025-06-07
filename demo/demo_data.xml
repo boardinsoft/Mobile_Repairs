@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        
+        <!-- Dispositivos de demostración -->
+        <record id="demo_device_1" model="mobile.device">
+            <field name="customer_id" ref="base.res_partner_2"/>
+            <field name="brand_id" ref="brand_apple"/>
+            <field name="model">iPhone 13 Pro</field>
+            <field name="imei">123456789012345</field>
+            <field name="color">Azul Sierra</field>
+            <field name="storage_capacity">256</field>
+            <field name="condition_id" ref="condition_good"/>
+        </record>
+        
+        <record id="demo_device_2" model="mobile.device">
+            <field name="customer_id" ref="base.res_partner_3"/>
+            <field name="brand_id" ref="brand_samsung"/>
+            <field name="model">Galaxy S21</field>
+            <field name="imei">987654321098765</field>
+            <field name="color">Negro Fantasma</field>
+            <field name="storage_capacity">128</field>
+            <field name="condition_id" ref="condition_fair"/>
+        </record>
+        
+        <record id="demo_device_3" model="mobile.device">
+            <field name="customer_id" ref="base.res_partner_4"/>
+            <field name="brand_id" ref="brand_xiaomi"/>
+            <field name="model">Redmi Note 11</field>
+            <field name="imei">456789123456789</field>
+            <field name="color">Azul Estelar</field>
+            <field name="storage_capacity">64</field>
+            <field name="condition_id" ref="condition_poor"/>
+        </record>
+        
+        <!-- Órdenes de reparación de demostración -->
+        <record id="demo_repair_1" model="mobile.repair.order">
+            <field name="customer_id" ref="base.res_partner_2"/>
+            <field name="device_id" ref="demo_device_1"/>
+            <field name="failure_type_id" ref="fault_broken_screen"/>
+            <field name="issue_description">Pantalla fisurada después de caída</field>
+            <field name="status">in_progress</field>
+            <field name="priority">high</field>
+            <field name="repair_date" eval="(DateTime.now() - timedelta(days=2)).strftime('%Y-%m-%d')"/>
+            <field name="estimated_completion_date" eval="(DateTime.now() + timedelta(days=1)).strftime('%Y-%m-%d')"/>
+            <field name="estimated_cost">150.00</field>
+            <field name="total_amount">150.00</field>
+        </record>
+        
+        <record id="demo_repair_2" model="mobile.repair.order">
+            <field name="customer_id" ref="base.res_partner_3"/>
+            <field name="device_id" ref="demo_device_2"/>
+            <field name="failure_type_id" ref="fault_battery_drain"/>
+            <field name="issue_description">Batería se agota muy rápido</field>
+            <field name="status">completed</field>
+            <field name="priority">medium</field>
+            <field name="repair_date" eval="(DateTime.now() - timedelta(days=5)).strftime('%Y-%m-%d')"/>
+            <field name="completion_date" eval="(DateTime.now() - timedelta(days=1)).strftime('%Y-%m-%d')"/>
+            <field name="estimated_cost">80.00</field>
+            <field name="final_cost">75.00</field>
+            <field name="total_amount">75.00</field>
+            <field name="duration_hours">8</field>
+        </record>
+        
+        <record id="demo_repair_3" model="mobile.repair.order">
+            <field name="customer_id" ref="base.res_partner_4"/>
+            <field name="device_id" ref="demo_device_3"/>
+            <field name="failure_type_id" ref="fault_wont_turn_on"/>
+            <field name="issue_description">No enciende después de mojarse</field>
+            <field name="status">draft</field>
+            <field name="priority">medium</field>
+            <field name="repair_date" eval="DateTime.now().strftime('%Y-%m-%d')"/>
+            <field name="estimated_completion_date" eval="(DateTime.now() + timedelta(days=3)).strftime('%Y-%m-%d')"/>
+            <field name="estimated_cost">120.00</field>
+            <field name="total_amount">120.00</field>
+        </record>
+        
+        <record id="demo_repair_4" model="mobile.repair.order">
+            <field name="customer_id" ref="base.res_partner_2"/>
+            <field name="device_id" ref="demo_device_1"/>
+            <field name="failure_type_id" ref="fault_slow_performance"/>
+            <field name="issue_description">Funciona muy lento, aplicaciones se cierran</field>
+            <field name="status">completed</field>
+            <field name="priority">low</field>
+            <field name="repair_date" eval="(DateTime.now() - timedelta(days=10)).strftime('%Y-%m-%d')"/>
+            <field name="completion_date" eval="(DateTime.now() - timedelta(days=7)).strftime('%Y-%m-%d')"/>
+            <field name="estimated_cost">50.00</field>
+            <field name="final_cost">45.00</field>
+            <field name="total_amount">45.00</field>
+            <field name="duration_hours">4</field>
+        </record>
+        
+        <record id="demo_repair_5" model="mobile.repair.order">
+            <field name="customer_id" ref="base.res_partner_3"/>
+            <field name="device_id" ref="demo_device_2"/>
+            <field name="failure_type_id" ref="fault_broken_screen"/>
+            <field name="issue_description">Pantalla completamente negra, táctil no responde</field>
+            <field name="status">canceled</field>
+            <field name="priority">high</field>
+            <field name="repair_date" eval="(DateTime.now() - timedelta(days=15)).strftime('%Y-%m-%d')"/>
+            <field name="estimated_cost">200.00</field>
+            <field name="cancellation_reason">Cliente decidió comprar dispositivo nuevo</field>
+        </record>
+        
+        <!-- Líneas de reparación de demostración -->
+        <record id="demo_line_1" model="mobile.repair.line">
+            <field name="repair_order_id" ref="demo_repair_1"/>
+            <field name="description">Reemplazo de pantalla LCD</field>
+            <field name="quantity">1</field>
+            <field name="unit_price">120.00</field>
+            <field name="subtotal">120.00</field>
+        </record>
+        
+        <record id="demo_line_2" model="mobile.repair.line">
+            <field name="repair_order_id" ref="demo_repair_1"/>
+            <field name="description">Mano de obra</field>
+            <field name="quantity">1</field>
+            <field name="unit_price">30.00</field>
+            <field name="subtotal">30.00</field>
+        </record>
+        
+        <record id="demo_line_3" model="mobile.repair.line">
+            <field name="repair_order_id" ref="demo_repair_2"/>
+            <field name="description">Reemplazo de batería</field>
+            <field name="quantity">1</field>
+            <field name="unit_price">45.00</field>
+            <field name="subtotal">45.00</field>
+        </record>
+        
+        <record id="demo_line_4" model="mobile.repair.line">
+            <field name="repair_order_id" ref="demo_repair_2"/>
+            <field name="description">Mano de obra especializada</field>
+            <field name="quantity">1</field>
+            <field name="unit_price">30.00</field>
+            <field name="subtotal">30.00</field>
+        </record>
+        
+    </data>
+</odoo>

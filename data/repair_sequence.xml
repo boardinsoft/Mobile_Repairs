@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        
+        <!-- Secuencia para órdenes de reparación -->
+        <record id="seq_mobile_repair_order" model="ir.sequence">
+            <field name="name">Órdenes de Reparación</field>
+            <field name="code">mobile.repair.order</field>
+            <field name="prefix">REP</field>
+            <field name="suffix"></field>
+            <field name="padding">4</field>
+            <field name="number_next">1001</field>
+            <field name="number_increment">1</field>
+            <field name="company_id" eval="False"/>
+        </record>
+        
+        <!-- Datos básicos de condiciones - CON campo descripcion -->
+        <record id="condition_excellent" model="mobile.device.condition">
+            <field name="name">Excelente</field>
+            <field name="descripcion">Dispositivo en perfectas condiciones estéticas y funcionales</field>
+        </record>
+        
+        <record id="condition_good" model="mobile.device.condition">
+            <field name="name">Bueno</field>
+            <field name="descripcion">Dispositivo con signos mínimos de uso, funcionalmente perfecto</field>
+        </record>
+        
+        <record id="condition_fair" model="mobile.device.condition">
+            <field name="name">Regular</field>
+            <field name="descripcion">Dispositivo con signos evidentes de uso pero funcionalmente correcto</field>
+        </record>
+        
+        <record id="condition_poor" model="mobile.device.condition">
+            <field name="name">Malo</field>
+            <field name="descripcion">Dispositivo con daños evidentes o problemas funcionales</field>
+        </record>
+        
+        <!-- Categorías básicas de fallas -->
+        <record id="fault_cat_hardware" model="mobile.fault.category">
+            <field name="name">Hardware</field>
+            <field name="descripcion">Problemas relacionados con componentes físicos del dispositivo</field>
+        </record>
+        
+        <record id="fault_cat_software" model="mobile.fault.category">
+            <field name="name">Software</field>
+            <field name="descripcion">Problemas relacionados con el sistema operativo y aplicaciones</field>
+        </record>
+        
+        <record id="fault_cat_screen" model="mobile.fault.category">
+            <field name="name">Pantalla</field>
+            <field name="descripcion">Problemas relacionados con la pantalla y componentes de visualización</field>
+        </record>
+        
+        <record id="fault_cat_battery" model="mobile.fault.category">
+            <field name="name">Batería</field>
+            <field name="descripcion">Problemas relacionados con la batería y sistema de carga</field>
+        </record>
+        
+        <!-- Tipos de fallas comunes -->
+        <record id="fault_broken_screen" model="mobile.fault">
+            <field name="name">Pantalla Rota</field>
+            <field name="descripcion">Cristal de pantalla fisurado, agrietado o completamente roto</field>
+            <field name="category_id" ref="fault_cat_screen"/>
+        </record>
+        
+        <record id="fault_battery_drain" model="mobile.fault">
+            <field name="name">Batería Agotada</field>
+            <field name="descripcion">La batería se descarga rápidamente o no mantiene la carga</field>
+            <field name="category_id" ref="fault_cat_battery"/>
+        </record>
+        
+        <record id="fault_wont_turn_on" model="mobile.fault">
+            <field name="name">No Enciende</field>
+            <field name="descripcion">El dispositivo no responde al botón de encendido o no da señales de vida</field>
+            <field name="category_id" ref="fault_cat_hardware"/>
+        </record>
+        
+        <record id="fault_slow_performance" model="mobile.fault">
+            <field name="name">Funcionamiento Lento</field>
+            <field name="descripcion">El dispositivo responde lentamente o se congela frecuentemente</field>
+            <field name="category_id" ref="fault_cat_software"/>
+        </record>
+        
+        <!-- Marcas populares -->
+        <record id="brand_apple" model="mobile.brand">
+            <field name="name">Apple</field>
+            <field name="descripcion">Dispositivos iPhone, iPad y otros productos Apple</field>
+        </record>
+        
+        <record id="brand_samsung" model="mobile.brand">
+            <field name="name">Samsung</field>
+            <field name="descripcion">Dispositivos Galaxy y otros productos Samsung</field>
+        </record>
+        
+        <record id="brand_huawei" model="mobile.brand">
+            <field name="name">Huawei</field>
+            <field name="descripcion">Dispositivos Huawei y submarca Honor</field>
+        </record>
+        
+        <record id="brand_xiaomi" model="mobile.brand">
+            <field name="name">Xiaomi</field>
+            <field name="descripcion">Dispositivos Xiaomi, Redmi y POCO</field>
+        </record>
+        
+        <!-- Modelos populares de ejemplo -->
+        <record id="model_iphone_13" model="mobile.model">
+            <field name="name">iPhone 13</field>
+            <field name="brand_id" ref="brand_apple"/>
+            <field name="descripcion">iPhone 13 estándar de Apple</field>
+        </record>
+        
+        <record id="model_iphone_14" model="mobile.model">
+            <field name="name">iPhone 14</field>
+            <field name="brand_id" ref="brand_apple"/>
+            <field name="descripcion">iPhone 14 estándar de Apple</field>
+        </record>
+        
+        <record id="model_galaxy_s23" model="mobile.model">
+            <field name="name">Galaxy S23</field>
+            <field name="brand_id" ref="brand_samsung"/>
+            <field name="descripcion">Samsung Galaxy S23 estándar</field>
+        </record>
+        
+        <record id="model_galaxy_a54" model="mobile.model">
+            <field name="name">Galaxy A54</field>
+            <field name="brand_id" ref="brand_samsung"/>
+            <field name="descripcion">Samsung Galaxy A54 gama media</field>
+        </record>
+        
+    </data>
+</odoo>

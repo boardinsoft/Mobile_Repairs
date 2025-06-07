@@ -1,24 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <!-- ========================================= -->
-        <!-- GRUPOS DE SEGURIDAD PERSONALIZADOS       -->
-        <!-- ========================================= -->
-        
-        <record id="group_mobile_repair_manager" model="res.groups">
-            <field name="name">Mobile Repair Manager</field>
-            <field name="category_id" ref="base.module_category_services"/>
-            <field name="comment">Permite gestión completa de las órdenes de reparación móvil</field>
-            <field name="implied_ids" eval="[(4, ref('group_mobile_repair_user'))]"/>
+        <!-- Categoría para organizar los grupos -->
+        <record id="category_mobile_repair" model="res.groups.category">
+            <field name="name">Reparaciones Móviles</field>
+            <field name="description">Gestión de reparaciones de dispositivos móviles</field>
+            <field name="sequence">10</field>
         </record>
 
+        <!-- Grupo básico para usuarios -->
         <record id="group_mobile_repair_user" model="res.groups">
-            <field name="name">Mobile Repair User</field>
-            <field name="category_id" ref="base.module_category_services"/>
-            <field name="comment">Permite trabajar con órdenes de reparación móvil</field>
-            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+            <field name="name">Usuario de Reparaciones</field>
+            <field name="category_id" ref="category_mobile_repair"/>
+            <field name="comment">Acceso básico para consultar y crear órdenes de reparación</field>
         </record>
 
+<<<<<<< HEAD
         <!-- ========================================= -->
         <!-- PERMISOS PARA ÓRDENES DE REPARACIÓN      -->
         <!-- ========================================= -->
@@ -318,6 +315,14 @@
             <field name="perm_write" eval="1"/>
             <field name="perm_create" eval="1"/>
             <field name="perm_unlink" eval="0"/>
+=======
+        <!-- Grupo para managers -->
+        <record id="group_mobile_repair_manager" model="res.groups">
+            <field name="name">Manager de Reparaciones</field>
+            <field name="category_id" ref="category_mobile_repair"/>
+            <field name="implied_ids" eval="[(4, ref('group_mobile_repair_user'))]"/>
+            <field name="comment">Acceso completo para gestionar el módulo de reparaciones</field>
+>>>>>>> stability
         </record>
     </data>
 </odoo>

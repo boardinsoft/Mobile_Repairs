@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ========================================= -->
+    <!-- DASHBOARD - ACCIÓN CORREGIDA             -->
+    <!-- ========================================= -->
+    
+    <!-- Dashboard principal -->
+    <record id="action_mobile_repair_dashboard" model="ir.actions.act_window">
+        <field name="name">Dashboard de Reparaciones</field>
+        <field name="res_model">mobile.repair.order</field>
+        <field name="view_mode">kanban,graph,pivot</field>
+        <field name="context">{
+            'search_default_group_by_status': 1,
+            'search_default_this_month': 1
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                ¡Bienvenido al Dashboard de Reparaciones!
+            </p>
+            <p>
+                Aquí puedes ver un resumen de todas las órdenes de reparación.
+            </p>
+        </field>
+    </record>
+
+    <!-- ========================================= -->
+    <!-- ACCIONES PRINCIPALES DE ÓRDENES          -->
+    <!-- ========================================= -->
+    
+    <!-- Acción principal para todas las órdenes -->
+    <record id="action_repair_order_main" model="ir.actions.act_window">
+        <field name="name">Órdenes de Reparación</field>
+        <field name="res_model">mobile.repair.order</field>
+        <field name="view_mode">kanban,tree,form,graph,pivot</field>
+        <field name="context">{'search_default_group_by_status': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crear una nueva orden de reparación
+            </p>
+            <p>
+                Gestiona las órdenes de reparación de dispositivos móviles, desde el diagnóstico
+                hasta la facturación del cliente.
+            </p>
+        </field>
+    </record>
+
+    <!-- ========================================= -->
+    <!-- ACCIONES POR ESTADO DE ÓRDENES           -->
+    <!-- ========================================= -->
+    
+    <!-- Órdenes en borrador (Recibidas) -->
+    <record id="action_mobile_repair_order_draft" model="ir.actions.act_window">
+        <field name="name">Órdenes Recibidas</field>
+        <field name="res_model">mobile.repair.order</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="domain">[('status', '=', 'draft')]</field>
+        <field name="context">{'default_status': 'draft'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crear una nueva orden de reparación
+            </p>
+            <p>Órdenes que están siendo preparadas y requieren confirmación para iniciar el proceso de reparación.</p>
+        </field>
+    </record>
+
+    <!-- ELIMINAR: action_mobile_repair_order_confirmed porque el estado 'confirmed' NO EXISTE en tu modelo -->
+
+    <!-- Órdenes en proceso -->
+    <record id="action_mobile_repair_order_progress" model="ir.actions.act_window">
+        <field name="name">Órdenes en Reparación</field>
+        <field name="res_model">mobile.repair.order</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="domain">[('status', '=', 'in_progress')]</field>
+        <field name="context">{'default_status': 'in_progress'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No hay órdenes en reparación</p>
+            <p>Órdenes que están siendo trabajadas actualmente por los técnicos.</p>
+        </field>
+    </record>
+
+    <!-- Órdenes completadas -->
+    <record id="action_mobile_repair_order_completed" model="ir.actions.act_window">
+        <field name="name">Órdenes Listas para Entrega</field>
+        <field name="res_model">mobile.repair.order</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="domain">[('status', '=', 'completed')]</field>
+        <field name="context">{'default_status': 'completed'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No hay órdenes completadas</p>
+            <p>Órdenes terminadas y listas para entrega al cliente.</p>
+        </field>
+    </record>
+
+    <!-- Órdenes entregadas -->
+    <record id="action_mobile_repair_order_delivered" model="ir.actions.act_window">
+        <field name="name">Órdenes Entregadas</field>
+        <field name="res_model">mobile.repair.order</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="domain">[('status', '=', 'delivered')]</field>
+        <field name="context">{'default_status': 'delivered'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No hay órdenes entregadas</p>
+            <p>Órdenes que han sido entregadas al cliente.</p>
+        </field>
+    </record>
+
+    <!-- Órdenes canceladas -->
+    <record id="action_mobile_repair_order_canceled" model="ir.actions.act_window">
+        <field name="name">Órdenes Canceladas</field>
+        <field name="res_model">mobile.repair.order</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('status', '=', 'canceled')]</field>
+        <field name="context">{'default_status': 'canceled'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No hay órdenes canceladas</p>
+            <p>Órdenes que fueron canceladas por diferentes motivos.</p>
+        </field>
+    </record>
+
+    <!-- ========================================= -->
+    <!-- ACCIONES ESPECIALES - CORREGIDAS         -->
+    <!-- ========================================= -->
+    
+    <!-- Órdenes urgentes - CORREGIDO: 'high' -> 'urgent' -->
+    <record id="action_mobile_repair_order_urgent" model="ir.actions.act_window">
+        <field name="name">Órdenes Urgentes</field>
+        <field name="res_model">mobile.repair.order</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="domain">[('priority', '=', 'urgent'), ('status', 'not in', ['delivered', 'canceled'])]</field>
+        <field name="context">{'default_priority': 'urgent'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No hay órdenes urgentes</p>
+            <p>Órdenes marcadas como urgentes que requieren atención prioritaria.</p>
+        </field>
+    </record>
+
+    <!-- Órdenes vencidas - SIMPLIFICADO (eliminamos campos inexistentes) -->
+    <record id="action_mobile_repair_order_overdue" model="ir.actions.act_window">
+        <field name="name">Órdenes Vencidas</field>
+        <field name="res_model">mobile.repair.order</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('repair_date', '&lt;', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d')), ('status', 'not in', ['completed', 'delivered', 'canceled'])]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">¡Excelente! No hay órdenes vencidas</p>
+            <p>Órdenes recibidas hace más de 7 días que aún no han sido completadas.</p>
+        </field>
+    </record>
+
+    <!-- Órdenes de esta semana - SIMPLIFICADO -->
+    <record id="action_mobile_repair_order_this_week" model="ir.actions.act_window">
+        <field name="name">Órdenes de Esta Semana</field>
+        <field name="res_model">mobile.repair.order</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="domain">[('repair_date', '&gt;=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No hay órdenes esta semana</p>
+            <p>Órdenes recibidas durante los últimos 7 días.</p>
+        </field>
+    </record>
+
+    <!-- ========================================= -->
+    <!-- ACCIONES PLACEHOLDER - SEGURAS           -->
+    <!-- ========================================= -->
+    
+    <!-- DISPOSITIVOS - Placeholder temporales hasta crear los modelos -->
+    <record id="action_mobile_device" model="ir.actions.client">
+        <field name="name">Catálogo de Dispositivos</field>
+        <field name="tag">display_notification</field>
+        <field name="params">{"title": "Próximamente", "message": "El catálogo de dispositivos estará disponible en la próxima versión.", "type": "info"}</field>
+    </record>
+
+    <record id="action_mobile_brand" model="ir.actions.client">
+        <field name="name">Marcas de Dispositivos</field>
+        <field name="tag">display_notification</field>
+        <field name="params">{"title": "Próximamente", "message": "La gestión de marcas estará disponible en la próxima versión.", "type": "info"}</field>
+    </record>
+
+    <record id="action_mobile_model" model="ir.actions.client">
+        <field name="name">Modelos de Dispositivos</field>
+        <field name="tag">display_notification</field>
+        <field name="params">{"title": "Próximamente", "message": "La gestión de modelos estará disponible en la próxima versión.", "type": "info"}</field>
+    </record>
+
+    <record id="action_device_condition" model="ir.actions.client">
+        <field name="name">Condiciones de Dispositivos</field>
+        <field name="tag">display_notification</field>
+        <field name="params">{"title": "Próximamente", "message": "La gestión de condiciones estará disponible en la próxima versión.", "type": "info"}</field>
+    </record>
+
+    <!-- FALLAS - Placeholder temporales -->
+    <record id="action_mobile_fault_category" model="ir.actions.client">
+        <field name="name">Categorías de Fallas</field>
+        <field name="tag">display_notification</field>
+        <field name="params">{"title": "Próximamente", "message": "Las categorías de fallas estarán disponibles en la próxima versión.", "type": "info"}</field>
+    </record>
+
+    <record id="action_mobile_fault" model="ir.actions.client">
+        <field name="name">Tipos de Fallas</field>
+        <field name="tag">display_notification</field>
+        <field name="params">{"title": "Próximamente", "message": "Los tipos de fallas estarán disponibles en la próxima versión.", "type": "info"}</field>
+    </record>
+
+    <!-- ANÁLISIS -->
+    <record id="action_repair_analytics" model="ir.actions.act_window">
+        <field name="name">Análisis y Reportes</field>
+        <field name="res_model">mobile.repair.order</field>
+        <field name="view_mode">graph,pivot</field>
+        <field name="context">{
+            'search_default_group_by_status': 1,
+            'search_default_group_by_technician': 1
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Vista de análisis
+            </p>
+            <p>Análisis detallado del rendimiento del taller.</p>
+        </field>
+    </record>
+
+    <!-- PLANTILLAS TEMPORALES PARA FUNCIONES FUTURAS -->
+    <record id="action_diagnostic_templates" model="ir.actions.client">
+        <field name="name">Plantillas de Diagnóstico</field>
+        <field name="tag">display_notification</field>
+        <field name="params">{"title": "Próximamente", "message": "Esta funcionalidad estará disponible en la próxima versión.", "type": "info"}</field>
+    </record>
+
+    <record id="action_repair_invoices" model="ir.actions.client">
+        <field name="name">Facturación</field>
+        <field name="tag">display_notification</field>
+        <field name="params">{"title": "Próximamente", "message": "Integración con facturación estará disponible pronto.", "type": "info"}</field>
+    </record>
+
+    <record id="action_financial_reports" model="ir.actions.client">
+        <field name="name">Reportes Financieros</field>
+        <field name="tag">display_notification</field>
+        <field name="params">{"title": "Próximamente", "message": "Reportes financieros estarán disponibles pronto.", "type": "info"}</field>
+    </record>
+
+    <record id="action_service_pricing" model="ir.actions.client">
+        <field name="name">Precios de Servicios</field>
+        <field name="tag">display_notification</field>
+        <field name="params">{"title": "Próximamente", "message": "Gestión de precios estará disponible pronto.", "type": "info"}</field>
+    </record>
+
+    <record id="action_parts_pricing" model="ir.actions.client">
+        <field name="name">Precios de Repuestos</field>
+        <field name="tag">display_notification</field>
+        <field name="params">{"title": "Próximamente", "message": "Gestión de repuestos estará disponible pronto.", "type": "info"}</field>
+    </record>
+
+    <record id="action_repair_config" model="ir.actions.client">
+        <field name="name">Configuración del Taller</field>
+        <field name="tag">display_notification</field>
+        <field name="params">{"title": "Próximamente", "message": "Configuración avanzada estará disponible pronto.", "type": "info"}</field>
+    </record>
+
+    <record id="action_technicians" model="ir.actions.client">
+        <field name="name">Gestión de Técnicos</field>
+        <field name="tag">display_notification</field>
+        <field name="params">{"title": "Próximamente", "message": "Gestión de técnicos estará disponible pronto.", "type": "info"}</field>
+    </record>
+
+    <record id="action_repair_permissions" model="ir.actions.client">
+        <field name="name">Permisos</field>
+        <field name="tag">display_notification</field>
+        <field name="params">{"title": "Próximamente", "message": "Gestión de permisos estará disponible pronto.", "type": "info"}</field>
+    </record>
+
+</odoo>

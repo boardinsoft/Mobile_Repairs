@@ -1,0 +1,183 @@
+/* ========================================= */
+/* Dashboard de Reparaciones Móviles CSS   */
+/* ========================================= */
+
+/* Mejorar apariencia general del dashboard */
+.mobile_repair_dashboard {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Título principal del dashboard */
+.mobile_repair_dashboard .oe_title h1 {
+    color: #17a2b8;
+    margin-bottom: 10px;
+}
+
+.mobile_repair_dashboard .oe_title h3 {
+    color: #6c757d;
+    font-weight: 300;
+    margin-bottom: 20px;
+}
+
+/* Mejorar apariencia de los grupos */
+.mobile_repair_dashboard .o_group {
+    margin-bottom: 20px;
+}
+
+.mobile_repair_dashboard .o_group > table > tbody > tr > td.o_group_col_6 {
+    padding: 15px;
+}
+
+/* Estilos para botones de navegación */
+.mobile_repair_dashboard .btn {
+    border-radius: 4px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.mobile_repair_dashboard .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.mobile_repair_dashboard .btn-sm {
+    padding: 8px 16px;
+    font-size: 13px;
+}
+
+/* Colores específicos para estados */
+.mobile_repair_dashboard .btn-outline-secondary {
+    border-color: #6c757d;
+    color: #6c757d;
+}
+
+.mobile_repair_dashboard .btn-outline-secondary:hover {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+/* Decoraciones para campos */
+.mobile_repair_dashboard .decoration-success {
+    color: #28a745 !important;
+    font-weight: bold;
+}
+
+.mobile_repair_dashboard .decoration-warning {
+    color: #ffc107 !important;
+    font-weight: bold;
+}
+
+.mobile_repair_dashboard .decoration-danger {
+    color: #dc3545 !important;
+    font-weight: bold;
+}
+
+.mobile_repair_dashboard .decoration-info {
+    color: #17a2b8 !important;
+    font-weight: bold;
+}
+
+/* Mejorar alertas de resumen */
+.mobile_repair_dashboard .alert {
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.mobile_repair_dashboard .alert-info {
+    background: linear-gradient(135deg, #e8f4f8 0%, #d1ecf1 100%);
+    color: #0c5460;
+}
+
+.mobile_repair_dashboard .alert-success {
+    background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
+    color: #155724;
+}
+
+/* Espaciado mejorado */
+.mobile_repair_dashboard .mb8 {
+    margin-bottom: 8px;
+}
+
+.mobile_repair_dashboard .mr8 {
+    margin-right: 8px;
+}
+
+.mobile_repair_dashboard .mb16 {
+    margin-bottom: 16px;
+}
+
+/* Mejorar campos de estadísticas */
+.mobile_repair_dashboard .o_field_widget.o_field_monetary {
+    font-size: 18px;
+    font-weight: bold;
+    color: #28a745;
+}
+
+.mobile_repair_dashboard .o_field_widget.o_field_integer {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* Hover effects para secciones */
+.mobile_repair_dashboard .o_group:hover {
+    background: rgba(0,123,255,0.02);
+    border-radius: 8px;
+    transition: background 0.3s ease;
+}
+
+/* Iconos en títulos */
+.mobile_repair_dashboard .fa {
+    margin-right: 8px;
+}
+
+/* Responsividad para dispositivos móviles */
+@media (max-width: 768px) {
+    .mobile_repair_dashboard .col-md-4 {
+        margin-bottom: 20px;
+    }
+    
+    .mobile_repair_dashboard .btn-sm {
+        width: 100%;
+        margin-bottom: 8px;
+        margin-right: 0;
+    }
+    
+    .mobile_repair_dashboard .oe_title h1 {
+        font-size: 24px;
+    }
+    
+    .mobile_repair_dashboard .oe_title h3 {
+        font-size: 16px;
+    }
+}
+
+/* Animaciones sutiles */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.mobile_repair_dashboard .o_group {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Mejorar campos readonly */
+.mobile_repair_dashboard .o_field_widget.o_readonly_modifier {
+    background: transparent;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+/* Separadores visuales */
+.mobile_repair_dashboard .o_horizontal_separator {
+    border-top: 2px solid #e9ecef;
+    margin: 20px 0;
+}
+
+/* Mejorar contraste de texto */
+.mobile_repair_dashboard .o_form_label {
+    font-weight: 600;
+    color: #495057;
+}
