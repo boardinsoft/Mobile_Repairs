@@ -193,117 +193,25 @@ class RepairOrder(models.Model):
         required=True
     )
 
-<<<<<<< HEAD
-    # Integración con facturación
-    invoice_id = fields.Many2one(
-        'account.move', 
-        string='Factura', 
-        readonly=True, 
-        copy=False,
-        help="Factura generada para esta orden"
-    )
-    invoice_count = fields.Integer(
-        string='Contador de Facturas', 
-        compute='_compute_invoice_count',
-        help="Número de facturas asociadas"
-    )
-
-    def _get_default_name(self):
-        """
-        Genera el nombre por defecto de la orden con validación robusta.
-        Crea la secuencia automáticamente si no existe.
-        """
-        sequence_code = 'mobile.repair.order'
-        
-        # Intentar obtener la secuencia
-        sequence = self.env['ir.sequence'].next_by_code(sequence_code)
-        
-        if not sequence:
-            # La secuencia no existe, crearla automáticamente
-            try:
-                self.env['ir.sequence'].sudo().create({
-                    'name': 'Órdenes de Reparación Móvil',
-                    'code': sequence_code,
-                    'prefix': 'REP',
-                    'padding': 5,
-                    'company_id': False,  # Disponible para todas las compañías
-                    'implementation': 'standard',
-                    'active': True,
-                })
-                # Intentar nuevamente después de crear la secuencia
-                sequence = self.env['ir.sequence'].next_by_code(sequence_code)
-                
-            except Exception as e:
-                # Si falla la creación de secuencia, usar fallback seguro
-                import logging
-                _logger = logging.getLogger(__name__)
-                _logger.error(f"Error creando secuencia para órdenes de reparación: {e}")
-                
-                # Fallback seguro: buscar el último número usado
-                last_order = self.env['mobile.repair.order'].search(
-                    [('name', 'like', 'REP/%')], 
-                    order='name desc', 
-                    limit=1
-                )
-                
-                if last_order and last_order.name:
-                    try:
-                        # Extraer número del último registro (ej: REP/2024/00005 -> 5)
-                        import re
-                        match = re.search(r'REP/\d+/(\d+)', last_order.name)
-                        if match:
-                            last_number = int(match.group(1))
-                            new_number = last_number + 1
-                        else:
-                            new_number = 1
-                    except (ValueError, AttributeError):
-                        new_number = 1
-                else:
-                    new_number = 1
-                
-                # Generar nombre con año actual y número secuencial
-                year = fields.Datetime.now().year
-                return f'REP/{year}/{new_number:05d}'
-        
-        return sequence or f'REP/{fields.Datetime.now().year}/00001'
-
-    @api.model
-    def _ensure_sequence_exists(self):
-        """
-        Método utilitario para asegurar que la secuencia existe.
-        Puede ser llamado desde data/ir_sequence_data.xml
-        """
-        sequence_code = 'mobile.repair.order'
-        existing_sequence = self.env['ir.sequence'].search([
-            ('code', '=', sequence_code)
-        ], limit=1)
-        
-        if not existing_sequence:
-            self.env['ir.sequence'].sudo().create({
-                'name': 'Órdenes de Reparación Móvil',
-                'code': sequence_code,
-                'prefix': 'REP',
-                'padding': 5,
-                'company_id': False,
-                'implementation': 'standard',
-                'active': True,
-            })
-            return True
-        return False
-
+    # 👉 SECUENCIA AUTOMÁTICA MEJORADA
     @api.model_create_multi
     def create(self, vals_list):
-        """
-        Override del método create para asignar secuencia automáticamente.
-        """
+        """Genera automáticamente la referencia usando la secuencia *mobile.repair.order*."""
+        sequence = self.env['ir.sequence'].search([('code', '=', 'mobile.repair.order')], limit=1)
+        if not sequence:
+            sequence = self.env['ir.sequence'].sudo().create({
+                'name': 'Secuencia Orden de Reparación',
+                'code': 'mobile.repair.order',
+                'prefix': 'REP',
+                'padding': 5,
+                'number_next': 1,
+                'number_increment': 1,
+            })
         for vals in vals_list:
-            if not vals.get('name') or vals.get('name') == 'New':
-                vals['name'] = self._get_default_name()
-        return super(RepairOrder, self).create(vals_list)
+            if vals.get('name', 'Nueva Orden') in ['Nueva Orden', '/', 'New']:
+                vals['name'] = sequence.next_by_id() or 'REP-ERROR'
+        return super().create(vals_list)
 
-=======
-    # ✅ MÉTODOS COMPUTADOS OPTIMIZADOS
->>>>>>> stability
     @api.depends('start_date', 'completion_date')
     def _compute_duration_hours(self):
         """Calcula duración real de reparación (sin contar recepción)"""
@@ -357,121 +265,6 @@ class RepairOrder(models.Model):
         for record in self:
             record.invoice_count = 1 if record.invoice_id else 0
 
-<<<<<<< HEAD
-    @api.constrains('delivery_date', 'repair_date')
-    def _check_dates(self):
-        """
-        Valida que la fecha de entrega no sea anterior a la fecha de reparación.
-        """
-        for record in self:
-            if record.delivery_date and record.repair_date:
-                repair_date_only = record.repair_date.date()
-                if record.delivery_date < repair_date_only:
-                    raise ValidationError(
-                        "La fecha de entrega no puede ser anterior a la fecha de reparación."
-                    )
-
-    @api.constrains('estimated_cost')
-    def _check_estimated_cost(self):
-        """
-        Valida que el costo estimado no sea negativo.
-        """
-        for record in self:
-            if record.estimated_cost < 0:
-                raise ValidationError("El costo estimado no puede ser negativo.")
-
-    @api.constrains('start_date', 'completion_date')
-    def _check_completion_after_start(self):
-        """
-        Valida que la fecha de finalización sea posterior a la de inicio.
-        """
-        for record in self:
-            if record.start_date and record.completion_date:
-                if record.completion_date <= record.start_date:
-                    raise ValidationError(
-                        "La fecha de finalización debe ser posterior a la fecha de inicio."
-                    )
-
-    @api.constrains('repair_date')
-    def _check_repair_date_not_future(self):
-        """
-        Advierte si la fecha de reparación está muy en el futuro.
-        """
-        for record in self:
-            if record.repair_date:
-                days_diff = (record.repair_date.date() - fields.Date.today()).days
-                if days_diff > 30:
-                    # No ValidationError, solo log para el administrador
-                    record.message_post(
-                        body=f"⚠️ <b>Advertencia:</b> La fecha de reparación está programada "
-                             f"para {days_diff} días en el futuro ({record.repair_date.strftime('%d/%m/%Y')}). "
-                             f"Verifique si es correcto.",
-                        message_type='notification'
-                    )
-    
-    @api.constrains('total_amount', 'estimated_cost')
-    def _check_cost_variance(self):
-        """
-        Advierte si el costo real excede significativamente el estimado.
-        """
-        for record in self:
-            if record.estimated_cost > 0 and record.total_amount > 0:
-                variance = ((record.total_amount - record.estimated_cost) / record.estimated_cost) * 100
-                if variance > 50:  # Más del 50% de diferencia
-                    record.message_post(
-                        body=f"💰 <b>Variación de costo detectada:</b><br/>"
-                             f"• Costo estimado: {record.currency_id.symbol}{record.estimated_cost:,.2f}<br/>"
-                             f"• Costo real: {record.currency_id.symbol}{record.total_amount:,.2f}<br/>"
-                             f"• Variación: +{variance:.1f}%<br/>"
-                             f"Considere revisar el presupuesto inicial.",
-                        message_type='notification'
-                    )
-
-    @api.constrains('technician_id', 'status')
-    def _check_technician_workload(self):
-        """
-        Advierte si el técnico tiene muchas reparaciones activas.
-        """
-        for record in self:
-            if record.technician_id and record.status in ['draft', 'in_progress']:
-                active_repairs = self.env['mobile.repair.order'].search_count([
-                    ('technician_id', '=', record.technician_id.id),
-                    ('status', 'in', ['draft', 'in_progress']),
-                    ('id', '!=', record.id)
-                ])
-                
-                if active_repairs >= 5:  # Más de 5 reparaciones activas
-                    record.message_post(
-                        body=f"👷 <b>Carga de trabajo alta:</b><br/>"
-                             f"El técnico {record.technician_id.name} tiene {active_repairs + 1} "
-                             f"reparaciones activas. Considere redistribuir la carga de trabajo.",
-                        message_type='notification'
-                    )
-
-=======
-    # ✅ SECUENCIA AUTOMÁTICA MEJORADA
-    @api.model_create_multi
-    def create(self, vals_list):
-        """Secuencia automática simplificada"""
-        for vals in vals_list:
-            if vals.get('name', 'Nueva Orden') == 'Nueva Orden':
-                # Crear secuencia si no existe
-                sequence = self.env['ir.sequence'].search([('code', '=', 'mobile.repair.order')], limit=1)
-                if not sequence:
-                    sequence = self.env['ir.sequence'].create({
-                        'name': 'Secuencia Orden de Reparación',
-                        'code': 'mobile.repair.order',
-                        'prefix': 'REP',
-                        'padding': 5,
-                        'number_next': 1,
-                        'number_increment': 1,
-                    })
-                
-                vals['name'] = sequence.next_by_id() or 'REP-ERROR'
-        return super().create(vals_list)
-
-    # ✅ ACCIONES MEJORADAS CON VALIDACIONES INTELIGENTES
->>>>>>> stability
     def action_start_repair(self):
         """Iniciar reparación con validaciones"""
         for record in self:
@@ -572,23 +365,7 @@ class RepairOrder(models.Model):
                 body="🔄 <b>Orden regresada a borrador</b>",
                 message_type='notification'
             )
-<<<<<<< HEAD
-            
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': '🔄 Orden Reiniciada',
-                'message': f'La orden {self.name} ha regresado a estado borrador.',
-                'type': 'info',
-                'sticky': False,
-            }
-        }
 
-=======
-
-    # ✅ MÉTODOS DE FACTURACIÓN RÁPIDA
->>>>>>> stability
     def action_create_invoice(self):
         """Crear factura para la orden de reparación - MÉTODO RÁPIDO"""
         self.ensure_one()

@@ -5,12 +5,12 @@
         <field name="name">mobile.fault.category.tree</field>
         <field name="model">mobile.fault.category</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="name"/>
                 <field name="code"/>
                 <field name="parent_id"/>
                 <field name="descripcion"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -37,12 +37,12 @@
         <field name="name">mobile.fault.tree</field>
         <field name="model">mobile.fault</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="name"/>
                 <field name="code"/>
                 <field name="category_id"/>
                 <field name="descripcion"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -68,7 +68,7 @@
     <record id="action_failure_category" model="ir.actions.act_window">
         <field name="name">Categorías de Fallas</field>
         <field name="res_model">mobile.fault.category</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Crear una nueva categoría de fallas
@@ -83,7 +83,7 @@
     <record id="action_failure_type" model="ir.actions.act_window">
         <field name="name">Tipos de Fallas</field>
         <field name="res_model">mobile.fault</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Crear un nuevo tipo de falla

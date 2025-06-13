@@ -5,11 +5,11 @@
         <field name="name">mobile.brand.tree</field>
         <field name="model">mobile.brand</field>
         <field name="arch" type="xml">
-            <tree string="Marcas">
+            <list string="Marcas">
                 <field name="name"/>
                 <field name="code"/>
                 <field name="active"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -28,20 +28,20 @@
                     <notebook>
                         <page string="Modelos" name="models">
                             <field name="model_ids" mode="tree">
-                                <tree>
+                                <list>
                                     <field name="name"/>
                                     <field name="code"/>
                                     <field name="active"/>
-                                </tree>
+                                </list>
                             </field>
                         </page>
                         <page string="Dispositivos" name="devices">
                             <field name="device_ids" mode="tree">
-                                <tree>
+                                <list>
                                     <field name="name"/>
                                     <field name="model_id"/>
                                     <field name="serial_number"/>
-                                </tree>
+                                </list>
                             </field>
                         </page>
                     </notebook>
@@ -69,9 +69,9 @@
 
     <!-- Acción de ventana para Marcas -->
     <record id="action_mobile_brand" model="ir.actions.act_window">
-        <field name="name">Marcas</field>
+        <field name="name">Catálogo Marcas</field>
         <field name="res_model">mobile.brand</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Crear una nueva marca
@@ -88,4 +88,10 @@
               parent="menu_mobile_repair_root"
               action="action_mobile_brand"
               sequence="10"/>
+
+    <record id="action_mobile_brand_catalog" model="ir.actions.act_window">
+        <field name="name">Marcas (Catálogo)</field>
+        <field name="res_model">mobile.brand</field>
+        <field name="view_mode">list,form</field>
+    </record>
 </odoo> 

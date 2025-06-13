@@ -4,11 +4,11 @@
         <field name="name">mobile.device.condition.tree</field>
         <field name="model">mobile.device.condition</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="name"/>
                 <field name="code"/>
                 <field name="descripcion"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -25,20 +25,6 @@
                     </group>
                 </sheet>
             </form>
-        </field>
-    </record>
-    
-    <record id="action_device_condition" model="ir.actions.act_window">
-        <field name="name">Condiciones de Dispositivo</field>
-        <field name="res_model">mobile.device.condition</field>
-        <field name="view_mode">tree,form</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Crear una nueva condición de dispositivo
-            </p>
-            <p>
-                Define las condiciones en las que pueden encontrarse los dispositivos.
-            </p>
         </field>
     </record>
 </odoo>

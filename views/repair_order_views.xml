@@ -116,7 +116,7 @@
                         <page string="Líneas de Reparación" name="repair_lines">
                             <field name="repair_line_ids" 
                                    context="{'default_currency_id': currency_id}"
-                                   readonly="status == 'completed'">>
+                                   readonly="status == 'completed'">
                                 <list editable="bottom">
                                     <field name="sequence" widget="handle"/>
                                     <field name="product_id" 
@@ -168,7 +168,7 @@
                         </page>
                         
                         <page string="Seguimiento y Métricas" name="tracking" 
-                              invisible="status == 'draft'">>
+                              invisible="status == 'draft'">
                             <group>
                                 <group string="Timeline de la Reparación">
                                     <field name="repair_date" readonly="1" widget="datetime"/>
@@ -192,7 +192,7 @@
                         </page>
                         
                         <page string="Facturación" name="invoicing" 
-                              invisible="not invoice_id">>
+                              invisible="not invoice_id">
                             <group>
                                 <field name="invoice_count" invisible="1"/>
                                 <field name="invoice_id" readonly="1"/>

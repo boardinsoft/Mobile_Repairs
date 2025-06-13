@@ -59,7 +59,7 @@
     <record id="action_mobile_device_list" model="ir.actions.act_window">
         <field name="name">Dispositivos Móviles</field>
         <field name="res_model">mobile.device</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Crear un nuevo dispositivo móvil
@@ -97,13 +97,16 @@
         </field>
     </record>
 
-    <record id="action_mobile_brand" model="ir.actions.act_window">
-        <field name="name">Marcas</field>
+    <record id="action_mobile_brand_device" model="ir.actions.act_window">
+        <field name="name">Marcas (Desde Dispositivos)</field>
         <field name="res_model">mobile.brand</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Crear una nueva marca
+            </p>
+            <p>
+                Configure las marcas de dispositivos móviles que maneja su taller.
             </p>
         </field>
     </record>
@@ -140,13 +143,16 @@
         </field>
     </record>
 
-    <record id="action_mobile_model" model="ir.actions.act_window">
-        <field name="name">Modelos</field>
+    <record id="action_mobile_model_device" model="ir.actions.act_window">
+        <field name="name">Modelos (Desde Dispositivos)</field>
         <field name="res_model">mobile.model</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Crear un nuevo modelo
+            </p>
+            <p>
+                Configure los modelos relacionados con cada marca.
             </p>
         </field>
     </record>
@@ -176,19 +182,9 @@
         </field>
     </record>
 
-    <record id="action_mobile_device" model="ir.actions.act_window">
-        <field name="name">Dispositivos Móviles</field>
+    <record id="action_mobile_device_catalog" model="ir.actions.act_window">
+        <field name="name">Catálogo Dispositivos (Vista)</field>
         <field name="res_model">mobile.device</field>
         <field name="view_mode">list,form</field>
-        <field name="search_view_id" ref="view_mobile_device_search"/>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Registrar un nuevo dispositivo móvil
-            </p>
-            <p>
-                Aquí puedes gestionar todos los dispositivos móviles que ingresan para reparación.
-                Incluye información detallada como marca, modelo, IMEI, estado y fallas reportadas.
-            </p>
-        </field>
     </record>
 </odoo>

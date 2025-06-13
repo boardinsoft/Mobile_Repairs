@@ -56,7 +56,7 @@
         <record id="action_repair_order_by_technician" model="ir.actions.act_window">
             <field name="name">Órdenes por Técnico</field>
             <field name="res_model">mobile.repair.order</field>
-            <field name="view_mode">tree,form</field>
+            <field name="view_mode">list,form</field>
             <field name="domain">[('technician_id', '!=', False)]</field>
             <field name="context">{'search_default_group_technician': 1}</field>
         </record>
@@ -64,7 +64,7 @@
         <record id="action_repair_order_pending" model="ir.actions.act_window">
             <field name="name">Órdenes Pendientes</field>
             <field name="res_model">mobile.repair.order</field>
-            <field name="view_mode">tree,form</field>
+            <field name="view_mode">list,form</field>
             <field name="domain">[('status', 'in', ['draft', 'in_progress'])]</field>
             <field name="context">{'search_default_group_status': 1}</field>
         </record>
