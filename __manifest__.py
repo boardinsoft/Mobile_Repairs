@@ -43,9 +43,8 @@
     ],
     'data': [
         # Seguridad (SIEMPRE PRIMERO)
-        #'security/mobile_repair_orders_security.xml',
+        'security/mobile_repair_orders_security.xml',
         'security/ir.model.access.csv',
-        
         
         # Datos base y configuración
         'data/repair_sequence.xml',
@@ -61,7 +60,7 @@
         'views/repair_order_menu.xml',
     ],
     'demo': [
-        #'demo/demo_data.xml',
+        'demo/demo_data.xml',
     ],
     'assets': {
         'web.assets_backend': [
