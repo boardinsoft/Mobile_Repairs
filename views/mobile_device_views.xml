@@ -3,88 +3,151 @@
     <record id="view_mobile_device_tree" model="ir.ui.view">
         <field name="name">mobile.device.tree</field>
         <field name="model">mobile.device</field>
+        <field name="type">list</field>
         <field name="arch" type="xml">
-            <list>
+            <list string="Dispositivos Móviles">
+                <field name="display_name"/>
                 <field name="brand_id"/>
                 <field name="model_id"/>
                 <field name="imei"/>
-                <field name="serial_number" optional="hide"/>
-                <field name="color" optional="show"/>
-                <field name="enciende" widget="boolean_toggle"/>
-                <field name="garantia" widget="boolean_toggle"/>
                 <field name="condicion_id"/>
-                <field name="tipo_bloqueo"/>
-                <field name="display_name" string="Nombre Completo" optional="hide"/>
+                <field name="enciende"/>
+                <field name="garantia"/>
             </list>
         </field>
     </record>
     
-<!-- Acción para listar dispositivos móviles -->
-    <record id="action_mobile_device" model="ir.actions.act_window">
-        <field name="name">Dispositivos Móviles</field>
-        <field name="res_model">mobile.device</field>
-        <field name="view_mode">tree,form</field>
-        <field name="context">{}</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                ¡Registra tu primer dispositivo!
-            </p>
-            <p>
-                Gestiona el catálogo de dispositivos móviles.
-            </p>
-        </field>
-    </record>
     <record id="view_mobile_device_form" model="ir.ui.view">
         <field name="name">mobile.device.form</field>
         <field name="model">mobile.device</field>
+        <field name="type">form</field>
         <field name="arch" type="xml">
-            <form>
+            <form string="Dispositivo Móvil">
+                <header>
+                    <button name="action_repair" string="Crear Orden de Reparación" 
+                            type="object" class="oe_highlight"/>
+                </header>
                 <sheet>
-                    <div class="oe_title">
-                        <h1>
-                            <field name="display_name" placeholder="Dispositivo..." readonly="1"/>
-                        </h1>
-                    </div>
-                    
                     <group>
-                        <group string="Información Básica">
+                        <group>
+                            <field name="display_name"/>
                             <field name="brand_id"/>
-                            <field name="model_id" 
-                                   domain="[('brand_id', '=', brand_id)]" 
-                                   options="{'no_quick_create': True}"/>
-                            <field name="condicion_id"/>
-                        </group>
-                        <group string="Identificación">
+                            <field name="model_id"/>
                             <field name="imei"/>
                             <field name="serial_number"/>
                             <field name="color"/>
                         </group>
-                    </group>
-                    
-                    <group>
-                        <group string="Estado del Dispositivo">
+                        <group>
+                            <field name="condicion_id"/>
                             <field name="enciende"/>
                             <field name="garantia"/>
-                        </group>
-                        <group string="Seguridad y Bloqueo">
                             <field name="tipo_bloqueo"/>
-                            <field name="detalle_bloqueo" 
-                                   invisible="tipo_bloqueo == 'ninguno'"/>
+                            <field name="detalle_bloqueo" invisible="tipo_bloqueo == 'ninguno'"/>
                         </group>
                     </group>
-                    
                     <group string="Fallas Reportadas">
-                        <field name="fault_ids" widget="many2many_tags" 
-                               placeholder="Selecciona las fallas del dispositivo..."/>
+                        <field name="fault_ids" widget="many2many_tags"/>
                     </group>
-                    
                     <group string="Accesorios Entregados">
-                        <field name="accesorios" 
-                               placeholder="Ej: Cargador, cable USB, funda, protector de pantalla, tarjeta SIM..."
-                               nolabel="1"/>
+                        <field name="accesorios" nolabel="1"/>
                     </group>
                 </sheet>
             </form>
+        </field>
+    </record>
+
+    <record id="action_mobile_device_list" model="ir.actions.act_window">
+        <field name="name">Dispositivos Móviles</field>
+        <field name="res_model">mobile.device</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crear un nuevo dispositivo móvil
+            </p>
+        </field>
+    </record>
+
+    <record id="view_mobile_brand_tree" model="ir.ui.view">
+        <field name="name">mobile.brand.tree</field>
+        <field name="model">mobile.brand</field>
+        <field name="type">list</field>
+        <field name="arch" type="xml">
+            <list string="Marcas">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_mobile_brand_form" model="ir.ui.view">
+        <field name="name">mobile.brand.form</field>
+        <field name="model">mobile.brand</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Marca">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="code"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_mobile_brand" model="ir.actions.act_window">
+        <field name="name">Marcas</field>
+        <field name="res_model">mobile.brand</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crear una nueva marca
+            </p>
+        </field>
+    </record>
+
+    <record id="view_mobile_model_tree" model="ir.ui.view">
+        <field name="name">mobile.model.tree</field>
+        <field name="model">mobile.model</field>
+        <field name="type">list</field>
+        <field name="arch" type="xml">
+            <list string="Modelos">
+                <field name="name"/>
+                <field name="brand_id"/>
+                <field name="code"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_mobile_model_form" model="ir.ui.view">
+        <field name="name">mobile.model.form</field>
+        <field name="model">mobile.model</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Modelo">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="brand_id"/>
+                        <field name="code"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_mobile_model" model="ir.actions.act_window">
+        <field name="name">Modelos</field>
+        <field name="res_model">mobile.model</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crear un nuevo modelo
+            </p>
         </field>
     </record>
 

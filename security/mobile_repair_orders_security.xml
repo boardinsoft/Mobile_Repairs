@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <!-- Categoría para organizar los grupos -->
-        <record id="category_mobile_repair" model="res.groups.category">
+        <!-- Categoría para organizar los grupos (CORREGIDO: ir.module.category) -->
+        <record id="category_mobile_repair" model="ir.module.category">
             <field name="name">Reparaciones Móviles</field>
             <field name="description">Gestión de reparaciones de dispositivos móviles</field>
             <field name="sequence">10</field>
