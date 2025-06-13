@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api
+from odoo import models, fields, api, _
+from odoo.exceptions import ValidationError
 
 class MobileBrand(models.Model):
     """
@@ -16,9 +17,19 @@ class MobileBrand(models.Model):
         required=True,
         help="Nombre de la marca del dispositivo móvil"
     )
+    code = fields.Char(
+        string='Código',
+        required=True,
+        help="Código único para identificar la marca"
+    )
     descripcion = fields.Text(
         string='Descripción',
         help="Descripción adicional de la marca"
+    )
+    active = fields.Boolean(
+        string='Activo',
+        default=True,
+        help="Indica si la marca está activa"
     )
     model_ids = fields.One2many(
         'mobile.model', 
@@ -26,6 +37,16 @@ class MobileBrand(models.Model):
         string='Modelos',
         help="Modelos disponibles para esta marca"
     )
+    device_ids = fields.One2many(
+        'mobile.device', 
+        'brand_id', 
+        string='Dispositivos',
+        help="Dispositivos asociados a esta marca"
+    )
+
+    _sql_constraints = [
+        ('code_uniq', 'unique(code)', 'El código de la marca debe ser único!')
+    ]
 
     def name_get(self):
         """Personaliza la visualización del nombre en los campos relacionados"""
@@ -49,6 +70,11 @@ class MobileModel(models.Model):
         required=True,
         help="Nombre del modelo específico"
     )
+    code = fields.Char(
+        string='Código',
+        required=True,
+        help="Código único para identificar el modelo"
+    )
     brand_id = fields.Many2one(
         'mobile.brand', 
         string='Marca', 
@@ -60,6 +86,21 @@ class MobileModel(models.Model):
         string='Descripción',
         help="Descripción técnica del modelo"
     )
+    active = fields.Boolean(
+        string='Activo',
+        default=True,
+        help="Indica si el modelo está activo"
+    )
+    device_ids = fields.One2many(
+        'mobile.device', 
+        'model_id', 
+        string='Dispositivos',
+        help="Dispositivos asociados a este modelo"
+    )
+
+    _sql_constraints = [
+        ('code_uniq', 'unique(code)', 'El código del modelo debe ser único!')
+    ]
 
     def name_get(self):
         """Muestra marca y modelo juntos en los campos relacionados"""
@@ -215,6 +256,22 @@ class MobileDevice(models.Model):
             result.append((record.id, name))
         return result
 
+    def action_repair(self):
+        """
+        Crea una nueva orden de reparación para este dispositivo.
+        """
+        self.ensure_one()
+        return {
+            'name': 'Nueva Orden de Reparación',
+            'type': 'ir.actions.act_window',
+            'res_model': 'mobile.repair.order',
+            'view_mode': 'form',
+            'context': {
+                'default_device_id': self.id,
+                'default_customer_id': False,  # Se debe seleccionar el cliente
+            }
+        }
+
 
 class FaultCategory(models.Model):
     """
@@ -231,6 +288,11 @@ class FaultCategory(models.Model):
         string='Categoría', 
         required=True,
         help="Nombre de la categoría de falla"
+    )
+    code = fields.Char(
+        string='Código',
+        required=True,
+        help="Código único para identificar la categoría"
     )
     parent_id = fields.Many2one(
         'mobile.fault.category', 
@@ -282,6 +344,11 @@ class Fault(models.Model):
         required=True,
         help="Descripción específica de la falla"
     )
+    code = fields.Char(
+        string='Código',
+        required=True,
+        help="Código único para identificar la falla"
+    )
     category_id = fields.Many2one(
         'mobile.fault.category', 
         string='Categoría de Falla',
@@ -316,6 +383,11 @@ class DeviceCondition(models.Model):
         string='Condición', 
         required=True,
         help="Estado general del dispositivo"
+    )
+    code = fields.Char(
+        string='Código',
+        required=True,
+        help="Código único para identificar la condición"
     )
     descripcion = fields.Text(
         string='Descripción',
