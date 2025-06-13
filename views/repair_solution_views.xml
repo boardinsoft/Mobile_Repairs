@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista de Formulario -->
+    <record id="view_mobile_repair_solution_form" model="ir.ui.view">
+        <field name="name">mobile.repair.solution.form</field>
+        <field name="model">mobile.repair.solution</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Nombre de la solución"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="estimated_time"/>
+                            <field name="estimated_cost"/>
+                        </group>
+                        <group>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Descripción">
+                            <field name="description"/>
+                        </page>
+                        <page string="Fallas Relacionadas">
+                            <field name="fault_ids" widget="many2many_tags"/>
+                        </page>
+                        <page string="Notas">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista de Lista -->
+    <record id="view_mobile_repair_solution_tree" model="ir.ui.view">
+        <field name="name">mobile.repair.solution.tree</field>
+        <field name="model">mobile.repair.solution</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="estimated_time"/>
+                <field name="estimated_cost"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista de Búsqueda -->
+    <record id="view_mobile_repair_solution_search" model="ir.ui.view">
+        <field name="name">mobile.repair.solution.search</field>
+        <field name="model">mobile.repair.solution</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="fault_ids"/>
+                <filter string="Activos" name="active" domain="[('active', '=', True)]"/>
+                <group expand="0" string="Agrupar Por">
+                    <filter string="Fallas" name="group_by_fault" context="{'group_by': 'fault_ids'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Acción de Ventana -->
+    <record id="action_mobile_repair_solution" model="ir.actions.act_window">
+        <field name="name">Soluciones de Reparación</field>
+        <field name="res_model">mobile.repair.solution</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_mobile_repair_solution_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crear una nueva solución de reparación
+            </p>
+            <p>
+                Registra las soluciones comunes para diferentes tipos de fallas.
+            </p>
+        </field>
+    </record>
+</odoo> 

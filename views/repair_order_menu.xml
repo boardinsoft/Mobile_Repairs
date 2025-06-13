@@ -4,16 +4,35 @@
     <!-- MENÚ PRINCIPAL - REPARACIONES MÓVILES    -->
     <!-- ========================================= -->
     
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+    <!-- Menú raíz - Solo usuarios del módulo -->
+>>>>>>> Develop
     <menuitem id="menu_mobile_repair_root" 
               name="Reparaciones" 
               sequence="50"
               web_icon="mobile_repair_orders,static/description/icon.png"
               groups="group_mobile_repair_user,group_mobile_repair_manager"/>
+<<<<<<< HEAD
+=======
+=======
+    <!-- Menú raíz con icono -->
+=======
+>>>>>>> stability
+    <menuitem id="menu_mobile_repair_root" 
+              name="Reparaciones Móviles" 
+              sequence="10"
+              web_icon="mobile_repair_orders,static/description/icon.png"/>
+>>>>>>> stability
+>>>>>>> Develop
 
     <!-- ========================================= -->
     <!-- BLOQUE 1: OPERACIONES DIARIAS            -->
     <!-- ========================================= -->
     
+<<<<<<< HEAD
     <menuitem id="menu_operations_section" 
               name="Operaciones" 
               parent="menu_mobile_repair_root" 
@@ -30,16 +49,169 @@
               parent="menu_operations_section" 
               action="action_repair_order_main" 
               sequence="12"/>
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+    <!-- Dashboard - Todos los usuarios del módulo pueden ver -->
+    <menuitem id="menu_repair_dashboard" 
+              name="Información General" 
+              parent="menu_mobile_repair_root" 
+              action="action_repair_dashboard" 
+              sequence="10"
+              groups="group_mobile_repair_user,group_mobile_repair_manager"/>
+=======
+    <menuitem id="menu_information_section" 
+              name="Información" 
+=======
+    <menuitem id="menu_mobile_repair_operations" 
+              name="Operaciones" 
+>>>>>>> stability
+              parent="menu_mobile_repair_root" 
+              sequence="10"/>
+              
+    <menuitem id="menu_mobile_repair_dashboard" 
+              name="Dashboard" 
+              parent="menu_mobile_repair_operations" 
+              action="action_mobile_repair_dashboard"
+              sequence="11"/>
+              
+<<<<<<< HEAD
+    <menuitem id="menu_repair_analytics" 
+              name="Análisis y Reportes" 
+              parent="menu_information_section" 
+              action="action_repair_analytics"
+              sequence="12"/>
+>>>>>>> stability
+=======
+    <menuitem id="menu_repair_order" 
+              name="Órdenes de Reparación" 
+              parent="menu_mobile_repair_operations" 
+              sequence="10"/>
+
+    <menuitem id="menu_mobile_repair_order_all" 
+              name="Todas las Órdenes" 
+              parent="menu_repair_order" 
+              action="action_repair_order_main" 
+              sequence="10"/>
+
+    <menuitem id="menu_mobile_repair_order_draft" 
+              name="Borradores" 
+              parent="menu_repair_order" 
+              action="action_mobile_repair_order_draft" 
+              sequence="20"/>
+
+    <menuitem id="menu_mobile_repair_order_progress" 
+              name="En Proceso" 
+              parent="menu_repair_order" 
+              action="action_mobile_repair_order_progress"
+              sequence="30"/> 
+                  
+    <menuitem id="menu_mobile_repair_order_completed" 
+              name="Completadas" 
+              parent="menu_repair_order" 
+              action="action_mobile_repair_order_completed" 
+              sequence="40"/>
+                  
+    <menuitem id="menu_mobile_repair_order_delivered" 
+              name="Entregadas" 
+              parent="menu_repair_order" 
+              action="action_mobile_repair_order_delivered" 
+              sequence="50"/>
+                  
+    <menuitem id="menu_mobile_repair_order_canceled" 
+              name="Canceladas" 
+              parent="menu_repair_order" 
+              action="action_mobile_repair_order_canceled" 
+              sequence="60"/>
+
+    <menuitem id="menu_mobile_repair_special" 
+              name="Vistas Especiales" 
+              parent="menu_repair_order" 
+              sequence="70"/>
+              
+    <menuitem id="menu_mobile_repair_order_urgent" 
+              name="Urgentes" 
+              parent="menu_mobile_repair_special" 
+              action="action_mobile_repair_order_urgent" 
+              sequence="10"/>
+                  
+    <menuitem id="menu_mobile_repair_order_overdue" 
+              name="Vencidas" 
+              parent="menu_mobile_repair_special" 
+              action="action_mobile_repair_order_overdue" 
+              sequence="20"/>
+                  
+    <menuitem id="menu_mobile_repair_order_this_week" 
+              name="Esta Semana" 
+              parent="menu_mobile_repair_special" 
+              action="action_mobile_repair_order_this_week" 
+              sequence="30"/>
+>>>>>>> stability
+>>>>>>> Develop
 
     <!-- ========================================= -->
     <!-- BLOQUE 2: GESTIÓN DE ÓRDENES             -->
     <!-- ========================================= -->
     
     <menuitem id="menu_orders_section" 
+<<<<<<< HEAD
               name="Gestión de Órdenes" 
+=======
+<<<<<<< HEAD
+              name="Órdenes de Reparación" 
+>>>>>>> stability
+=======
+              name="Gestión de Órdenes" 
+>>>>>>> stability
+>>>>>>> Develop
               parent="menu_mobile_repair_root" 
               sequence="20"/>
               
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+    <!-- Todas las órdenes - Todos los usuarios -->
+    <menuitem id="menu_repair_orders_all" 
+              name="Todas" 
+              parent="menu_repair_orders_section" 
+=======
+    <menuitem id="menu_orders_overview" 
+              name="Vista General" 
+              parent="menu_orders_section" 
+>>>>>>> stability
+              action="action_repair_order_main" 
+              sequence="21"
+              groups="group_mobile_repair_user,group_mobile_repair_manager"/>
+              
+<<<<<<< HEAD
+    <!-- Borradores - Todos los usuarios -->
+    <menuitem id="menu_repair_orders_draft" 
+              name="Borradores" 
+              parent="menu_repair_orders_section" 
+              action="action_mobile_repair_order_draft" 
+              sequence="22"
+              groups="group_mobile_repair_user,group_mobile_repair_manager"/>
+              
+    <!-- En proceso - Todos los usuarios -->
+    <menuitem id="menu_repair_orders_progress" 
+              name="En Proceso" 
+              parent="menu_repair_orders_section" 
+              action="action_mobile_repair_order_progress" 
+              sequence="23"
+              groups="group_mobile_repair_user,group_mobile_repair_manager"/>
+              
+    <!-- Completadas - Todos los usuarios -->
+    <menuitem id="menu_repair_orders_completed" 
+              name="Completadas" 
+              parent="menu_repair_orders_section" 
+              action="action_mobile_repair_order_completed" 
+              sequence="24"
+              groups="group_mobile_repair_user,group_mobile_repair_manager"/>
+=======
+=======
+>>>>>>> stability
+>>>>>>> Develop
     <menuitem id="menu_orders_by_status" 
               name="Por Estado" 
               parent="menu_orders_section" 
@@ -96,6 +268,7 @@
                   name="Esta Semana" 
                   parent="menu_orders_special" 
                   action="action_mobile_repair_order_this_week" 
+<<<<<<< HEAD
                   sequence="223"/>
 
     <!-- ========================================= -->
@@ -104,6 +277,23 @@
     
     <menuitem id="menu_catalog_section" 
               name="Catálogo" 
+=======
+<<<<<<< HEAD
+                  sequence="233"/>
+>>>>>>> stability
+=======
+                  sequence="223"/>
+>>>>>>> stability
+
+    <!-- ========================================= -->
+    <!-- BLOQUE 3: REPORTES                        -->
+    <!-- ========================================= -->
+    
+<<<<<<< HEAD
+    <!-- Sección dispositivos - Todos los usuarios -->
+    <menuitem id="menu_devices_section" 
+              name="Dispositivos" 
+>>>>>>> Develop
               parent="menu_mobile_repair_root" 
               sequence="30"/>
               
@@ -136,17 +326,63 @@
                   parent="menu_device_management" 
                   action="action_device_condition" 
                   sequence="323"/>
+<<<<<<< HEAD
 
     <!-- ========================================= -->
     <!-- BLOQUE 4: DIAGNÓSTICOS Y SOLUCIONES      -->
     <!-- ========================================= -->
     
+=======
+>>>>>>> stability
+=======
+    <menuitem id="menu_mobile_repair_reporting" 
+              name="Reportes" 
+              parent="menu_mobile_repair_root" 
+              action="action_repair_analytics"
+              sequence="50"/>
+>>>>>>> stability
+
+    <!-- ========================================= -->
+    <!-- BLOQUE 4: CONFIGURACIÓN                  -->
+    <!-- ========================================= -->
+    
+<<<<<<< HEAD
+<<<<<<< HEAD
+    <!-- Configuración - SOLO MANAGERS -->
+    <menuitem id="menu_technical_config" 
+              name="Configuración" 
+=======
+>>>>>>> Develop
     <menuitem id="menu_diagnostics_section" 
+=======
+    <menuitem id="menu_mobile_repair_configuration" 
+              name="Configuración" 
+              parent="menu_mobile_repair_root" 
+              sequence="100"/>
+              
+    <!-- Configuración General -->
+    <menuitem id="menu_mobile_repair_settings" 
+              name="Ajustes" 
+              parent="menu_mobile_repair_configuration" 
+              action="action_repair_settings" 
+              sequence="10"/>
+
+    <!-- Gestión de Dispositivos -->
+    <menuitem id="menu_mobile_device" 
+              name="Dispositivos" 
+              parent="menu_mobile_repair_operations" 
+              action="action_mobile_device_list" 
+              sequence="20"/>
+
+    <!-- Diagnósticos y Soluciones -->
+    <menuitem id="menu_mobile_diagnostics" 
+>>>>>>> stability
               name="Diagnósticos" 
               parent="menu_mobile_repair_root" 
               sequence="40"
               groups="group_mobile_repair_manager"/>
               
+<<<<<<< HEAD
         <menuitem id="menu_failure_categories" 
                   name="Categorías de Fallas" 
                   parent="menu_diagnostics_section" 
@@ -195,4 +431,84 @@
                   parent="menu_configuration_section" 
                   action="action_repair_settings" 
                   sequence="91"/>
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+    <!-- Categorías de fallas - Solo managers -->
+    <menuitem id="menu_fault_categories" 
+              name="Categorías de Fallas" 
+              parent="menu_technical_config" 
+              action="action_mobile_fault_category" 
+              sequence="41"
+              groups="group_mobile_repair_manager"/>
+              
+    <!-- Tipos de fallas - Solo managers -->
+    <menuitem id="menu_fault_types" 
+              name="Tipos de Fallas" 
+              parent="menu_technical_config" 
+              action="action_mobile_fault" 
+              sequence="42"
+              groups="group_mobile_repair_manager"/>
+              
+    <!-- Condiciones - Solo managers -->
+    <menuitem id="menu_device_conditions" 
+              name="Condiciones" 
+              parent="menu_technical_config" 
+              action="action_device_condition" 
+              sequence="43"
+              groups="group_mobile_repair_manager"/>
+=======
+    <menuitem id="menu_fault_management" 
+              name="Gestión de Fallas" 
+              parent="menu_diagnostics_section" 
+              sequence="41"/>
+              
+        <menuitem id="menu_fault_categories" 
+                  name="Categorías" 
+                  parent="menu_fault_management" 
+                  action="action_mobile_fault_category" 
+                  sequence="411"/>
+=======
+        <menuitem id="menu_mobile_fault_category" 
+                  name="Categorías de Fallas" 
+                  parent="menu_mobile_diagnostics" 
+                  action="action_fault_category" 
+                  sequence="10"/>
+>>>>>>> stability
+                  
+        <menuitem id="menu_mobile_fault" 
+                  name="Fallas" 
+                  parent="menu_mobile_diagnostics" 
+                  action="action_fault" 
+                  sequence="20"/>
+                  
+        <menuitem id="menu_mobile_repair_solution" 
+                  name="Soluciones" 
+                  parent="menu_mobile_diagnostics" 
+                  action="action_repair_solution" 
+                  sequence="30"/>
+
+    <!-- Menús de Configuración -->
+    <menuitem id="menu_mobile_brand"
+              name="Marcas"
+              parent="menu_mobile_repair_configuration"
+              action="action_mobile_brand"
+              sequence="10"/>
+
+    <menuitem id="menu_mobile_model"
+              name="Modelos"
+              parent="menu_mobile_repair_configuration"
+              action="action_mobile_model"
+              sequence="20"/>
+
+<<<<<<< HEAD
+>>>>>>> stability
+=======
+    <menuitem id="menu_device_condition"
+              name="Condiciones"
+              parent="menu_mobile_repair_configuration"
+              action="action_device_condition"
+              sequence="30"/>
+>>>>>>> stability
+>>>>>>> Develop
 </odoo>
