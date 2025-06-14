@@ -1,217 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- =============================================
-         Dashboard Principal - Compatible con Odoo 18
-         ============================================= -->
-    
-    <record id="mobile_repair_dashboard_view_form" model="ir.ui.view">
-        <field name="name">mobile.repair.dashboard.form</field>
-        <field name="model">mobile.repair.dashboard</field>
-        <field name="arch" type="xml">
-            <form string="Dashboard de Reparaciones" create="false" edit="false">
-                <header>
-                    <button name="action_refresh_data" 
-                            string="🔄 Actualizar Datos" 
-                            type="object" 
-                            class="btn btn-primary"/>
-                    <button name="action_create_repair_order" 
-                            string="➕ Nueva Reparación" 
-                            type="object" 
-                            class="btn btn-success"/>
-                </header>
-                
-                <sheet>
-                    <div class="oe_title">
-                        <h1>
-                            <i class="fa fa-mobile text-primary me-2"/>
-                            Dashboard de Reparaciones
-                        </h1>
-                        <p class="text-muted">Vista general del taller</p>
-                    </div>
-                    
-                    <!-- Filtros de período -->
-                    <group string="⏰ Período de Análisis">
-                        <group>
-                            <field name="date_from"/>
-                            <field name="date_to"/>
-                        </group>
-                        <group>
-                            <button name="action_set_current_week" 
-                                    string="Esta Semana" 
-                                    type="object" 
-                                    class="btn btn-outline-secondary"/>
-                            <button name="action_set_current_month" 
-                                    string="Este Mes" 
-                                    type="object" 
-                                    class="btn btn-outline-secondary"/>
-                        </group>
-                    </group>
-                    
-                    <!-- KPIs principales -->
-                    <group string="📊 Métricas de Órdenes">
-                        <group>
-                            <field name="total_orders" readonly="1" string="📋 Total de Órdenes"/>
-                            <field name="orders_in_progress" readonly="1" string="🔧 En Reparación"/>
-                            <field name="orders_completed" readonly="1" string="✅ Completadas"/>
-                            <field name="orders_urgent" readonly="1" string="🚨 Urgentes"/>
-                        </group>
-                        <group>
-                            <field name="orders_ready" readonly="1" string="📦 Listas para Entrega"/>
-                            <field name="orders_delivered" readonly="1" string="🎯 Entregadas"/>
-                            <field name="orders_canceled" readonly="1" string="❌ Canceladas"/>
-                        </group>
-                    </group>
-                    
-                    <!-- KPIs financieros -->
-                    <group string="💰 Métricas Financieras">
-                        <group>
-                            <field name="total_revenue" widget="monetary" readonly="1" string="💵 Ingresos Totales"/>
-                            <field name="avg_order_value" widget="monetary" readonly="1" string="📈 Valor Promedio"/>
-                        </group>
-                        <group>
-                            <field name="pending_revenue" widget="monetary" readonly="1" string="⏳ Ingresos Pendientes"/>
-                            <field name="completion_rate" readonly="1" string="📊 Tasa de Finalización (%)"/>
-                        </group>
-                    </group>
-                    
-                    <!-- Análisis y eficiencia -->
-                    <group string="🔍 Análisis del Período">
-                        <group>
-                            <field name="most_common_failure" readonly="1" string="🔧 Falla Más Común"/>
-                            <field name="busiest_technician" readonly="1" string="👷 Técnico Más Ocupado"/>
-                        </group>
-                        <group>
-                            <field name="avg_duration_hours" widget="float_time" readonly="1" string="⏱️ Duración Promedio"/>
-                        </group>
-                    </group>
-                    
-                    <!-- Acciones rápidas como botones estadísticos -->
-                    <div class="oe_button_box">
-                        <button name="action_view_repair_orders" 
-                                string="Todas las Órdenes" 
-                                type="object" 
-                                class="oe_stat_button" 
-                                icon="fa-list">
-                            <div class="o_field_widget o_stat_info">
-                                <span class="o_stat_value">
-                                    <field name="total_orders" widget="integer"/>
-                                </span>
-                                <span class="o_stat_text">Órdenes</span>
-                            </div>
-                        </button>
-                        
-                        <button name="action_view_progress_orders" 
-                                string="En Proceso" 
-                                type="object" 
-                                class="oe_stat_button" 
-                                icon="fa-wrench">
-                            <div class="o_field_widget o_stat_info">
-                                <span class="o_stat_value">
-                                    <field name="orders_in_progress" widget="integer"/>
-                                </span>
-                                <span class="o_stat_text">En Reparación</span>
-                            </div>
-                        </button>
-                        
-                        <button name="action_view_ready_orders" 
-                                string="Listas para Entrega" 
-                                type="object" 
-                                class="oe_stat_button" 
-                                icon="fa-check">
-                            <div class="o_field_widget o_stat_info">
-                                <span class="o_stat_value">
-                                    <field name="orders_ready" widget="integer"/>
-                                </span>
-                                <span class="o_stat_text">Listas</span>
-                            </div>
-                        </button>
-                        
-                        <button name="action_view_urgent_orders" 
-                                string="Urgentes" 
-                                type="object" 
-                                class="oe_stat_button" 
-                                icon="fa-exclamation"
-                                invisible="orders_urgent == 0">
-                            <div class="o_field_widget o_stat_info">
-                                <span class="o_stat_value text-danger">
-                                    <field name="orders_urgent" widget="integer"/>
-                                </span>
-                                <span class="o_stat_text">Urgentes</span>
-                            </div>
-                        </button>
-                        
-                        <button name="action_view_pending_invoices" 
-                                string="Pendientes de Facturar" 
-                                type="object" 
-                                class="oe_stat_button" 
-                                icon="fa-dollar">
-                            <div class="o_field_widget o_stat_info">
-                                <span class="o_stat_value text-success">
-                                    <field name="pending_revenue" widget="monetary"/>
-                                </span>
-                                <span class="o_stat_text">Por Facturar</span>
-                            </div>
-                        </button>
-                        
-                        <button name="action_view_technician_workload" 
-                                string="Carga por Técnico" 
-                                type="object" 
-                                class="oe_stat_button" 
-                                icon="fa-users">
-                            <div class="o_field_widget o_stat_info">
-                                <span class="o_stat_text">Ver Carga</span>
-                                <span class="o_stat_text">de Trabajo</span>
-                            </div>
-                        </button>
-                    </div>
-                    
-                    <!-- Campo oculto -->
-                    <field name="currency_id" invisible="1"/>
-                </sheet>
-            </form>
-        </field>
-    </record>
-    
-    <!-- =============================================
-         Vista Simplificada Alternativa
-         ============================================= -->
-    
+    <!-- Vista minimalista de información general para el dashboard -->
     <record id="mobile_repair_dashboard_view_simple" model="ir.ui.view">
         <field name="name">mobile.repair.dashboard.simple</field>
         <field name="model">mobile.repair.dashboard</field>
         <field name="arch" type="xml">
-            <form string="Dashboard Simple" create="false" edit="false">
+            <form string="Información General" create="false" edit="false">
                 <sheet>
-                    <group>
-                        <group string="Filtros">
-                            <field name="date_from"/>
-                            <field name="date_to"/>
-                        </group>
-                        <group string="Acciones">
-                            <button name="action_refresh_data" 
-                                    string="Actualizar" 
-                                    type="object" 
-                                    class="btn btn-primary"/>
-                        </group>
+                    <!-- Filtros básicos de rango de fechas -->
+                    <group string="Período">
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                        <button name="action_refresh_data" string="Actualizar" type="object" class="btn btn-primary"/>
                     </group>
-                    
-                    <group string="Resumen de Órdenes">
-                        <group>
-                            <field name="total_orders" readonly="1"/>
-                            <field name="orders_in_progress" readonly="1"/>
-                            <field name="orders_completed" readonly="1"/>
-                        </group>
-                        <group>
-                            <field name="total_revenue" widget="monetary" readonly="1"/>
-                            <field name="avg_order_value" widget="monetary" readonly="1"/>
-                            <field name="completion_rate" readonly="1"/>
-                        </group>
+
+                    <!-- Resumen numérico -->
+                    <group string="Órdenes">
+                        <field name="total_orders" readonly="1" class="oe_inline"/>
+                        <field name="orders_in_progress" readonly="1" class="oe_inline"/>
+                        <field name="orders_completed" readonly="1" class="oe_inline"/>
                     </group>
-                    
+
+                    <group string="Gráfico">
+                        <div class="o_dashboard_graph" js_class="mobile_repair_orders_repair_bar" style="width:100%;"/>
+                    </group>
+
+                    <group string="Finanzas">
+                        <field name="total_revenue" widget="monetary" readonly="1" class="oe_inline"/>
+                        <field name="avg_order_value" widget="monetary" readonly="1" class="oe_inline"/>
+                    </group>
+
+                    <!-- Campo oculto de moneda -->
                     <field name="currency_id" invisible="1"/>
                 </sheet>
             </form>
         </field>
     </record>
-    
 </odoo>
