@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        
+        <!-- ============================================================ -->
+        <!-- DATOS DEMO MINIMALISTAS PARA PRUEBAS                        -->
+        <!-- ============================================================ -->
+        
+        <!-- Clientes demo -->
+        <record id="customer_demo_1" model="res.partner">
+            <field name="name">Juan Pérez</field>
+            <field name="email">juan.perez@email.com</field>
+            <field name="phone">+34 123 456 789</field>
+            <field name="is_company">False</field>
+            <field name="customer_rank">1</field>
+        </record>
+
+        <record id="customer_demo_2" model="res.partner">
+            <field name="name">María García</field>
+            <field name="email">maria.garcia@email.com</field>
+            <field name="phone">+34 987 654 321</field>
+            <field name="is_company">False</field>
+            <field name="customer_rank">1</field>
+        </record>
+
+        <record id="customer_demo_3" model="res.partner">
+            <field name="name">Carlos Rodríguez</field>
+            <field name="email">carlos.rodriguez@email.com</field>
+            <field name="phone">+34 555 123 456</field>
+            <field name="is_company">False</field>
+            <field name="customer_rank">1</field>
+        </record>
+
+        <!-- Técnicos demo -->
+        <record id="technician_demo_1" model="res.users">
+            <field name="name">Ana López - Técnico Senior</field>
+            <field name="login">ana.lopez</field>
+            <field name="email">ana.lopez@taller.com</field>
+            <field name="groups_id" eval="[(6, 0, [ref('base.group_user')])]"/>
+        </record>
+
+        <record id="technician_demo_2" model="res.users">
+            <field name="name">David Martín - Técnico Junior</field>
+            <field name="login">david.martin</field>
+            <field name="email">david.martin@taller.com</field>
+            <field name="groups_id" eval="[(6, 0, [ref('base.group_user')])]"/>
+        </record>
+
+        <!-- ============================================================ -->
+        <!-- ÓRDENES DE REPARACIÓN DEMO                                  -->
+        <!-- ============================================================ -->
+
+        <!-- Orden 1: Recibida -->
+        <record id="repair_order_demo_1" model="mobile.repair.order">
+            <field name="customer_id" ref="customer_demo_1"/>
+            <field name="device_info">iPhone 14 Pro - Azul Sierra - IMEI: ***1234</field>
+            <field name="problem_description">Pantalla fisurada después de caída. El táctil funciona correctamente pero hay grietas visibles en la esquina superior derecha.</field>
+            <field name="state">draft</field>
+            <field name="priority">normal</field>
+            <field name="date_received" eval="DateTime.now() - timedelta(hours=2)"/>
+            <field name="estimated_cost">150.00</field>
+        </record>
+
+        <!-- Orden 2: En reparación -->
+        <record id="repair_order_demo_2" model="mobile.repair.order">
+            <field name="customer_id" ref="customer_demo_2"/>
+            <field name="device_info">Samsung Galaxy S23 - Negro - IMEI: ***5678</field>
+            <field name="problem_description">Batería se agota muy rápido, no dura ni medio día con uso normal.</field>
+            <field name="state">in_progress</field>
+            <field name="priority">high</field>
+            <field name="technician_id" ref="technician_demo_1"/>
+            <field name="date_received" eval="DateTime.now() - timedelta(days=1)"/>
+            <field name="date_started" eval="DateTime.now() - timedelta(hours=3)"/>
+            <field name="estimated_cost">80.00</field>
+            <field name="diagnosis">Batería degradada. Capacidad actual: 65%. Requiere reemplazo de batería original.</field>
+        </record>
+
+        <!-- Orden 3: Lista para entrega -->
+        <record id="repair_order_demo_3" model="mobile.repair.order">
+            <field name="customer_id" ref="customer_demo_3"/>
+            <field name="device_info">Xiaomi Redmi Note 12 - Azul - IMEI: ***9012</field>
+            <field name="problem_description">No enciende después de mojarse con lluvia.</field>
+            <field name="state">ready</field>
+            <field name="priority">urgent</field>
+            <field name="technician_id" ref="technician_demo_2"/>
+            <field name="date_received" eval="DateTime.now() - timedelta(days=2)"/>
+            <field name="date_started" eval="DateTime.now() - timedelta(days=1, hours=8)"/>
+            <field name="date_completed" eval="DateTime.now() - timedelta(hours=1)"/>
+            <field name="estimated_cost">120.00</field>
+            <field name="final_cost">95.00</field>
+            <field name="diagnosis">Daño por líquido en placa base. Corrosión en conectores de batería y carga.</field>
+            <field name="solution_applied">Limpieza profunda con alcohol isopropílico, reemplazo de conectores dañados y secado completo. Dispositivo funcionando al 100%.</field>
+        </record>
+
+        <!-- Orden 4: Entregada -->
+        <record id="repair_order_demo_4" model="mobile.repair.order">
+            <field name="customer_id" ref="customer_demo_1"/>
+            <field name="device_info">iPhone 13 - Blanco - IMEI: ***3456</field>
+            <field name="problem_description">Botón de volumen no responde.</field>
+            <field name="state">delivered</field>
+            <field name="priority">normal</field>
+            <field name="technician_id" ref="technician_demo_1"/>
+            <field name="date_received" eval="DateTime.now() - timedelta(days=5)"/>
+            <field name="date_started" eval="DateTime.now() - timedelta(days=4)"/>
+            <field name="date_completed" eval="DateTime.now() - timedelta(days=2)"/>
+            <field name="date_delivered" eval="DateTime.now() - timedelta(days=1)"/>
+            <field name="estimated_cost">60.00</field>
+            <field name="final_cost">55.00</field>
+            <field name="diagnosis">Flex de botones de volumen deteriorado.</field>
+            <field name="solution_applied">Reemplazo del flex de botones de volumen. Pruebas completas realizadas.</field>
+        </record>
+
+        <!-- Orden 5: Urgente en proceso -->
+        <record id="repair_order_demo_5" model="mobile.repair.order">
+            <field name="customer_id" ref="customer_demo_2"/>
+            <field name="device_info">Huawei P50 - Dorado - IMEI: ***7890</field>
+            <field name="problem_description">Pantalla completamente en negro, no enciende desde ayer por la noche.</field>
+            <field name="state">in_progress</field>
+            <field name="priority">urgent</field>
+            <field name="technician_id" ref="technician_demo_2"/>
+            <field name="date_received" eval="DateTime.now() - timedelta(hours=6)"/>
+            <field name="date_started" eval="DateTime.now() - timedelta(hours=2)"/>
+            <field name="estimated_cost">200.00</field>
+            <field name="diagnosis">Posible daño en pantalla LCD y/o placa base. Investigando causa raíz.</field>
+            <field name="customer_notes">Cliente necesita el dispositivo urgentemente para trabajo, contiene información importante.</field>
+        </record>
+
+        <!-- Orden 6: Cancelada -->
+        <record id="repair_order_demo_6" model="mobile.repair.order">
+            <field name="customer_id" ref="customer_demo_3"/>
+            <field name="device_info">iPhone 12 Mini - Verde - IMEI: ***2468</field>
+            <field name="problem_description">Cámara trasera no enfoca correctamente.</field>
+            <field name="state">cancelled</field>
+            <field name="priority">normal</field>
+            <field name="date_received" eval="DateTime.now() - timedelta(days=3)"/>
+            <field name="estimated_cost">90.00</field>
+            <field name="customer_notes">Cliente decidió comprar dispositivo nuevo en lugar de reparar.</field>
+        </record>
+
+    </data>
+</odoo>

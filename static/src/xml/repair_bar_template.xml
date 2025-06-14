@@ -1,5 +1,0 @@
-<templates id="template" xml:space="preserve">
-    <t t-name="mobile_repair_orders.RepairBar">
-        <canvas style="width:100%; height:180px;"/>
-    </t>
-</templates> 

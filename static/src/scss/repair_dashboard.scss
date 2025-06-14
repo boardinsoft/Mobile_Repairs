@@ -1,0 +1,435 @@
+// ============================================================
+// ESTILOS PARA DASHBOARD DE REPARACIONES - MINIMALISTA
+// Paleta de colores Odoo 18 + Personalización sutil
+// ============================================================
+
+// Variables de colores (Odoo 18 compatible)
+$primary: #007bff;
+$success: #28a745;
+$warning: #ffc107;
+$danger: #dc3545;
+$info: #17a2b8;
+$secondary: #6c757d;
+$light: #f8f9fa;
+$dark: #343a40;
+
+// Colores específicos del módulo
+$repair-primary: #2E7D32;     // Verde profesional
+$repair-secondary: #757575;   // Gris neutro
+$repair-accent: #FF9800;      // Naranja para acentos
+
+// ============================================================
+// DASHBOARD PRINCIPAL
+// ============================================================
+
+.o_repair_dashboard {
+    background: $light;
+    min-height: 100vh;
+    
+    // Título principal
+    .oe_title h1 {
+        color: $repair-primary;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        
+        &::before {
+            content: "";
+            display: inline-block;
+            width: 4px;
+            height: 2rem;
+            background: linear-gradient(135deg, $repair-primary, $repair-accent);
+            margin-right: 1rem;
+            border-radius: 2px;
+        }
+    }
+    
+    // Filtros de fecha
+    .o_field_widget {
+        &.o_field_date {
+            .o_input {
+                border-radius: 6px;
+                border: 1px solid #dee2e6;
+                padding: 0.5rem 0.75rem;
+                transition: all 0.2s ease;
+                
+                &:focus {
+                    border-color: $repair-primary;
+                    box-shadow: 0 0 0 0.2rem rgba(46, 125, 50, 0.25);
+                }
+            }
+        }
+    }
+}
+
+// ============================================================
+// CARDS DE KPIs
+// ============================================================
+
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    }
+    
+    // Bordes de color específicos
+    &.border-primary {
+        border-left: 4px solid $primary !important;
+    }
+    
+    &.border-warning {
+        border-left: 4px solid $warning !important;
+    }
+    
+    &.border-success {
+        border-left: 4px solid $success !important;
+    }
+    
+    &.border-danger {
+        border-left: 4px solid $danger !important;
+    }
+    
+    &.border-info {
+        border-left: 4px solid $info !important;
+    }
+    
+    &.border-secondary {
+        border-left: 4px solid $secondary !important;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+        
+        .display-4 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 0.5rem;
+        }
+        
+        .card-text {
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        
+        small {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+    }
+    
+    // Botones como números en cards
+    .btn-link {
+        text-decoration: none !important;
+        
+        &:hover {
+            opacity: 0.8;
+        }
+    }
+}
+
+// ============================================================
+// GRÁFICOS
+// ============================================================
+
+.repair-states-chart,
+.daily-activity-chart {
+    .spinner-border {
+        width: 3rem;
+        height: 3rem;
+    }
+    
+    canvas {
+        border-radius: 8px;
+    }
+}
+
+// ============================================================
+// KANBAN OPTIMIZADO
+// ============================================================
+
+.o_kanban_small_column {
+    .oe_kanban_card {
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        transition: all 0.2s ease;
+        
+        &:hover {
+            border-color: $repair-primary;
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.15);
+        }
+        
+        // Header del kanban
+        .o_kanban_record_title {
+            font-weight: 600;
+            color: $dark;
+            
+            .badge {
+                font-size: 0.7rem;
+                padding: 0.25rem 0.5rem;
+                border-radius: 4px;
+            }
+        }
+        
+        // Progreso en kanban
+        .progress {
+            height: 6px;
+            border-radius: 3px;
+            background-color: #e9ecef;
+            
+            .progress-bar {
+                border-radius: 3px;
+                transition: width 0.6s ease;
+            }
+        }
+        
+        // Footer del kanban
+        .o_kanban_record_bottom {
+            border-top: 1px solid #f1f3f4;
+            font-size: 0.85rem;
+        }
+    }
+}
+
+// ============================================================
+// PROGRESO EN FORMULARIOS
+// ============================================================
+
+.progress {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    
+    .progress-bar {
+        border-radius: 10px;
+        transition: width 0.6s ease;
+        
+        &.progress-bar-striped {
+            background-image: linear-gradient(
+                45deg,
+                rgba(255, 255, 255, 0.15) 25%,
+                transparent 25%,
+                transparent 50%,
+                rgba(255, 255, 255, 0.15) 50%,
+                rgba(255, 255, 255, 0.15) 75%,
+                transparent 75%,
+                transparent
+            );
+            background-size: 1rem 1rem;
+        }
+        
+        &.progress-bar-animated {
+            animation: progress-bar-stripes 1s linear infinite;
+        }
+    }
+}
+
+// ============================================================
+// BADGES Y ESTADOS
+// ============================================================
+
+.badge {
+    font-weight: 500;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    
+    &.badge-danger {
+        background-color: $danger;
+        color: white;
+    }
+    
+    &.badge-warning {
+        background-color: $warning;
+        color: $dark;
+    }
+    
+    &.badge-success {
+        background-color: $success;
+        color: white;
+    }
+    
+    &.badge-primary {
+        background-color: $primary;
+        color: white;
+    }
+    
+    &.badge-info {
+        background-color: $info;
+        color: white;
+    }
+}
+
+// ============================================================
+// ALERTAS INFORMATIVAS
+// ============================================================
+
+.alert {
+    border: none;
+    border-radius: 8px;
+    border-left: 4px solid;
+    
+    &.alert-info {
+        background: linear-gradient(135deg, #e8f4f8 0%, #d1ecf1 100%);
+        border-left-color: $info;
+        color: #0c5460;
+    }
+    
+    &.alert-success {
+        background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
+        border-left-color: $success;
+        color: #155724;
+    }
+    
+    .alert-heading {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+}
+
+// ============================================================
+// BOTONES OPTIMIZADOS
+// ============================================================
+
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    transition: all 0.2s ease;
+    
+    &:hover {
+        transform: translateY(-1px);
+    }
+    
+    &.btn-block {
+        width: 100%;
+    }
+    
+    // Botones outline mejorados
+    &.btn-outline-primary {
+        border-color: $primary;
+        color: $primary;
+        
+        &:hover {
+            background-color: $primary;
+            border-color: $primary;
+            color: white;
+        }
+    }
+    
+    &.btn-outline-secondary {
+        border-color: $secondary;
+        color: $secondary;
+        
+        &:hover {
+            background-color: $secondary;
+            border-color: $secondary;
+            color: white;
+        }
+    }
+    
+    &.btn-outline-warning {
+        border-color: $warning;
+        color: #856404;
+        
+        &:hover {
+            background-color: $warning;
+            border-color: $warning;
+            color: #856404;
+        }
+    }
+    
+    &.btn-outline-success {
+        border-color: $success;
+        color: $success;
+        
+        &:hover {
+            background-color: $success;
+            border-color: $success;
+            color: white;
+        }
+    }
+}
+
+// ============================================================
+// RESPONSIVIDAD
+// ============================================================
+
+@media (max-width: 768px) {
+    .o_repair_dashboard {
+        .display-4 {
+            font-size: 2rem !important;
+        }
+        
+        .card-body {
+            padding: 1rem;
+        }
+        
+        .btn-block {
+            margin-bottom: 0.5rem;
+        }
+        
+        .oe_title h1 {
+            font-size: 1.5rem;
+        }
+    }
+}
+
+// ============================================================
+// ANIMACIONES SUTILES
+// ============================================================
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes progress-bar-stripes {
+    0% {
+        background-position-x: 1rem;
+    }
+}
+
+// Aplicar animación fadeIn a elementos principales
+.card,
+.alert,
+.o_kanban_record {
+    animation: fadeIn 0.3s ease-out;
+}
+
+// ============================================================
+// MEJORAS ESPECÍFICAS PARA ODOO 18
+// ============================================================
+
+// Integración con el tema de Odoo
+.o_web_client {
+    .o_repair_dashboard {
+        // Hereda colores del tema activo
+        --repair-primary-rgb: 46, 125, 50;
+        --repair-accent-rgb: 255, 152, 0;
+        
+        // Compatibilidad con modo oscuro (si está disponible)
+        @media (prefers-color-scheme: dark) {
+            background: #1a1a1a;
+            
+            .card {
+                background: #2d2d2d;
+                color: #e0e0e0;
+            }
+            
+            .text-muted {
+                color: #b0b0b0 !important;
+            }
+        }
+    }
+}

@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================================ -->
+    <!-- CATÁLOGO DE DISPOSITIVOS MINIMALISTA                        -->
+    <!-- ============================================================ -->
+    
+    <!-- Vista de lista simplificada -->
+    <record id="view_device_catalog_tree" model="ir.ui.view">
+        <field name="name">device.catalog.tree</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+            <list string="Catálogo de Dispositivos" 
+                  create="false" 
+                  edit="false" 
+                  delete="false">
+                <field name="name" string="Cliente"/>
+                <field name="phone"/>
+                <field name="email"/>
+                <!-- Información de dispositivos se mostrará en la vista form -->
+            </list>
+        </field>
+    </record>
+    
+    <!-- ============================================================ -->
+    <!-- VISTA RÁPIDA DE DISPOSITIVOS POR CLIENTE                    -->
+    <!-- ============================================================ -->
+    
+    <record id="view_customer_devices_form" model="ir.ui.view">
+        <field name="name">customer.devices.form</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <notebook position="inside">
+                <page string="📱 Dispositivos y Reparaciones" name="devices_repairs">
+                    <group>
+                        <group string="📱 Historial de Dispositivos">
+                            <div class="alert alert-info" role="alert">
+                                <strong>📋 Dispositivos Reparados</strong><br/>
+                                <small class="text-muted">
+                                    Historial de todos los dispositivos que este cliente ha traído para reparación.
+                                </small>
+                            </div>
+                            
+                            <!-- Lista de órdenes de reparación como proxy de dispositivos -->
+                            <field name="supplier_invoice_count" invisible="1"/>
+                            
+                            <!-- Campo personalizado para mostrar órdenes -->
+                            <div class="o_field_widget">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <button name="action_view_customer_repairs" 
+                                                type="object" 
+                                                class="btn btn-primary btn-sm mb-2"
+                                                context="{'search_default_customer_id': active_id}">
+                                            📋 Ver Todas las Reparaciones
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </group>
+                        
+                        <group string="📊 Estadísticas del Cliente">
+                            <div class="o_field_widget">
+                                <div class="row text-center">
+                                    <div class="col-md-4">
+                                        <div class="card border-primary">
+                                            <div class="card-body">
+                                                <h5 class="text-primary mb-1">
+                                                    <span id="total_repairs">-</span>
+                                                </h5>
+                                                <small class="text-muted">Total Reparaciones</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card border-success">
+                                            <div class="card-body">
+                                                <h5 class="text-success mb-1">
+                                                    <span id="completed_repairs">-</span>
+                                                </h5>
+                                                <small class="text-muted">Completadas</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card border-warning">
+                                            <div class="card-body">
+                                                <h5 class="text-warning mb-1">
+                                                    <span id="pending_repairs">-</span>
+                                                </h5>
+                                                <small class="text-muted">Pendientes</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </group>
+                    </group>
+                    
+                    <!-- Últimas reparaciones del cliente -->
+                    <group string="🔧 Últimas Reparaciones">
+                        <div class="o_field_widget">
+                            <div id="recent_repairs_container">
+                                <div class="text-center text-muted py-3">
+                                    <i class="fa fa-spinner fa-spin"></i>
+                                    <p class="mt-2">Cargando historial de reparaciones...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </group>
+                </page>
+            </notebook>
+        </field>
+    </record>
+    
+    <!-- ============================================================ -->
+    <!-- VISTA SIMPLIFICADA PARA REGISTRO RÁPIDO                    -->
+    <!-- ============================================================ -->
+    
+    <record id="view_quick_device_form" model="ir.ui.view">
+        <field name="name">quick.device.form</field>
+        <field name="model">mobile.repair.order</field>
+        <field name="arch" type="xml">
+            <form string="Registro Rápido de Dispositivo">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>📱 Nuevo Dispositivo para Reparación</h1>
+                        <p class="text-muted">
+                            Registra rápidamente un dispositivo y su problema
+                        </p>
+                    </div>
+                    
+                    <group>
+                        <group string="👤 Información del Cliente">
+                            <field name="customer_id" 
+                                   options="{'quick_create': True}"
+                                   placeholder="Selecciona o crea un cliente"/>
+                        </group>
+                        
+                        <group string="📱 Información del Dispositivo">
+                            <field name="device_info" 
+                                   placeholder="Ej: iPhone 14 Pro - Azul Sierra - IMEI: 123456789012345"
+                                   required="1"/>
+                            <field name="priority"/>
+                        </group>
+                    </group>
+                    
+                    <group string="🔍 Problema Reportado">
+                        <field name="problem_description" 
+                               nolabel="1"
+                               placeholder="Describe detalladamente el problema que reporta el cliente..."
+                               required="1"/>
+                    </group>
+                    
+                    <group string="💰 Estimación Inicial" groups="base.group_user">
+                        <field name="estimated_cost" 
+                               widget="monetary"
+                               placeholder="Presupuesto estimado"/>
+                    </group>
+                    
+                    <group string="📝 Notas Adicionales">
+                        <field name="customer_notes" 
+                               nolabel="1"
+                               placeholder="Observaciones adicionales del cliente (accesorios, daños previos, etc.)"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    
+    <!-- ============================================================ -->
+    <!-- ACCIONES                                                     -->
+    <!-- ============================================================ -->
+    
+    <!-- Acción para catálogo de clientes con dispositivos -->
+    <record id="action_customer_devices" model="ir.actions.act_window">
+        <field name="name">👥 Clientes y Dispositivos</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('customer_rank', '>', 0)]</field>
+        <field name="context">{'default_customer_rank': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                👥 Crear un nuevo cliente
+            </p>
+            <p>
+                Los clientes y sus dispositivos se gestionan de forma integrada.<br/>
+                Cada orden de reparación incluye la información del dispositivo.
+            </p>
+        </field>
+    </record>
+    
+    <!-- Acción para registro rápido -->
+    <record id="action_quick_device_registration" model="ir.actions.act_window">
+        <field name="name">📱 Registro Rápido</field>
+        <field name="res_model">mobile.repair.order</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_quick_device_form"/>
+        <field name="target">new</field>
+        <field name="context">{'default_state': 'draft'}</field>
+    </record>
+    
+    <!-- ============================================================ -->
+    <!-- MÉTODO PERSONALIZADO PARA VER REPARACIONES DEL CLIENTE      -->
+    <!-- ============================================================ -->
+    
+    <!-- Esta acción se usa desde el botón en la vista del cliente -->
+    <record id="action_customer_repair_orders" model="ir.actions.act_window">
+        <field name="name">Reparaciones del Cliente</field>
+        <field name="res_model">mobile.repair.order</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="domain">[('customer_id', '=', active_id)]</field>
+        <field name="context">{
+            'search_default_group_by_state': 1,
+            'default_customer_id': active_id
+        }</field>
+    </record>
+
+</odoo>

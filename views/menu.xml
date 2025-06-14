@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================================ -->
+    <!-- ESTRUCTURA DE MENÚS MINIMALISTA Y EFICIENTE                 -->
+    <!-- ============================================================ -->
+
+    <!-- Menú raíz -->
+    <menuitem id="menu_repair_root"
+              name="📱 Reparaciones"
+              sequence="50"
+              web_icon="mobile_repair_orders,static/description/icon.png"/>
+
+    <!-- ============================================================ -->
+    <!-- OPERACIONES PRINCIPALES                                     -->
+    <!-- ============================================================ -->
+    
+    <!-- Dashboard principal -->
+    <menuitem id="menu_repair_dashboard"
+              name="📊 Dashboard"
+              parent="menu_repair_root"
+              action="action_repair_dashboard"
+              sequence="10"/>
+
+    <!-- Órdenes de reparación -->
+    <menuitem id="menu_repair_orders"
+              name="📋 Órdenes"
+              parent="menu_repair_root"
+              sequence="20"/>
+
+        <!-- Todas las órdenes -->
+        <menuitem id="menu_repair_orders_all"
+                  name="📋 Todas"
+                  parent="menu_repair_orders"
+                  action="action_repair_orders_all"
+                  sequence="10"/>
+
+        <!-- Por estado -->
+        <menuitem id="menu_repair_orders_draft"
+                  name="📥 Recibidas"
+                  parent="menu_repair_orders"
+                  action="action_repair_orders_draft"
+                  sequence="20"/>
+
+        <menuitem id="menu_repair_orders_in_progress"
+                  name="🔧 En Reparación"
+                  parent="menu_repair_orders"
+                  action="action_repair_orders_in_progress"
+                  sequence="30"/>
+
+        <menuitem id="menu_repair_orders_ready"
+                  name="✅ Listas"
+                  parent="menu_repair_orders"
+                  action="action_repair_orders_ready"
+                  sequence="40"/>
+
+        <menuitem id="menu_repair_orders_delivered"
+                  name="📦 Entregadas"
+                  parent="menu_repair_orders"
+                  action="action_repair_orders_delivered"
+                  sequence="50"/>
+
+    <!-- ============================================================ -->
+    <!-- GESTIÓN DE CLIENTES Y DISPOSITIVOS                          -->
+    <!-- ============================================================ -->
+    
+    <!-- Clientes y dispositivos -->
+    <menuitem id="menu_repair_customers"
+              name="👥 Clientes"
+              parent="menu_repair_root"
+              sequence="30"/>
+
+        <menuitem id="menu_repair_customers_all"
+                  name="👥 Todos los Clientes"
+                  parent="menu_repair_customers"
+                  action="action_customer_devices"
+                  sequence="10"/>
+
+        <menuitem id="menu_repair_quick_registration"
+                  name="📱 Registro Rápido"
+                  parent="menu_repair_customers"
+                  action="action_quick_device_registration"
+                  sequence="20"/>
+
+    <!-- ============================================================ -->
+    <!-- CONFIGURACIÓN (Solo administradores)                        -->
+    <!-- ============================================================ -->
+    
+    <menuitem id="menu_repair_config"
+              name="⚙️ Configuración"
+              parent="menu_repair_root"
+              sequence="90"
+              groups="base.group_system"/>
+
+        <!-- Datos maestros simplificados -->
+        <menuitem id="menu_repair_config_data"
+                  name="📂 Datos Maestros"
+                  parent="menu_repair_config"
+                  sequence="10"/>
+
+            <!-- Solo lo esencial para configuración -->
+            <menuitem id="menu_repair_technicians"
+                      name="👷 Técnicos"
+                      parent="menu_repair_config_data"
+                      action="base.action_res_users"
+                      sequence="10"/>
+
+            <menuitem id="menu_repair_customers"
+                      name="👥 Clientes"
+                      parent="menu_repair_config_data"
+                      action="base.action_partner_form"
+                      sequence="20"/>
+
+        <!-- Configuración avanzada -->
+        <menuitem id="menu_repair_config_advanced"
+                  name="🔧 Configuración Avanzada"
+                  parent="menu_repair_config"
+                  sequence="20"/>
+
+            <menuitem id="menu_repair_sequences"
+                      name="📋 Secuencias"
+                      parent="menu_repair_config_advanced"
+                      action="base.ir_sequence_form"
+                      sequence="10"/>
+
+</odoo>

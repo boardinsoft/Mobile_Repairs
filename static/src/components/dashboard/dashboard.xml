@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <!-- Template para gráfico de estados -->
+    <t t-name="mobile_repair_orders.RepairStatesChart">
+        <div class="repair-states-chart h-100 d-flex flex-column">
+            <div t-if="state.isLoading" class="d-flex justify-content-center align-items-center h-100">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+            </div>
+            
+            <div t-else="" class="h-100 position-relative">
+                <canvas style="max-height: 100%; max-width: 100%;"></canvas>
+                
+                <!-- Mensaje si no hay datos -->
+                <div t-if="!state.chartData or state.chartData.data.length === 0" 
+                     class="position-absolute top-50 start-50 translate-middle text-center">
+                    <div class="text-muted">
+                        <i class="fa fa-chart-pie fa-3x mb-3 opacity-25"></i>
+                        <p class="mb-0">No hay datos para mostrar</p>
+                        <small>Las órdenes aparecerán aquí cuando estén disponibles</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <!-- Template para gráfico de actividad diaria -->
+    <t t-name="mobile_repair_orders.DailyActivityChart">
+        <div class="daily-activity-chart h-100 d-flex flex-column">
+            <div t-if="state.isLoading" class="d-flex justify-content-center align-items-center h-100">
+                <div class="spinner-border text-success" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+            </div>
+            
+            <div t-else="" class="h-100 position-relative">
+                <canvas style="max-height: 100%; max-width: 100%;"></canvas>
+                
+                <!-- Mensaje si no hay datos -->
+                <div t-if="!state.chartData or state.chartData.data.every(d => d === 0)" 
+                     class="position-absolute top-50 start-50 translate-middle text-center">
+                    <div class="text-muted">
+                        <i class="fa fa-chart-line fa-3x mb-3 opacity-25"></i>
+                        <p class="mb-0">Sin actividad reciente</p>
+                        <small>La actividad diaria aparecerá aquí</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>
