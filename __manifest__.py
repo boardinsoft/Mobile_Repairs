@@ -45,4 +45,10 @@
     'installable': True,
     'application': True,
     'license': 'LGPL-3',
+    'assets': {
+        'web.assets_backend': [
+            'mobile_repair_orders/static/src/js/repair_bar.js',
+            'mobile_repair_orders/static/src/xml/repair_bar_template.xml',
+        ],
+    },
 }

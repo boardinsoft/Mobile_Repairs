@@ -230,7 +230,7 @@ class RepairOrder(models.Model):
             
             # Estado base
             if record.status == 'draft':
-                progress = 5  # Solo recibido
+                progress = 0  # Inicial sin avance
             elif record.status == 'in_progress':
                 progress = 25  # Iniciado
             elif record.status == 'completed':

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Vista de lista para órdenes de reparación -->
+    <!-- ✅ VISTA DE LISTA - SIN PROGRESO -->
     <record id="mobile_repair_order_tree_view" model="ir.ui.view">
         <field name="name">mobile.repair.order.tree</field>
         <field name="model">mobile.repair.order</field>
@@ -17,19 +17,21 @@
                        widget="badge"/>
                 <field name="technician_id" optional="show"/>
                 <field name="repair_date"/>
-                <field name="start_date" optional="hide" string="Fecha Inicio Real"/>
-                <field name="completion_date" optional="hide" string="Fecha Finalización"/>
+                <field name="start_date" optional="hide" string="Fecha Inicio"/>
+                <field name="completion_date" optional="hide" string="Fecha Completada"/>
                 <field name="duration_hours" optional="hide" string="Duración (h)" widget="float_time"/>
-                <field name="progress" optional="show" widget="progressbar"/>
+                <!-- ✅ PROGRESO REMOVIDO DE LA VISTA DE LISTA -->
                 <field name="delivery_date" optional="show"/>
                 <field name="priority" optional="hide" widget="priority"/>
                 <field name="total_amount" widget="monetary" sum="Total"/>
                 <field name="currency_id" column_invisible="1"/>
+                <!-- ✅ PROGRESO OCULTO PERO DISPONIBLE PARA KANBAN -->
+                <field name="progress" column_invisible="1"/>
             </list>
         </field>
     </record>
     
-    <!-- Vista de formulario para órdenes de reparación -->
+    <!-- ✅ VISTA DE FORMULARIO - SIN PROGRESO EN INTERFAZ -->
     <record id="mobile_repair_order_form_view" model="ir.ui.view">
         <field name="name">mobile.repair.order.form</field>
         <field name="model">mobile.repair.order</field>
@@ -70,11 +72,8 @@
                         </h1>
                         <div class="o_row">
                             <field name="priority" widget="priority"/>
-                            <div class="ms-3">
-                                <span class="fw-bold text-primary">Progreso: </span>
-                                <field name="progress" widget="percentage" readonly="1" 
-                                       class="fw-bold text-primary" nolabel="1"/>
-                            </div>
+                            <!-- ✅ PROGRESO COMPLETAMENTE REMOVIDO DEL FORMULARIO -->
+                            <field name="progress" invisible="1"/>
                         </div>
                     </div>
                     
@@ -83,7 +82,7 @@
                             <field name="customer_id" options="{'no_quick_create': True}"/>
                             <field name="device_id" domain="[]" options="{'no_quick_create': True}"/>
                             <field name="failure_type_id" required="1" 
-                                   help="Selecciona la falla principal de la lista configurada en el sistema"/>
+                                   help="Selecciona la falla principal reportada por el cliente"/>
                         </group>
                         <group string="Asignación y Fechas">
                             <field name="technician_id" options="{'no_quick_create': True}"/>
@@ -93,20 +92,20 @@
                         </group>
                     </group>
 
-                    <!-- Información de Tiempos -->
+                    <!-- ✅ INFORMACIÓN DE TIEMPOS MEJORADA -->
                     <div class="alert alert-info" role="alert" 
                          invisible="not start_date and not completion_date">
                         <div class="row">
                             <div class="col-md-4" invisible="not start_date">
-                                <strong>Fecha de Inicio:</strong><br/>
+                                <strong>🔧 Fecha de Inicio:</strong><br/>
                                 <field name="start_date" readonly="1" widget="datetime" nolabel="1"/>
                             </div>
                             <div class="col-md-4" invisible="not completion_date">
-                                <strong>Fecha de Finalización:</strong><br/>
+                                <strong>✅ Fecha de Finalización:</strong><br/>
                                 <field name="completion_date" readonly="1" widget="datetime" nolabel="1"/>
                             </div>
                             <div class="col-md-4" invisible="not duration_hours or duration_hours == 0">
-                                <strong>Duración Total:</strong><br/>
+                                <strong>⏱️ Duración Total:</strong><br/>
                                 <field name="duration_hours" readonly="1" widget="float_time" nolabel="1"/>
                             </div>
                         </div>
@@ -130,13 +129,13 @@
                                     <field name="currency_id" column_invisible="1"/>
                                     <field name="is_service" column_invisible="1"/>
                                 </list>
+                                <group class="oe_subtotal_footer oe_right">
+                                    <div class="oe_subtotal_footer_separator oe_inline o_td_label">
+                                        <span class="o_form_label">Total:</span>
+                                    </div>
+                                    <field name="total_amount" nolabel="1" class="oe_subtotal_footer_separator" widget="monetary"/>
+                                </group>
                             </field>
-                            <group class="oe_subtotal_footer oe_right">
-                                <div class="oe_subtotal_footer_separator oe_inline o_td_label">
-                                    <span class="o_form_label">Total:</span>
-                                </div>
-                                <field name="total_amount" nolabel="1" class="oe_subtotal_footer_separator" widget="monetary"/>
-                            </group>
                         </page>
                         
                         <page string="Información Adicional" name="additional_info">
@@ -148,11 +147,9 @@
                                 <group string="Presupuesto">
                                     <field name="estimated_cost" widget="monetary"/>
                                     <field name="total_amount" string="Costo Real" widget="monetary" readonly="1"/>
-                                    <div invisible="not estimated_cost or estimated_cost == 0">
-                                        <span class="fw-bold">Diferencia:</span>
-                                        <span class="text-muted">
-                                            Real vs Estimado
-                                        </span>
+                                    <div invisible="not estimated_cost or estimated_cost == 0 or total_amount == 0">
+                                        <span class="fw-bold text-info">Diferencia: </span>
+                                        <span class="text-muted">(calculo)</span>
                                     </div>
                                 </group>
                             </group>
@@ -180,11 +177,11 @@
                                 </group>
                                 <group string="Métricas de Rendimiento">
                                     <field name="duration_hours" readonly="1" widget="float_time"/>
-                                    <field name="progress" readonly="1" widget="progressbar"/>
+                                    <!-- ✅ SIN PROGRESO EN VISTA FORMULARIO -->
                                     <div class="alert alert-light" role="alert">
                                         <small class="text-muted">
-                                            <strong>Información:</strong> El progreso se calcula automáticamente 
-                                            basado en el estado, técnico asignado y líneas de reparación.
+                                            <strong>Información:</strong> El seguimiento del progreso se visualiza 
+                                            en la vista kanban para una mejor gestión visual del taller.
                                         </small>
                                     </div>
                                 </group>
@@ -211,7 +208,7 @@
         </field>
     </record>
 
-    <!-- Vista de búsqueda para órdenes de reparación -->
+    <!-- ✅ VISTA DE BÚSQUEDA PARA ÓRDENES DE REPARACIÓN -->
     <record id="mobile_repair_order_search_view" model="ir.ui.view">
         <field name="name">mobile.repair.order.search</field>
         <field name="model">mobile.repair.order</field>
@@ -227,6 +224,7 @@
                 <filter string="Borradores" name="draft" domain="[('status', '=', 'draft')]"/>
                 <filter string="En Proceso" name="in_progress" domain="[('status', '=', 'in_progress')]"/>
                 <filter string="Completadas" name="completed" domain="[('status', '=', 'completed')]"/>
+                <filter string="Entregadas" name="delivered" domain="[('status', '=', 'delivered')]"/>
                 <filter string="Canceladas" name="canceled" domain="[('status', '=', 'canceled')]"/>
                 
                 <separator/>
@@ -254,13 +252,6 @@
                 <filter string="Esta Semana" name="this_week" 
                         domain="[('repair_date', '&gt;=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
                 
-                <separator/>
-                <!-- Filtros por Tipo de Falla -->
-                <filter string="Pantalla Dañada" name="screen_damage" domain="[('failure_type_id.name', 'ilike', 'Pantalla Dañada')]"/>
-                <filter string="Problemas de Batería" name="battery_issue" domain="[('failure_type_id.name', 'ilike', 'Batería')]"/>
-                <filter string="Daño por Agua" name="water_damage" domain="[('failure_type_id.name', 'ilike', 'Agua')]"/>
-                <filter string="Problemas de Software" name="software_issue" domain="[('failure_type_id.name', 'ilike', 'Software')]"/>
-                
                 <!-- Agrupaciones -->
                 <group expand="0" string="Agrupar Por">
                     <filter string="Estado" name="group_status" context="{'group_by': 'status'}"/>
@@ -275,7 +266,7 @@
         </field>
     </record>
 
-    <!-- Vista kanban para órdenes de reparación -->
+    <!-- ✅ VISTA KANBAN CON PROGRESO OPTIMIZADO -->
     <record id="mobile_repair_order_kanban_view" model="ir.ui.view">
         <field name="name">mobile.repair.order.kanban</field>
         <field name="model">mobile.repair.order</field>
@@ -301,12 +292,12 @@
                             <div class="o_kanban_record_top mb16">
                                 <div class="o_kanban_record_headings">
                                     <strong class="o_kanban_record_title">
-                                        <span t-if="record.priority.raw_value == 'urgent'" class="badge badge-danger me-2">URGENTE</span>
-                                        <span t-elif="record.priority.raw_value == 'high'" class="badge badge-warning me-2">ALTA</span>
+                                        <span t-if="record.priority.raw_value == 'urgent'" class="badge badge-danger me-2">🚨 URGENTE</span>
+                                        <span t-elif="record.priority.raw_value == 'high'" class="badge badge-warning me-2">⚡ ALTA</span>
                                         <field name="name"/>
                                     </strong>
                                     <div class="text-muted mt-1" t-if="record.failure_type_id.raw_value">
-                                        <field name="failure_type_id"/>
+                                        <small>🔧 <field name="failure_type_id"/></small>
                                     </div>
                                 </div>
                             </div>
@@ -316,46 +307,47 @@
                                     <!-- Información principal -->
                                     <div class="mb-2">
                                         <div class="fw-bold text-600">
-                                            <field name="customer_id"/>
+                                            👤 <field name="customer_id"/>
                                         </div>
                                         <div class="text-muted small">
-                                            <field name="device_id"/>
+                                            📱 <field name="device_id"/>
                                         </div>
                                     </div>
                                     
                                     <!-- Técnico asignado -->
                                     <div class="mb-2" t-if="record.technician_id.raw_value">
                                         <div class="text-info small">
-                                            Técnico: <field name="technician_id"/>
+                                            👷 <field name="technician_id"/>
                                         </div>
                                     </div>
                                     
                                     <!-- Fechas importantes -->
                                     <div class="mb-2" t-if="record.start_date.raw_value">
                                         <div class="text-muted small">
-                                            Iniciado: <field name="start_date" widget="date"/>
+                                            🔧 Iniciado: <field name="start_date" widget="date"/>
                                         </div>
                                     </div>
                                     
                                     <div class="mb-2" t-if="record.completion_date.raw_value">
                                         <div class="text-success small">
-                                            Completado: <field name="completion_date" widget="date"/>
+                                            ✅ Completado: <field name="completion_date" widget="date"/>
                                         </div>
                                     </div>
                                     
-                                    <!-- Barra de progreso minimalista -->
+                                    <!-- ⭐ BARRA DE PROGRESO PRINCIPAL - SOLO EN KANBAN -->
                                     <div class="mt-3">
                                         <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <small class="text-muted">Progreso</small>
-                                            <small class="fw-bold">
-                                                <field name="progress"/>%
+                                            <small class="text-muted fw-bold">Progreso</small>
+                                            <small class="fw-bold text-primary">
+                                                <field name="progress" widget="integer"/>%
                                             </small>
                                         </div>
-                                        <div class="progress" style="height: 6px;">
-                                            <div class="progress-bar" 
+                                        <div class="progress" style="height: 8px; border-radius: 4px;">
+                                            <div class="progress-bar progress-bar-striped" 
                                                  t-att-style="'width: ' + record.progress.raw_value + '%;'"
                                                  t-att-class="record.status.raw_value == 'completed' ? 'bg-success' : 
-                                                             record.status.raw_value == 'in_progress' ? 'bg-primary' : 
+                                                             record.status.raw_value == 'in_progress' ? 'bg-primary progress-bar-animated' : 
+                                                             record.status.raw_value == 'delivered' ? 'bg-success' :
                                                              record.status.raw_value == 'canceled' ? 'bg-danger' : 'bg-secondary'"
                                                  role="progressbar">
                                             </div>
@@ -364,14 +356,14 @@
                                 </div>
                             </div>
                             
-                            <!-- Footer limpio -->
+                            <!-- Footer con información financiera -->
                             <div class="o_kanban_record_bottom mt-3 pt-2" style="border-top: 1px solid #dee2e6;">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="text-muted small">
-                                        <field name="repair_date" widget="date"/>
+                                        📅 <field name="repair_date" widget="date"/>
                                     </div>
-                                    <div class="fw-bold text-primary">
-                                        <field name="total_amount" widget="monetary"/>
+                                    <div class="fw-bold text-success" t-if="record.total_amount.raw_value > 0">
+                                        💰 <field name="total_amount" widget="monetary"/>
                                     </div>
                                 </div>
                             </div>

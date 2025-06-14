@@ -129,9 +129,12 @@ class MobileDevice(models.Model):
     """
     Modelo principal para gestionar dispositivos móviles individuales.
     Representa cada dispositivo físico que ingresa para reparación.
+    ✅ OPTIMIZADO: Sin campo de fallas (se gestionan en las órdenes)
+    ✅ CON CHATTER: Hereda de mail.thread para seguimiento
     """
     _name = 'mobile.device'
     _description = 'Dispositivo Móvil'
+    _inherit = ['mail.thread', 'mail.activity.mixin']  # ✅ CHATTER HABILITADO
     _order = 'display_name'
 
     # Información básica del dispositivo
@@ -139,6 +142,7 @@ class MobileDevice(models.Model):
         'mobile.brand', 
         string='Marca', 
         required=True,
+        tracking=True,  # ✅ Seguimiento en chatter
         help="Marca del dispositivo móvil"
     )
     model_id = fields.Many2one(
@@ -146,16 +150,19 @@ class MobileDevice(models.Model):
         string='Modelo',
         required=True,
         domain="[('brand_id', '=', brand_id)]",
+        tracking=True,  # ✅ Seguimiento en chatter
         help="Modelo específico del dispositivo"
     )
     
     # Identificadores únicos
     imei = fields.Char(
         string='IMEI',
+        tracking=True,  # ✅ Seguimiento en chatter
         help="Número IMEI del dispositivo (identificador único)"
     )
     serial_number = fields.Char(
         string='Número de serie',
+        tracking=True,  # ✅ Seguimiento en chatter
         help="Número de serie del dispositivo"
     )
     
@@ -169,11 +176,13 @@ class MobileDevice(models.Model):
     enciende = fields.Boolean(
         string='¿Enciende?',
         default=True,
+        tracking=True,  # ✅ Seguimiento en chatter
         help="Indica si el dispositivo enciende correctamente"
     )
     garantia = fields.Boolean(
         string='En garantía',
         default=False,
+        tracking=True,  # ✅ Seguimiento en chatter
         help="Indica si el dispositivo está en período de garantía"
     )
     
@@ -185,16 +194,12 @@ class MobileDevice(models.Model):
         help="Nombre completo del dispositivo (marca + modelo)"
     )
     
-    # Relaciones
-    fault_ids = fields.Many2many(
-        'mobile.fault', 
-        string='Fallas',
-        help="Fallas reportadas en el dispositivo"
-    )
+    # ✅ CAMPO DE CONDICIÓN SIMPLIFICADO (ya no relacionado con fallas)
     condicion_id = fields.Many2one(
         'mobile.device.condition', 
         string='Condición del equipo',
-        help="Estado general del dispositivo"
+        tracking=True,  # ✅ Seguimiento en chatter
+        help="Estado general físico del dispositivo"
     )
 
     # Información de seguridad
@@ -209,6 +214,7 @@ class MobileDevice(models.Model):
     ], 
         string='Tipo de bloqueo', 
         default='ninguno',
+        tracking=True,  # ✅ Seguimiento en chatter
         help="Tipo de bloqueo de seguridad configurado en el dispositivo"
     )
 
@@ -223,6 +229,14 @@ class MobileDevice(models.Model):
         help='Lista de accesorios entregados junto con el dispositivo'
     )
 
+    # ✅ CAMPO PARA CONTAR ÓRDENES DE REPARACIÓN
+    repair_count = fields.Integer(
+        string='Órdenes de Reparación',
+        compute='_compute_repair_count',
+        search='_search_repair_count',
+        help="Número de órdenes de reparación asociadas"
+    )
+
     @api.depends('brand_id', 'model_id')
     def _compute_display_name(self):
         """
@@ -233,6 +247,50 @@ class MobileDevice(models.Model):
             modelo = record.model_id.name if record.model_id else ''
             partes = [p for p in [marca, modelo] if p]
             record.display_name = ' - '.join(partes) if partes else 'Dispositivo sin especificar'
+
+    def _compute_repair_count(self):
+        """
+        Calcula el número de órdenes de reparación asociadas a este dispositivo.
+        """
+        for device in self:
+            device.repair_count = self.env['mobile.repair.order'].search_count([
+                ('device_id', '=', device.id)
+            ])
+
+    def _search_repair_count(self, operator, value):
+        """Permite filtrar dispositivos por el número de órdenes de reparación.
+
+        Soporta operadores =, !=, >, <, >=, <=.
+        """
+        # Agrupamos las órdenes existentes para obtener los conteos por dispositivo
+        data = self.env['mobile.repair.order'].read_group(
+            [('device_id', '!=', False)],
+            ['device_id'],
+            ['device_id']
+        )
+        counts = {rec['device_id'][0]: rec['device_id_count'] for rec in data if rec['device_id']}
+
+        # Aseguramos incluir dispositivos sin órdenes (count = 0)
+        device_ids_with_orders = set(counts.keys())
+        if operator in ('=', '==', '!=') and value == 0:
+            # Necesitamos todos los IDs de dispositivos para manejar el caso 0
+            all_ids = set(self.search([]).ids)
+            for missing_id in all_ids - device_ids_with_orders:
+                counts[missing_id] = 0
+
+        # Filtramos según el operador
+        valid_ids = []
+        for dev_id, count in counts.items():
+            if ((operator in ('=', '==') and count == value) or
+                (operator == '!=' and count != value) or
+                (operator == '>' and count > value) or
+                (operator == '<' and count < value) or
+                (operator == '>=' and count >= value) or
+                (operator == '<=' and count <= value)):
+                valid_ids.append(dev_id)
+
+        # Devuelve dominio con los IDs calculados
+        return [('id', 'in', valid_ids)]
 
     @api.onchange('brand_id')
     def _onchange_brand_id(self):
@@ -269,6 +327,23 @@ class MobileDevice(models.Model):
             'context': {
                 'default_device_id': self.id,
                 'default_customer_id': False,  # Se debe seleccionar el cliente
+            }
+        }
+
+    def action_view_repair_orders(self):
+        """
+        ✅ NUEVA ACCIÓN: Ver todas las órdenes de reparación de este dispositivo
+        """
+        self.ensure_one()
+        return {
+            'name': f'Órdenes de Reparación - {self.display_name}',
+            'type': 'ir.actions.act_window',
+            'res_model': 'mobile.repair.order',
+            'view_mode': 'tree,form,kanban',
+            'domain': [('device_id', '=', self.id)],
+            'context': {
+                'default_device_id': self.id,
+                'search_default_group_status': 1
             }
         }
 
@@ -334,6 +409,7 @@ class FaultCategory(models.Model):
 class Fault(models.Model):
     """
     Modelo para gestionar las fallas específicas de los dispositivos.
+    ✅ SIMPLIFICADO: Solo se usan en órdenes de reparación
     """
     _name = 'mobile.fault'
     _description = 'Falla de Dispositivo'
@@ -357,6 +433,18 @@ class Fault(models.Model):
     descripcion = fields.Text(
         string='Descripción',
         help="Descripción detallada de la falla y posibles causas"
+    )
+
+    # ✅ NUEVOS CAMPOS PARA MEJORAR LA GESTIÓN
+    is_common = fields.Boolean(
+        string='Falla Común',
+        default=False,
+        help="Marca si es una falla que ocurre frecuentemente"
+    )
+    
+    estimated_repair_time = fields.Float(
+        string='Tiempo Estimado (horas)',
+        help="Tiempo estimado promedio para reparar esta falla"
     )
 
     def name_get(self):
@@ -394,6 +482,13 @@ class DeviceCondition(models.Model):
         help="Descripción detallada de lo que implica esta condición"
     )
 
+    # ✅ NUEVO CAMPO PARA VALORACIÓN NUMÉRICA
+    condition_score = fields.Integer(
+        string='Puntuación (1-10)',
+        help="Puntuación numérica de la condición (1=Muy malo, 10=Excelente)",
+        default=5
+    )
+
     def name_get(self):
         """Personaliza la visualización del nombre"""
         result = []
@@ -411,12 +506,21 @@ class MobileRepairConfig(models.TransientModel):
     _inherit = 'res.config.settings'
     _description = 'Configuración de Reparaciones Móviles'
 
-    # Aquí puedes agregar campos de configuración específicos del módulo
-    # Por ejemplo:
-    # default_warranty_days = fields.Integer(
-    #     string='Días de garantía por defecto',
-    #     default=30,
-    #     help="Días de garantía que se aplican por defecto a las reparaciones"
-    # )
+    # ✅ NUEVOS CAMPOS DE CONFIGURACIÓN
+    default_warranty_days = fields.Integer(
+        string='Días de garantía por defecto',
+        default=30,
+        help="Días de garantía que se aplican por defecto a las reparaciones"
+    )
     
-    pass  # Por ahora solo sirve como placeholder para futuras configuraciones
+    auto_assign_technician = fields.Boolean(
+        string='Asignar técnico automáticamente',
+        default=False,
+        help="Asignar automáticamente el técnico con menos carga de trabajo"
+    )
+    
+    require_customer_signature = fields.Boolean(
+        string='Requiere firma del cliente',
+        default=True,
+        help="Requiere confirmación del cliente antes de iniciar reparación"
+    )
