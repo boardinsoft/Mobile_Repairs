@@ -1,54 +1,54 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Mobile Repair Orders',
-    'version': '1.0',
-    'category': 'Services/Repair',
-    'summary': 'Gestión de órdenes de reparación de dispositivos móviles',
+    'version': '2.0.0',
+    'category': 'Services',
+    'summary': 'Gestión minimalista de reparaciones móviles',
     'description': """
-        Módulo para la gestión integral de órdenes de reparación de dispositivos móviles.
+        Módulo optimizado para la gestión eficiente de reparaciones de dispositivos móviles.
+        
+        Características principales:
+        • Dashboard visual con métricas clave
+        • Flujo de trabajo simplificado
+        • Interfaz minimalista y rápida
+        • Gestión completa del ciclo de reparación
     """,
     'author': 'Your Company',
     'website': 'https://www.yourcompany.com',
     'depends': [
         'base',
         'mail',
-        'repair',
+        'web',
     ],
     'data': [
-        # Seguridad y secuencias (siempre primero)
+        # Seguridad
         'security/ir.model.access.csv',
-        'data/ir_sequence_data.xml',
-        'data/mobile_device_data.xml',
-
-        # Vistas de catálogos
-        # (Las vistas de marcas y modelos están incluidas dentro de mobile_device_views.xml)
-        'views/mobile_device_views.xml',
-        'views/device_condition_views.xml',
-        'views/fault_views.xml',
-        'views/fault_config_views.xml',
-        'views/repair_solution_views.xml',
-        'views/repair_line_views.xml',
-
-        # Vistas principales de negocio
-        'views/repair_order_views.xml',
-
-        # Acciones y menús
-        'views/repair_order_actions.xml',
-        'views/repair_order_filtered_actions.xml',
-        'views/repair_order_menu.xml',
-
-        # Plantillas y dashboard
-        'views/repair_order_templates.xml',
-        'views/dashboard_view.xml',
+        
+        # Datos base
+        'data/sequences.xml',
+        'data/base_data.xml',
+        
+        # Vistas principales
+        'views/repair_orders.xml',
+        'views/devices.xml',
+        'views/dashboard.xml',
+        'views/menus.xml',
     ],
-    'demo': [],
-    'installable': True,
-    'application': True,
-    'license': 'LGPL-3',
     'assets': {
         'web.assets_backend': [
-            'mobile_repair_orders/static/src/js/repair_bar.js',
-            'mobile_repair_orders/static/src/xml/repair_bar_template.xml',
+            'mobile_repair_orders/static/src/scss/repair_dashboard.scss',
+            'mobile_repair_orders/static/src/components/dashboard/dashboard.js',
+            'mobile_repair_orders/static/src/components/dashboard/dashboard.xml',
+            'mobile_repair_orders/static/src/components/dashboard/dashboard_widget.js',
+            'mobile_repair_orders/static/src/components/devices/devices.js',
+            'mobile_repair_orders/static/src/components/devices/devices.xml',
         ],
     },
+    'demo': [
+        'demo/demo_data.xml',
+    ],
+    'installable': True,
+    'application': True,
+    'auto_install': False,
+    'license': 'LGPL-3',
 }
