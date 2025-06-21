@@ -1,0 +1,25 @@
+/* Estilos para Kanban limpio en módulo de Reparaciones */
+.o_repair_kanban_clean .oe_kanban_card {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0.5rem !important;
+}
+
+.o_repair_kanban_clean .o_kanban_record_bottom {
+    border-top: none !important;
+    margin-top: 0.5rem !important;
+}
+
+.o_repair_kanban_clean .o_kanban_record_top {
+    margin-bottom: 0.5rem !important;
+}
+
+.o_repair_kanban_clean .o_kanban_primary {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.o_repair_kanban_clean .o_kanban_secondary {
+    font-size: 0.875rem;
+} 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Mobile Repair Orders',
-    'version': '2.0.0',
+    'version': '2.0.1',
     'category': 'Services',
     'summary': 'Gestión minimalista de reparaciones móviles',
     'description': """
@@ -29,7 +29,7 @@
         'data/base_data.xml',
         
         # Vistas principales
-        'views/repair_orders.xml',
+        'views/repair_order_views.xml',
         'views/devices.xml',
         'views/dashboard.xml',
         'views/menus.xml',
@@ -37,6 +37,7 @@
     'assets': {
         'web.assets_backend': [
             'mobile_repair_orders/static/src/scss/repair_dashboard.scss',
+            'mobile_repair_orders/static/src/scss/kanban_clean.scss',
             'mobile_repair_orders/static/src/components/dashboard/dashboard.js',
             'mobile_repair_orders/static/src/components/dashboard/dashboard.xml',
             'mobile_repair_orders/static/src/components/dashboard/dashboard_widget.js',

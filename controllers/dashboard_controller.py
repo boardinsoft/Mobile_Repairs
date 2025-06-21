@@ -82,3 +82,119 @@ class RepairDashboardController(http.Controller):
                 'states_chart': {'labels': [], 'data': [], 'backgroundColor': []},
                 'technicians_chart': {'labels': [], 'data': [], 'backgroundColor': '#007bff'},
                 'daily_activity': {'labels': [], 'data': [], 'backgroundColor': '#28a745'}
+            }
+
+    def _get_state_label(self, state):
+        """Retorna etiqueta legible para el estado"""
+        labels = {
+            'draft': 'Recibidas',
+            'in_progress': 'En Reparación',
+            'ready': 'Listas',
+            'delivered': 'Entregadas',
+            'cancelled': 'Canceladas'
+        }
+        return labels.get(state, state)
+
+    def _get_state_color(self, state):
+        """Retorna color para el estado (paleta Odoo 18)"""
+        colors = {
+            'draft': '#6c757d',      # Gris - recibidas
+            'in_progress': '#ffc107', # Amarillo - en proceso  
+            'ready': '#28a745',      # Verde - listas
+            'delivered': '#007bff',  # Azul - entregadas
+            'cancelled': '#dc3545'   # Rojo - canceladas
+        }
+        return colors.get(state, '#6c757d')
+
+    @http.route('/repair/dashboard/kpis', type='json', auth='user')
+    def get_kpis_data(self):
+        """Retorna KPIs para el dashboard"""
+        try:
+            RepairOrder = request.env['mobile.repair.order']
+            from datetime import datetime, timedelta
+            
+            # Fecha actual y primer día del mes
+            today = datetime.now().date()
+            first_day_month = today.replace(day=1)
+            
+            # KPIs básicos
+            total_orders = RepairOrder.search_count([])
+            pending_orders = RepairOrder.search_count([
+                ('state', 'in', ['draft', 'in_progress'])
+            ])
+            completed_today = RepairOrder.search_count([
+                ('date_completed', '>=', f"{today} 00:00:00"),
+                ('date_completed', '<=', f"{today} 23:59:59")
+            ])
+            urgent_orders = RepairOrder.search_count([
+                ('priority', '=', 'urgent'),
+                ('state', 'in', ['draft', 'in_progress'])
+            ])
+            
+            # Ingresos del mes
+            completed_orders = RepairOrder.search([
+                ('date_completed', '>=', first_day_month),
+                ('state', 'in', ['ready', 'delivered']),
+                ('final_cost', '>', 0)
+            ])
+            revenue_month = sum(completed_orders.mapped('final_cost'))
+            
+            # Duración promedio
+            finished_orders = RepairOrder.search([
+                ('date_completed', '!=', False),
+                ('duration_days', '>', 0)
+            ])
+            avg_duration = 0
+            if finished_orders:
+                avg_duration = sum(finished_orders.mapped('duration_days')) / len(finished_orders)
+            
+            # Técnico más productivo
+            top_technician = self._get_top_technician_kpi()
+            
+            return {
+                'total_orders': total_orders,
+                'pending_orders': pending_orders,
+                'completed_today': completed_today,
+                'urgent_orders': urgent_orders,
+                'revenue_month': revenue_month,
+                'avg_duration': round(avg_duration, 1),
+                'top_technician': top_technician
+            }
+            
+        except Exception as e:
+            return {
+                'total_orders': 0,
+                'pending_orders': 0,
+                'completed_today': 0,
+                'urgent_orders': 0,
+                'revenue_month': 0,
+                'avg_duration': 0,
+                'top_technician': 'Sin datos'
+            }
+
+    def _get_top_technician_kpi(self):
+        """Obtiene el técnico más productivo del mes"""
+        try:
+            RepairOrder = request.env['mobile.repair.order']
+            from datetime import datetime
+            
+            first_day_month = datetime.now().date().replace(day=1)
+            
+            technician_data = RepairOrder.read_group(
+                [
+                    ('date_completed', '>=', first_day_month),
+                    ('technician_id', '!=', False),
+                    ('state', 'in', ['ready', 'delivered'])
+                ],
+                ['technician_id'],
+                ['technician_id']
+            )
+            
+            if technician_data:
+                top = max(technician_data, key=lambda x: x['technician_id_count'])
+                return f"{top['technician_id'][1]} ({top['technician_id_count']})"
+            
+            return "Sin datos"
+            
+        except:
+            return "Sin datos"

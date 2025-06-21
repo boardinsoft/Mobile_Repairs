@@ -6,7 +6,7 @@
     
     <record id="view_repair_dashboard" model="ir.ui.view">
         <field name="name">repair.dashboard.form</field>
-        <field name="model">repair.dashboard</field>
+        <field name="model">mobile.repair.dashboard</field>
         <field name="arch" type="xml">
             <form string="Dashboard Reparaciones" create="false" edit="false" class="o_repair_dashboard">
                 <header>
@@ -24,7 +24,7 @@
                 <sheet>
                     <!-- Título y filtros -->
                     <div class="oe_title mb-3">
-                        <h1 class="text-primary">📱 Dashboard de Reparaciones</h1>
+                        <h1 class="text-primary">Dashboard de Reparaciones</h1>
                         <div class="row">
                             <div class="col-md-3">
                                 <field name="date_from"/>
@@ -91,7 +91,7 @@
                                             <field name="urgent_orders" widget="integer"/>
                                         </button>
                                     </div>
-                                    <p class="card-text text-muted mb-0">🚨 Urgentes</p>
+                                    <p class="card-text text-muted mb-0">Urgentes</p>
                                     <small class="text-muted">requieren atención</small>
                                 </div>
                             </div>
@@ -106,7 +106,7 @@
                                     <h4 class="text-info">
                                         <field name="revenue_month" widget="monetary"/>
                                     </h4>
-                                    <p class="card-text text-muted mb-0">💰 Ingresos del Mes</p>
+                                    <p class="card-text text-muted mb-0">Ingresos del Mes</p>
                                 </div>
                             </div>
                         </div>
@@ -117,7 +117,7 @@
                                     <h4 class="text-secondary">
                                         <field name="avg_duration" widget="float" digits="[16,1]"/> días
                                     </h4>
-                                    <p class="card-text text-muted mb-0">⏱️ Duración Promedio</p>
+                                    <p class="card-text text-muted mb-0">Duración Promedio</p>
                                 </div>
                             </div>
                         </div>
@@ -125,7 +125,7 @@
                         <div class="col-md-4">
                             <div class="card border-dark text-center h-100">
                                 <div class="card-body">
-                                    <p class="h6 text-dark mb-1">🏆 Técnico Destacado</p>
+                                    <p class="h6 text-dark mb-1">Técnico Destacado</p>
                                     <small class="text-muted">
                                         <field name="top_technician"/>
                                     </small>
@@ -168,36 +168,28 @@
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h5 class="card-title mb-0">🚀 Accesos Rápidos</h5>
+                                    <h5 class="card-title mb-0">Accesos Rápidos</h5>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-3">
-                                            <button name="%(action_repair_orders_draft)d" 
-                                                    type="action" 
-                                                    class="btn btn-outline-secondary btn-block mb-2">
-                                                📥 Ver Recibidas
+                                            <button name="%(mobile_repair_orders.action_repair_orders_draft)d" type="action" class="btn btn-outline-secondary btn-block mb-2">
+                                                Ver Recibidas
                                             </button>
                                         </div>
                                         <div class="col-md-3">
-                                            <button name="%(action_repair_orders_in_progress)d" 
-                                                    type="action" 
-                                                    class="btn btn-outline-warning btn-block mb-2">
-                                                🔧 En Reparación
+                                            <button name="%(mobile_repair_orders.action_repair_orders_in_progress)d" type="action" class="btn btn-outline-warning btn-block mb-2">
+                                                En Reparación
                                             </button>
                                         </div>
                                         <div class="col-md-3">
-                                            <button name="%(action_repair_orders_ready)d" 
-                                                    type="action" 
-                                                    class="btn btn-outline-success btn-block mb-2">
-                                                ✅ Listas para Entrega
+                                            <button name="%(mobile_repair_orders.action_repair_orders_ready)d" type="action" class="btn btn-outline-success btn-block mb-2">
+                                                Listas para Entrega
                                             </button>
                                         </div>
                                         <div class="col-md-3">
-                                            <button name="%(action_repair_orders_all)d" 
-                                                    type="action" 
-                                                    class="btn btn-outline-primary btn-block mb-2">
-                                                📋 Todas las Órdenes
+                                            <button name="%(mobile_repair_orders.action_repair_orders_all)d" type="action" class="btn btn-outline-primary btn-block mb-2">
+                                                Todas las Órdenes
                                             </button>
                                         </div>
                                     </div>
@@ -219,7 +211,7 @@
     
     <record id="action_repair_dashboard" model="ir.actions.act_window">
         <field name="name">Dashboard Reparaciones</field>
-        <field name="res_model">repair.dashboard</field>
+        <field name="res_model">mobile.repair.dashboard</field>
         <field name="view_mode">form</field>
         <field name="view_id" ref="view_repair_dashboard"/>
         <field name="target">current</field>

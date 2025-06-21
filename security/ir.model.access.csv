@@ -1,3 +1,2 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_mobile_repair_order_user,mobile.repair.order.user,model_mobile_repair_order,base.group_user,1,1,1,1
-access_repair_dashboard_user,repair.dashboard.user,model_repair_dashboard,base.group_user,1,1,1,0

@@ -339,7 +339,7 @@ class RepairOrder(models.Model):
 class ResPartner(models.Model):
     """Extensión del modelo de clientes para mostrar estadísticas de reparaciones"""
     _inherit = 'res.partner'
-    
+    customer_rank = fields.Integer(string='Customer Rank', default=0)
     repair_orders_count = fields.Integer(
         string='Órdenes de Reparación',
         compute='_compute_repair_stats'
@@ -409,47 +409,4 @@ class ResPartner(models.Model):
                 'search_default_group_by_state': 1,
                 'default_customer_id': self.id
             }
-        }
-    
-    @api.model
-    def get_dashboard_data(self):
-        """Método para obtener datos del dashboard de forma eficiente"""
-        domain_base = []
-        
-        # Conteos por estado
-        states_data = self.read_group(
-            domain_base,
-            ['state'],
-            ['state']
-        )
-        
-        # Órdenes por técnico (activas)
-        technician_data = self.read_group(
-            [('state', 'in', ['draft', 'in_progress'])],
-            ['technician_id'],
-            ['technician_id']
-        )
-        
-        # Estadísticas del mes actual
-        first_day = fields.Date.today().replace(day=1)
-        month_orders = self.search_count([
-            ('date_received', '>=', first_day)
-        ])
-        
-        completed_today = self.search_count([
-            ('date_completed', '>=', fields.Date.today())
-        ])
-        
-        return {
-            'orders_by_state': {
-                item['state']: item['state_count'] 
-                for item in states_data
-            },
-            'orders_by_technician': {
-                item['technician_id'][1] if item['technician_id'] else 'Sin asignar': item['technician_id_count']
-                for item in technician_data
-            },
-            'month_total': month_orders,
-            'completed_today': completed_today,
-            'urgent_count': self.search_count([('priority', '=', 'urgent'), ('state', 'in', ['draft', 'in_progress'])]),
         }

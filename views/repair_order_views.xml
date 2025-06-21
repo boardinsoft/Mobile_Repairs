@@ -58,32 +58,32 @@
                 <header>
                     <!-- Botones de acción principales -->
                     <button name="action_start_repair" 
-                            string="🔧 Iniciar Reparación" 
+                            string="Iniciar Reparación" 
                             type="object" 
                             class="btn-primary"
                             invisible="state != 'draft'"/>
                             
                     <button name="action_mark_ready" 
-                            string="✅ Marcar Listo" 
+                            string="Marcar Listo" 
                             type="object" 
                             class="btn-success"
                             invisible="state != 'in_progress'"/>
                             
                     <button name="action_deliver" 
-                            string="📦 Entregar" 
+                            string="Entregar" 
                             type="object" 
                             class="btn-info"
                             invisible="state != 'ready'"/>
                             
                     <button name="action_cancel" 
-                            string="❌ Cancelar" 
+                            string="Cancelar" 
                             type="object" 
                             class="btn-warning"
                             confirm="¿Está seguro de cancelar esta orden?"
                             invisible="state in ['delivered', 'cancelled']"/>
                             
                     <button name="action_reset_to_draft" 
-                            string="🔄 Regresar a Borrador" 
+                            string="Regresar a Borrador" 
                             type="object" 
                             class="btn-secondary"
                             invisible="state == 'draft'"/>
@@ -111,62 +111,48 @@
                                     <field name="progress_percentage"/>%
                                 </small>
                             </div>
-                            <div class="progress" style="height: 8px;">
-                                <div class="progress-bar" 
-                                     t-att-style="'width: ' + record.progress_percentage.raw_value + '%;'"
-                                     t-att-class="record.state.raw_value == 'ready' ? 'bg-success' : 
-                                                 record.state.raw_value == 'in_progress' ? 'bg-warning progress-bar-striped progress-bar-animated' : 
-                                                 record.state.raw_value == 'delivered' ? 'bg-primary' : 'bg-secondary'">
-                                </div>
-                            </div>
+                            <field name="progress_percentage" widget="progressbar" options="{'max_value': 100}" style="height: 8px;" class="mb-1"/>
                         </div>
                     </div>
                     
-                    <!-- Información principal -->
-                    <group>
-                        <group string="📱 Información del Dispositivo">
-                            <field name="customer_id" 
-                                   options="{'no_quick_create': True}"
-                                   required="1"/>
-                            <field name="device_info" 
-                                   placeholder="Ej: iPhone 14 Pro - Azul - IMEI: 123456789012345"
-                                   required="1"/>
-                            <field name="problem_description" 
-                                   placeholder="Descripción detallada del problema reportado por el cliente"/>
-                        </group>
-                        
-                        <group string="👷 Asignación y Fechas">
-                            <field name="technician_id" 
-                                   options="{'no_quick_create': True}"/>
-                            <field name="date_received"/>
-                            <field name="estimated_cost" 
-                                   widget="monetary"
-                                   groups="base.group_user"/>
-                            <field name="final_cost" 
-                                   widget="monetary"
-                                   groups="base.group_user"/>
-                        </group>
-                    </group>
+                    <!-- Información principal en dos columnas -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <group string="Información del Dispositivo">
+                                <field name="customer_id" options="{'no_quick_create': True}" required="1"/>
+                                <field name="device_info" placeholder="Ej: iPhone 14 Pro - Azul - IMEI: 123456789012345" required="1"/>
+                                <field name="problem_description" placeholder="Descripción detallada del problema reportado por el cliente"/>
+                            </group>
+                        </div>
+                        <div class="col-md-6">
+                            <group string="Asignación y Fechas">
+                                <field name="technician_id" options="{'no_quick_create': True}"/>
+                                <field name="date_received"/>
+                                <field name="estimated_cost" widget="monetary" groups="base.group_user"/>
+                                <field name="final_cost" widget="monetary" groups="base.group_user"/>
+                            </group>
+                        </div>
+                    </div>
                     
                     <!-- Timeline de fechas (solo si hay datos) -->
                     <div class="alert alert-info mt-3" 
                          invisible="not date_started and not date_completed and not date_delivered">
-                        <h6 class="alert-heading">📅 Timeline de la Reparación</h6>
+                        <h6 class="alert-heading">Timeline de la Reparación</h6>
                         <div class="row">
                             <div class="col-md-3" invisible="not date_started">
-                                <strong>🔧 Iniciado:</strong><br/>
+                                <strong>Iniciado:</strong><br/>
                                 <field name="date_started" widget="datetime" readonly="1" nolabel="1"/>
                             </div>
                             <div class="col-md-3" invisible="not date_completed">
-                                <strong>✅ Completado:</strong><br/>
+                                <strong>Completado:</strong><br/>
                                 <field name="date_completed" widget="datetime" readonly="1" nolabel="1"/>
                             </div>
                             <div class="col-md-3" invisible="not date_delivered">
-                                <strong>📦 Entregado:</strong><br/>
+                                <strong>Entregado:</strong><br/>
                                 <field name="date_delivered" widget="datetime" readonly="1" nolabel="1"/>
                             </div>
                             <div class="col-md-3" invisible="duration_days == 0">
-                                <strong>⏱️ Duración:</strong><br/>
+                                <strong>Duración:</strong><br/>
                                 <span class="fw-bold text-info">
                                     <field name="duration_days" widget="float" digits="[16,1]" readonly="1" nolabel="1"/> días
                                 </span>
@@ -176,7 +162,7 @@
                     
                     <!-- Información técnica en pestañas -->
                     <notebook>
-                        <page string="🔍 Diagnóstico y Solución" name="technical">
+                        <page string="Diagnóstico y Solución" name="technical">
                             <group>
                                 <field name="diagnosis" 
                                        nolabel="1" 
@@ -191,7 +177,7 @@
                             </group>
                         </page>
                         
-                        <page string="📝 Notas Adicionales" name="notes">
+                        <page string="Notas Adicionales" name="notes">
                             <group>
                                 <field name="customer_notes" 
                                        nolabel="1" 
@@ -224,8 +210,8 @@
         <field name="model">mobile.repair.order</field>
         <field name="arch" type="xml">
             <kanban default_group_by="state" 
-                    class="o_kanban_small_column" 
-                    quick_create="false">
+                    class="o_kanban_small_column o_repair_kanban_clean" 
+                    quick_create="true">
                     
                 <field name="name"/>
                 <field name="customer_id"/>
@@ -241,66 +227,34 @@
                 <templates>
                     <t t-name="card" class="d-flex flex-column">
                         <div class="oe_kanban_card oe_kanban_global_click d-flex flex-column">
-                            
                             <!-- Header con prioridad -->
                             <div class="o_kanban_record_top">
-                                <div class="o_kanban_record_headings">
-                                    <strong class="o_kanban_record_title d-flex align-items-center">
-                                        <span t-if="record.priority.raw_value == 'urgent'" 
-                                              class="badge badge-danger me-2">🚨</span>
-                                        <span t-elif="record.priority.raw_value == 'high'" 
-                                              class="badge badge-warning me-2">⚡</span>
+                                <div class="o_kanban_record_headings d-flex align-items-center">
+                                    <strong class="o_kanban_record_title">
                                         <field name="name"/>
                                     </strong>
+                                    <field name="priority" widget="priority" class="ms-auto"/>
                                 </div>
                             </div>
-                            
                             <!-- Información principal -->
                             <div class="o_kanban_record_body flex-grow-1">
-                                <div class="mb-2">
-                                    <div class="fw-bold text-truncate">
-                                        👤 <field name="customer_id"/>
-                                    </div>
-                                    <div class="text-muted small text-truncate">
-                                        📱 <field name="device_info"/>
-                                    </div>
-                                </div>
-                                
-                                <!-- Técnico asignado -->
-                                <div class="mb-2" t-if="record.technician_id.raw_value">
-                                    <small class="text-info">
-                                        👷 <field name="technician_id"/>
-                                    </small>
-                                </div>
-                                
-                                <!-- Barra de progreso -->
-                                <div class="mt-auto">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <small class="text-muted">Progreso</small>
-                                        <small class="fw-bold text-primary">
-                                            <field name="progress_percentage"/>%
-                                        </small>
-                                    </div>
-                                    <div class="progress" style="height: 6px;">
-                                        <div class="progress-bar" 
-                                             t-att-style="'width: ' + record.progress_percentage.raw_value + '%;'"
-                                             t-att-class="record.state.raw_value == 'ready' ? 'bg-success' : 
-                                                         record.state.raw_value == 'in_progress' ? 'bg-warning progress-bar-striped progress-bar-animated' : 
-                                                         record.state.raw_value == 'delivered' ? 'bg-primary' : 'bg-secondary'">
-                                        </div>
-                                    </div>
-                                </div>
+                                <p class="o_kanban_primary text-truncate">
+                                    <field name="customer_id"/>
+                                </p>
+                                <p class="o_kanban_secondary text-muted text-truncate">
+                                    <field name="device_info"/>
+                                </p>
                             </div>
-                            
-                            <!-- Footer -->
-                            <div class="o_kanban_record_bottom mt-2 pt-2 border-top">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <small class="text-muted">
-                                        📅 <field name="date_received" widget="date"/>
-                                    </small>
-                                    <div t-if="record.final_cost.raw_value > 0" class="fw-bold text-success">
-                                        💰 <field name="final_cost" widget="monetary"/>
-                                    </div>
+                            <!-- Footer con fecha, costo y avatar -->
+                            <div class="o_kanban_record_bottom mt-auto pt-2 border-top d-flex justify-content-between">
+                                <div>
+                                    <field name="date_received" widget="date"/>
+                                </div>
+                                <div t-if="record.final_cost.raw_value > 0">
+                                    <field name="final_cost" widget="monetary"/>
+                                </div>
+                                <div>
+                                    <field name="technician_id" widget="avatar" options="{'size': 32}"/>
                                 </div>
                             </div>
                         </div>
@@ -326,31 +280,31 @@
                 <field name="technician_id" string="Técnico"/>
                 
                 <!-- Filtros rápidos -->
-                <filter string="📥 Recibidas" name="draft" domain="[('state', '=', 'draft')]"/>
-                <filter string="🔧 En Reparación" name="in_progress" domain="[('state', '=', 'in_progress')]"/>
-                <filter string="✅ Listas" name="ready" domain="[('state', '=', 'ready')]"/>
-                <filter string="📦 Entregadas" name="delivered" domain="[('state', '=', 'delivered')]"/>
+                <filter string="Recibidas" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="En Reparación" name="in_progress" domain="[('state', '=', 'in_progress')]"/>
+                <filter string="Listas" name="ready" domain="[('state', '=', 'ready')]"/>
+                <filter string="Entregadas" name="delivered" domain="[('state', '=', 'delivered')]"/>
                 
                 <separator/>
                 
                 <!-- Filtros por prioridad -->
-                <filter string="🚨 Urgentes" name="urgent" domain="[('priority', '=', 'urgent')]"/>
-                <filter string="⚡ Alta Prioridad" name="high" domain="[('priority', '=', 'high')]"/>
+                <filter string="Urgentes" name="urgent" domain="[('priority', '=', 'urgent')]"/>
+                <filter string="Alta Prioridad" name="high" domain="[('priority', '=', 'high')]"/>
                 
                 <separator/>
                 
                 <!-- Filtros personales -->
-                <filter string="👷 Mis Reparaciones" name="my_repairs" 
+                <filter string="Mis Reparaciones" name="my_repairs" 
                         domain="[('technician_id', '=', uid)]"/>
-                <filter string="❓ Sin Técnico" name="no_technician" 
+                <filter string="Sin Técnico" name="no_technician" 
                         domain="[('technician_id', '=', False)]"/>
                 
                 <separator/>
                 
                 <!-- Filtros temporales -->
-                <filter string="📅 Hoy" name="today" 
+                <filter string="Hoy" name="today" 
                         domain="[('date_received', '&gt;=', context_today().strftime('%Y-%m-%d 00:00:00'))]"/>
-                <filter string="📅 Esta Semana" name="this_week" 
+                <filter string="Esta Semana" name="this_week" 
                         domain="[('date_received', '&gt;=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
                 
                 <!-- Agrupaciones -->
@@ -376,7 +330,7 @@
         <field name="view_mode">kanban,list,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                📱 Crear una nueva orden de reparación
+                Crear una nueva orden de reparación
             </p>
             <p>
                 Gestiona las reparaciones de dispositivos móviles de forma eficiente.

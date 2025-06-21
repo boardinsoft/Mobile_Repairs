@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 class RepairDashboard(models.TransientModel):
     """Dashboard minimalista para reparaciones móviles"""
-    _name = 'repair.dashboard'
+    _name = 'mobile.repair.dashboard'
     _description = 'Dashboard de Reparaciones'
 
     # ============================================================
