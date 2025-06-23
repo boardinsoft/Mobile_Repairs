@@ -1,2 +1,7 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_mobile_repair_order_user,mobile.repair.order.user,model_mobile_repair_order,base.group_user,1,1,1,1
+access_mobile_repair_device_brand,mobile.repair.device.brand,model_mobile_repair_device_brand,base.group_user,1,1,1,1
+access_mobile_repair_device_model,mobile.repair.device.model,model_mobile_repair_device_model,base.group_user,1,1,1,1
+access_mobile_repair_device_color,mobile.repair.device.color,model_mobile_repair_device_color,base.group_user,1,1,1,1
+access_mobile_repair_device_accessory,mobile.repair.device.accessory,model_mobile_repair_device_accessory,base.group_user,1,1,1,1
+access_mobile_repair_device,mobile.repair.device,model_mobile_repair_device,base.group_user,1,1,1,1

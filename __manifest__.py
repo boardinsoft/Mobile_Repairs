@@ -21,6 +21,7 @@
         'web',
     ],
     'data': [
+        'views/device_views.xml',
         # Seguridad
         'security/ir.model.access.csv',
         
@@ -34,17 +35,6 @@
         'views/dashboard.xml',
         'views/menus.xml',
     ],
-    'assets': {
-        'web.assets_backend': [
-            'mobile_repair_orders/static/src/scss/repair_dashboard.scss',
-            'mobile_repair_orders/static/src/scss/kanban_clean.scss',
-            'mobile_repair_orders/static/src/components/dashboard/dashboard.js',
-            'mobile_repair_orders/static/src/components/dashboard/dashboard.xml',
-            'mobile_repair_orders/static/src/components/dashboard/dashboard_widget.js',
-            'mobile_repair_orders/static/src/components/devices/devices.js',
-            'mobile_repair_orders/static/src/components/devices/devices.xml',
-        ],
-    },
     'demo': [
         'demo/demo_data.xml',
     ],

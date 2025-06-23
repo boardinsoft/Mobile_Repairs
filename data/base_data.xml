@@ -137,5 +137,73 @@
             <field name="customer_notes">Cliente decidió comprar dispositivo nuevo en lugar de reparar.</field>
         </record>
 
+        <!-- ============================================================ -->
+        <!-- COLORES PREDEFINIDOS PARA DISPOSITIVOS                      -->
+        <!-- ============================================================ -->
+        
+        <record id="color_black" model="mobile_repair.device.color">
+            <field name="name">Negro</field>
+            <field name="color_code">#212529</field>
+        </record>
+        
+        <record id="color_white" model="mobile_repair.device.color">
+            <field name="name">Blanco</field>
+            <field name="color_code">#f8f9fa</field>
+        </record>
+        
+        <record id="color_blue" model="mobile_repair.device.color">
+            <field name="name">Azul</field>
+            <field name="color_code">#0d6efd</field>
+        </record>
+        
+        <record id="color_red" model="mobile_repair.device.color">
+            <field name="name">Rojo</field>
+            <field name="color_code">#dc3545</field>
+        </record>
+        
+        <record id="color_green" model="mobile_repair.device.color">
+            <field name="name">Verde</field>
+            <field name="color_code">#198754</field>
+        </record>
+        
+        <record id="color_purple" model="mobile_repair.device.color">
+            <field name="name">Púrpura</field>
+            <field name="color_code">#6f42c1</field>
+        </record>
+        
+        <record id="color_gold" model="mobile_repair.device.color">
+            <field name="name">Dorado</field>
+            <field name="color_code">#ffc107</field>
+        </record>
+        
+        <record id="color_silver" model="mobile_repair.device.color">
+            <field name="name">Plateado</field>
+            <field name="color_code">#adb5bd</field>
+        </record>
+
+        <!-- ============================================================ -->
+        <!-- ACCESORIOS PREDEFINIDOS                                     -->
+        <!-- ============================================================ -->
+        
+        <record id="accessory_tapa" model="mobile_repair.device.accessory">
+            <field name="name">Tapa</field>
+            <field name="accessory_type">tapa</field>
+        </record>
+        
+        <record id="accessory_sim" model="mobile_repair.device.accessory">
+            <field name="name">SIM</field>
+            <field name="accessory_type">sim</field>
+        </record>
+        
+        <record id="accessory_sd_card" model="mobile_repair.device.accessory">
+            <field name="name">Memoria SD</field>
+            <field name="accessory_type">sd_card</field>
+        </record>
+        
+        <record id="accessory_sim_tray" model="mobile_repair.device.accessory">
+            <field name="name">Bandeja SIM</field>
+            <field name="accessory_type">sim_tray</field>
+        </record>
+
     </data>
 </odoo>

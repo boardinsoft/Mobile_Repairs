@@ -15,7 +15,9 @@
                 <!-- Campos principales visibles -->
                 <field name="name" readonly="1"/>
                 <field name="customer_id"/>
-                <field name="device_info"/>
+                <field name="device_id" widget="many2one_avatar"/>
+                <field name="device_brand" optional="show"/>
+                <field name="device_model" optional="show"/>
                 <field name="state" 
                        decoration-info="state == 'draft'" 
                        decoration-warning="state == 'in_progress'" 
@@ -29,9 +31,9 @@
                        decoration-warning="priority == 'high'"
                        widget="priority"/>
                        
-                <field name="technician_id" optional="show"/>
+                <field name="technician_id" optional="show" widget="many2one_avatar_user"/>
                 <field name="date_received"/>
-                <field name="duration_days" optional="hide" widget="float" digits="[16,1]"/>
+                <field name="duration_days" optional="hide" widget="float_time"/>
                 <field name="final_cost" 
                        widget="monetary" 
                        sum="Total" 
@@ -56,37 +58,31 @@
         <field name="arch" type="xml">
             <form string="Orden de Reparación">
                 <header>
-                    <!-- Botones de acción principales -->
+                    <!-- Botones de acción nativos -->
                     <button name="action_start_repair" 
                             string="Iniciar Reparación" 
                             type="object" 
-                            class="btn-primary"
+                            class="btn-primary" 
                             invisible="state != 'draft'"/>
-                            
+                    
                     <button name="action_mark_ready" 
                             string="Marcar Listo" 
                             type="object" 
-                            class="btn-success"
+                            class="btn-success" 
                             invisible="state != 'in_progress'"/>
-                            
+                    
                     <button name="action_deliver" 
                             string="Entregar" 
                             type="object" 
-                            class="btn-info"
+                            class="btn-info" 
                             invisible="state != 'ready'"/>
-                            
+                    
                     <button name="action_cancel" 
                             string="Cancelar" 
                             type="object" 
-                            class="btn-warning"
-                            confirm="¿Está seguro de cancelar esta orden?"
-                            invisible="state in ['delivered', 'cancelled']"/>
-                            
-                    <button name="action_reset_to_draft" 
-                            string="Regresar a Borrador" 
-                            type="object" 
-                            class="btn-secondary"
-                            invisible="state == 'draft'"/>
+                            class="btn-secondary" 
+                            confirm="¿Está seguro de cancelar esta orden?" 
+                            invisible="state in ['delivered','cancelled']"/>
                     
                     <field name="state" 
                            widget="statusbar" 
@@ -102,25 +98,18 @@
                                 <field name="priority" widget="priority"/>
                             </h1>
                         </div>
-                        
-                        <!-- Progreso visual -->
-                        <div class="mt-2 mb-3" invisible="state == 'draft'">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <small class="text-muted fw-bold">Progreso de Reparación</small>
-                                <small class="fw-bold text-primary">
-                                    <field name="progress_percentage"/>%
-                                </small>
-                            </div>
-                            <field name="progress_percentage" widget="progressbar" options="{'max_value': 100}" style="height: 8px;" class="mb-1"/>
-                        </div>
                     </div>
                     
                     <!-- Información principal en dos columnas -->
                     <div class="row">
                         <div class="col-md-6">
-                            <group string="Información del Dispositivo">
-                                <field name="customer_id" options="{'no_quick_create': True}" required="1"/>
-                                <field name="device_info" placeholder="Ej: iPhone 14 Pro - Azul - IMEI: 123456789012345" required="1"/>
+                            <group string="Información del Cliente y Dispositivo">
+                                <field name="customer_id" required="1" widget="res_partner_many2one"/>
+                                <field name="device_id" required="1" 
+                                       context="{'form_view_ref': 'mobile_repair_orders.view_device_form_simple'}"/>
+                                <field name="device_brand" readonly="1" invisible="not device_id"/>
+                                <field name="device_model" readonly="1" invisible="not device_id"/>
+                                <field name="device_imei" readonly="1" invisible="not device_id"/>
                                 <field name="problem_description" placeholder="Descripción detallada del problema reportado por el cliente"/>
                             </group>
                         </div>
@@ -210,12 +199,14 @@
         <field name="model">mobile.repair.order</field>
         <field name="arch" type="xml">
             <kanban default_group_by="state" 
-                    class="o_kanban_small_column o_repair_kanban_clean" 
+                    class="o_kanban_medium_column" 
                     quick_create="true">
                     
                 <field name="name"/>
                 <field name="customer_id"/>
-                <field name="device_info"/>
+                <field name="device_id"/>
+                <field name="device_brand"/>
+                <field name="device_model"/>
                 <field name="state"/>
                 <field name="priority"/>
                 <field name="technician_id"/>
@@ -226,7 +217,7 @@
                 
                 <templates>
                     <t t-name="card" class="d-flex flex-column">
-                        <div class="oe_kanban_card oe_kanban_global_click d-flex flex-column">
+                        <div class="oe_kanban_card oe_kanban_global_click d-flex flex-column h-100">
                             <!-- Header con prioridad -->
                             <div class="o_kanban_record_top">
                                 <div class="o_kanban_record_headings d-flex align-items-center">
@@ -238,11 +229,11 @@
                             </div>
                             <!-- Información principal -->
                             <div class="o_kanban_record_body flex-grow-1">
-                                <p class="o_kanban_primary text-truncate">
-                                    <field name="customer_id"/>
+                                <p class="o_kanban_primary fw-bold fs-6 text-truncate">
+                                    <field name="device_id"/>
                                 </p>
-                                <p class="o_kanban_secondary text-muted text-truncate">
-                                    <field name="device_info"/>
+                                <p class="o_kanban_secondary text-muted fs-7 text-truncate">
+                                    <field name="customer_id"/>
                                 </p>
                             </div>
                             <!-- Footer con fecha, costo y avatar -->
@@ -250,11 +241,11 @@
                                 <div>
                                     <field name="date_received" widget="date"/>
                                 </div>
-                                <div t-if="record.final_cost.raw_value > 0">
+                                <div>
                                     <field name="final_cost" widget="monetary"/>
                                 </div>
                                 <div>
-                                    <field name="technician_id" widget="avatar" options="{'size': 32}"/>
+                                    <field name="technician_id" widget="many2one_avatar_user"/>
                                 </div>
                             </div>
                         </div>
@@ -276,7 +267,10 @@
                 <!-- Campos de búsqueda -->
                 <field name="name" string="Número"/>
                 <field name="customer_id" string="Cliente"/>
-                <field name="device_info" string="Dispositivo"/>
+                <field name="device_id" string="Dispositivo"/>
+                <field name="device_brand" string="Marca"/>
+                <field name="device_model" string="Modelo"/>
+                <field name="device_imei" string="IMEI"/>
                 <field name="technician_id" string="Técnico"/>
                 
                 <!-- Filtros rápidos -->
@@ -340,7 +334,7 @@
     
     <!-- Acciones por estado -->
     <record id="action_repair_orders_draft" model="ir.actions.act_window">
-        <field name="name">📥 Órdenes Recibidas</field>
+        <field name="name">Órdenes Recibidas</field>
         <field name="res_model">mobile.repair.order</field>
         <field name="view_mode">kanban,list,form</field>
         <field name="domain">[('state', '=', 'draft')]</field>
@@ -348,7 +342,7 @@
     </record>
     
     <record id="action_repair_orders_in_progress" model="ir.actions.act_window">
-        <field name="name">🔧 En Reparación</field>
+        <field name="name">En Reparación</field>
         <field name="res_model">mobile.repair.order</field>
         <field name="view_mode">kanban,list,form</field>
         <field name="domain">[('state', '=', 'in_progress')]</field>
@@ -356,14 +350,14 @@
     </record>
     
     <record id="action_repair_orders_ready" model="ir.actions.act_window">
-        <field name="name">✅ Listas para Entrega</field>
+        <field name="name">Listas para Entrega</field>
         <field name="res_model">mobile.repair.order</field>
         <field name="view_mode">list,kanban,form</field>
         <field name="domain">[('state', '=', 'ready')]</field>
     </record>
     
     <record id="action_repair_orders_delivered" model="ir.actions.act_window">
-        <field name="name">📦 Entregadas</field>
+        <field name="name">Entregadas</field>
         <field name="res_model">mobile.repair.order</field>
         <field name="view_mode">list,form</field>
         <field name="domain">[('state', '=', 'delivered')]</field>

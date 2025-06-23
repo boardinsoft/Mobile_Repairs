@@ -23,7 +23,7 @@
                 
                 <sheet>
                     <!-- Título y filtros -->
-                    <div class="oe_title mb-3">
+                    <div class="oe_title o_mb_3">
                         <h1 class="text-primary">Dashboard de Reparaciones</h1>
                         <div class="row">
                             <div class="col-md-3">
@@ -36,77 +36,30 @@
                     </div>
                     
                     <!-- KPIs Cards -->
-                    <div class="row mb-4">
-                        <!-- Total Órdenes -->
+                    <div class="row o_mb_4">
                         <div class="col-md-3">
-                            <div class="card border-primary text-center h-100">
-                                <div class="card-body">
-                                    <div class="display-4 text-primary fw-bold">
-                                        <field name="total_orders" widget="integer"/>
-                                    </div>
-                                    <p class="card-text text-muted mb-0">Total Órdenes</p>
-                                    <small class="text-muted">en el período</small>
-                                </div>
-                            </div>
+                            <field name="total_orders" widget="statinfo" options="{'title': 'Total Órdenes'}"/>
                         </div>
-                        
-                        <!-- Pendientes -->
                         <div class="col-md-3">
-                            <div class="card border-warning text-center h-100">
-                                <div class="card-body">
-                                    <div class="display-4 text-warning fw-bold">
-                                        <button name="action_view_pending" 
-                                                type="object" 
-                                                class="btn btn-link p-0 text-warning display-4 fw-bold">
-                                            <field name="pending_orders" widget="integer"/>
-                                        </button>
-                                    </div>
-                                    <p class="card-text text-muted mb-0">Pendientes</p>
-                                    <small class="text-muted">recibidas + en proceso</small>
-                                </div>
-                            </div>
+                            <field name="pending_orders" widget="statinfo" options="{'title': 'Pendientes'}"/>
                         </div>
-                        
-                        <!-- Completadas Hoy -->
                         <div class="col-md-3">
-                            <div class="card border-success text-center h-100">
-                                <div class="card-body">
-                                    <div class="display-4 text-success fw-bold">
-                                        <field name="completed_today" widget="integer"/>
-                                    </div>
-                                    <p class="card-text text-muted mb-0">Completadas Hoy</p>
-                                    <small class="text-muted">✅ terminadas</small>
-                                </div>
-                            </div>
+                            <field name="completed_today" widget="statinfo" options="{'title': 'Completadas Hoy'}"/>
                         </div>
-                        
-                        <!-- Urgentes -->
                         <div class="col-md-3">
-                            <div class="card border-danger text-center h-100">
-                                <div class="card-body">
-                                    <div class="display-4 text-danger fw-bold">
-                                        <button name="action_view_urgent" 
-                                                type="object" 
-                                                class="btn btn-link p-0 text-danger display-4 fw-bold">
-                                            <field name="urgent_orders" widget="integer"/>
-                                        </button>
-                                    </div>
-                                    <p class="card-text text-muted mb-0">Urgentes</p>
-                                    <small class="text-muted">requieren atención</small>
-                                </div>
-                            </div>
+                            <field name="urgent_orders" widget="statinfo" options="{'title': 'Urgentes'}"/>
                         </div>
                     </div>
                     
                     <!-- Métricas Adicionales -->
-                    <div class="row mb-4">
+                    <div class="row o_mb_4">
                         <div class="col-md-4">
                             <div class="card border-info text-center h-100">
                                 <div class="card-body">
                                     <h4 class="text-info">
                                         <field name="revenue_month" widget="monetary"/>
                                     </h4>
-                                    <p class="card-text text-muted mb-0">Ingresos del Mes</p>
+                                    <p class="card-text text-muted o_mb_0">Ingresos del Mes</p>
                                 </div>
                             </div>
                         </div>
@@ -117,7 +70,7 @@
                                     <h4 class="text-secondary">
                                         <field name="avg_duration" widget="float" digits="[16,1]"/> días
                                     </h4>
-                                    <p class="card-text text-muted mb-0">Duración Promedio</p>
+                                    <p class="card-text text-muted o_mb_0">Duración Promedio</p>
                                 </div>
                             </div>
                         </div>
@@ -125,7 +78,7 @@
                         <div class="col-md-4">
                             <div class="card border-dark text-center h-100">
                                 <div class="card-body">
-                                    <p class="h6 text-dark mb-1">Técnico Destacado</p>
+                                    <p class="h6 text-dark o_mb_1">Técnico Destacado</p>
                                     <small class="text-muted">
                                         <field name="top_technician"/>
                                     </small>
@@ -139,10 +92,10 @@
                         <div class="col-md-6">
                             <div class="card">
                                 <div class="card-header">
-                                    <h5 class="card-title mb-0">📊 Órdenes por Estado</h5>
+                                    <h5 class="card-title o_mb_0"><i class="fa fa-chart-bar me-1"></i> Órdenes por Estado</h5>
                                 </div>
                                 <div class="card-body">
-                                    <div class="repair-states-chart-container" style="height: 300px;">
+                                    <div class="o_graph_container repair-states-chart-container">
                                         <canvas id="states_chart_canvas"></canvas>
                                     </div>
                                 </div>
@@ -152,10 +105,10 @@
                         <div class="col-md-6">
                             <div class="card">
                                 <div class="card-header">
-                                    <h5 class="card-title mb-0">📈 Actividad Diaria</h5>
+                                    <h5 class="card-title o_mb_0"><i class="fa fa-chart-line me-1"></i> Actividad Diaria</h5>
                                 </div>
                                 <div class="card-body">
-                                    <div class="daily-activity-chart-container" style="height: 300px;">
+                                    <div class="o_graph_container daily-activity-chart-container">
                                         <canvas id="daily_chart_canvas"></canvas>
                                     </div>
                                 </div>
@@ -164,31 +117,31 @@
                     </div>
                     
                     <!-- Accesos Rápidos -->
-                    <div class="row mt-4">
+                    <div class="row o_mt_4">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h5 class="card-title mb-0">Accesos Rápidos</h5>
+                                    <h5 class="card-title o_mb_0">Accesos Rápidos</h5>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-3">
-                                            <button name="%(mobile_repair_orders.action_repair_orders_draft)d" type="action" class="btn btn-outline-secondary btn-block mb-2">
+                                            <button name="%(mobile_repair_orders.action_repair_orders_draft)d" type="action" class="btn btn-outline-secondary btn-block o_mb_2">
                                                 Ver Recibidas
                                             </button>
                                         </div>
                                         <div class="col-md-3">
-                                            <button name="%(mobile_repair_orders.action_repair_orders_in_progress)d" type="action" class="btn btn-outline-warning btn-block mb-2">
+                                            <button name="%(mobile_repair_orders.action_repair_orders_in_progress)d" type="action" class="btn btn-outline-warning btn-block o_mb_2">
                                                 En Reparación
                                             </button>
                                         </div>
                                         <div class="col-md-3">
-                                            <button name="%(mobile_repair_orders.action_repair_orders_ready)d" type="action" class="btn btn-outline-success btn-block mb-2">
+                                            <button name="%(mobile_repair_orders.action_repair_orders_ready)d" type="action" class="btn btn-outline-success btn-block o_mb_2">
                                                 Listas para Entrega
                                             </button>
                                         </div>
                                         <div class="col-md-3">
-                                            <button name="%(mobile_repair_orders.action_repair_orders_all)d" type="action" class="btn btn-outline-primary btn-block mb-2">
+                                            <button name="%(mobile_repair_orders.action_repair_orders_all)d" type="action" class="btn btn-outline-primary btn-block o_mb_2">
                                                 Todas las Órdenes
                                             </button>
                                         </div>

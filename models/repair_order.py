@@ -34,11 +34,13 @@ class RepairOrder(models.Model):
         index=True
     )
     
-    device_info = fields.Char(
+    device_id = fields.Many2one(
+        'mobile_repair.device',
         string='Dispositivo',
         required=True,
         tracking=True,
-        help="Ej: iPhone 14 Pro - Azul - IMEI: ***1234"
+        index=True,
+        help="Seleccionar dispositivo registrado"
     )
     
     problem_description = fields.Text(
@@ -150,6 +152,34 @@ class RepairOrder(models.Model):
         compute='_compute_display_name',
         store=True
     )
+    
+    # Campos relacionados del dispositivo
+    device_brand = fields.Char(
+        string='Marca',
+        related='device_id.brand_id.name',
+        store=True,
+        readonly=True
+    )
+    
+    device_model = fields.Char(
+        string='Modelo',
+        related='device_id.model_id.name',
+        store=True,
+        readonly=True
+    )
+    
+    device_imei = fields.Char(
+        string='IMEI',
+        related='device_id.imei',
+        store=True,
+        readonly=True
+    )
+    
+    device_physical_state = fields.Selection(
+        string='Estado Físico del Dispositivo',
+        related='device_id.physical_state',
+        readonly=True
+    )
 
     # ============================================================
     # MÉTODOS COMPUTADOS
@@ -192,15 +222,16 @@ class RepairOrder(models.Model):
             
             record.progress_percentage = min(progress, 100)
     
-    @api.depends('name', 'customer_id', 'device_info')
+    @api.depends('name', 'customer_id', 'device_id')
     def _compute_display_name(self):
         """Nombre de visualización mejorado"""
         for record in self:
             parts = [record.name]
             if record.customer_id:
                 parts.append(record.customer_id.name)
-            if record.device_info:
-                parts.append(record.device_info[:30] + '...' if len(record.device_info) > 30 else record.device_info)
+            if record.device_id:
+                device_name = record.device_id.display_name
+                parts.append(device_name[:30] + '...' if len(device_name) > 30 else device_name)
             record.display_name = ' - '.join(parts)
 
     # ============================================================
@@ -213,7 +244,15 @@ class RepairOrder(models.Model):
         for vals in vals_list:
             if vals.get('name', 'Nuevo') == 'Nuevo':
                 vals['name'] = self.env['ir.sequence'].next_by_code('mobile.repair.order') or 'REP-ERROR'
-        return super().create(vals_list)
+        
+        records = super().create(vals_list)
+        
+        # Actualizar estadísticas del dispositivo
+        devices = records.mapped('device_id')
+        if devices:
+            devices._compute_repair_stats()
+        
+        return records
     
     def action_start_repair(self):
         """Inicia la reparación"""
@@ -230,7 +269,7 @@ class RepairOrder(models.Model):
         })
         
         self.message_post(
-            body=f"🔧 <b>Reparación iniciada</b><br/>Técnico: {self.technician_id.name}",
+            body=f"<b>Reparación iniciada</b><br/>Técnico: {self.technician_id.name}",
             message_type='notification'
         )
         return True
@@ -250,7 +289,7 @@ class RepairOrder(models.Model):
         })
         
         self.message_post(
-            body=f"✅ <b>Reparación completada</b><br/>Duración: {self.duration_days:.1f} días",
+            body=f"<b>Reparación completada</b><br/>Duración: {self.duration_days:.1f} días",
             message_type='notification'
         )
         return True
@@ -267,7 +306,7 @@ class RepairOrder(models.Model):
         })
         
         self.message_post(
-            body="📦 <b>Dispositivo entregado al cliente</b>",
+            body="<b>Dispositivo entregado al cliente</b>",
             message_type='notification'
         )
         return True
@@ -280,7 +319,7 @@ class RepairOrder(models.Model):
         
         self.write({'state': 'cancelled'})
         self.message_post(
-            body="❌ <b>Orden cancelada</b>",
+            body="<b>Orden cancelada</b>",
             message_type='notification'
         )
         return True
@@ -295,6 +334,21 @@ class RepairOrder(models.Model):
             'date_delivered': False
         })
         return True
+    
+    def action_create_device(self):
+        """Crear dispositivo rápidamente"""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Crear Dispositivo',
+            'res_model': 'mobile_repair.device',
+            'view_mode': 'form',
+            'context': {
+                'default_imei': '',
+                'repair_order_id': self.id
+            },
+            'target': 'new'
+        }
 
     # ============================================================
     # VALIDACIONES

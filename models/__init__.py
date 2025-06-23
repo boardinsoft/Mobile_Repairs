@@ -2,3 +2,4 @@
 
 from . import repair_order
 from . import dashboard
+from . import device

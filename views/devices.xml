@@ -42,7 +42,7 @@
                     <group>
                         <group string="Historial de Dispositivos">
                             <div class="alert alert-info" role="alert">
-                                <strong>📋 Dispositivos Reparados</strong><br/>
+                                <strong>Dispositivos Reparados</strong><br/>
                                 <small class="text-muted">
                                     Historial de todos los dispositivos que este cliente ha traído para reparación.
                                 </small>
@@ -54,8 +54,8 @@
                                     <div class="col-12">
                                         <button name="action_view_customer_repairs" 
                                                 type="object" 
-                                                class="btn btn-primary btn-sm mb-2">
-                                            📋 Ver Todas las Reparaciones
+                                                class="btn btn-primary btn-sm o_mb_2">
+                                            Ver Todas las Reparaciones
                                         </button>
                                     </div>
                                 </div>
@@ -68,7 +68,7 @@
                                     <div class="col-md-4">
                                         <div class="card border-primary">
                                             <div class="card-body">
-                                                <h5 class="text-primary mb-1">
+                                                <h5 class="text-primary o_mb_1">
                                                     <span id="total_repairs">-</span>
                                                 </h5>
                                                 <small class="text-muted">Total Reparaciones</small>
@@ -78,7 +78,7 @@
                                     <div class="col-md-4">
                                         <div class="card border-success">
                                             <div class="card-body">
-                                                <h5 class="text-success mb-1">
+                                                <h5 class="text-success o_mb_1">
                                                     <span id="completed_repairs">-</span>
                                                 </h5>
                                                 <small class="text-muted">Completadas</small>
@@ -88,7 +88,7 @@
                                     <div class="col-md-4">
                                         <div class="card border-warning">
                                             <div class="card-body">
-                                                <h5 class="text-warning mb-1">
+                                                <h5 class="text-warning o_mb_1">
                                                     <span id="pending_repairs">-</span>
                                                 </h5>
                                                 <small class="text-muted">Pendientes</small>
@@ -127,41 +127,41 @@
             <form string="Registro Rápido de Dispositivo">
                 <sheet>
                     <div class="oe_title">
-                        <h1>📱 Nuevo Dispositivo para Reparación</h1>
+                        <h1>Nuevo Dispositivo para Reparación</h1>
                         <p class="text-muted">
                             Registra rápidamente un dispositivo y su problema
                         </p>
                     </div>
                     
                     <group>
-                        <group string="👤 Información del Cliente">
+                        <group string="Información del Cliente">
                             <field name="customer_id" 
                                    options="{'quick_create': True}"
                                    placeholder="Selecciona o crea un cliente"/>
                         </group>
                         
-                        <group string="📱 Información del Dispositivo">
-                            <field name="device_info" 
-                                   placeholder="Ej: iPhone 14 Pro - Azul Sierra - IMEI: 123456789012345"
-                                   required="1"/>
+                        <group string="Información del Dispositivo">
+                            <field name="device_id" 
+                                   required="1"
+                                   context="{'form_view_ref': 'mobile_repair_orders.view_device_form_simple'}"/>
                             <field name="priority"/>
                         </group>
                     </group>
                     
-                    <group string="🔍 Problema Reportado">
+                    <group string="Problema Reportado">
                         <field name="problem_description" 
                                nolabel="1"
                                placeholder="Describe detalladamente el problema que reporta el cliente..."
                                required="1"/>
                     </group>
                     
-                    <group string="💰 Estimación Inicial" groups="base.group_user">
+                    <group string="Estimación Inicial" groups="base.group_user">
                         <field name="estimated_cost" 
                                widget="monetary"
                                placeholder="Presupuesto estimado"/>
                     </group>
                     
-                    <group string="📝 Notas Adicionales">
+                    <group string="Notas Adicionales">
                         <field name="customer_notes" 
                                nolabel="1"
                                placeholder="Observaciones adicionales del cliente (accesorios, daños previos, etc.)"/>
@@ -184,7 +184,7 @@
         <field name="context">{'default_customer_rank': 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                👥 Crear un nuevo cliente
+                Crear un nuevo cliente
             </p>
             <p>
                 Los clientes y sus dispositivos se gestionan de forma integrada.<br/>
@@ -195,7 +195,7 @@
     
     <!-- Acción para registro rápido -->
     <record id="action_quick_device_registration" model="ir.actions.act_window">
-        <field name="name">📱 Registro Rápido</field>
+        <field name="name">Registro Rápido</field>
         <field name="res_model">mobile.repair.order</field>
         <field name="view_mode">form</field>
         <field name="view_id" ref="view_quick_device_form"/>

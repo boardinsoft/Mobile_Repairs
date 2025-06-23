@@ -110,6 +110,13 @@
                       action="base.action_partner_form"
                       sequence="20"/>
 
+            <!-- Menú Dispositivos -->
+            <menuitem id="menu_repair_devices"
+                      name="Dispositivos"
+                      parent="menu_repair_config_data"
+                      action="action_mobile_repair_device"
+                      sequence="30"/>
+
         <!-- Configuración avanzada -->
         <menuitem id="menu_repair_config_advanced"
                   name="Configuración Avanzada"
