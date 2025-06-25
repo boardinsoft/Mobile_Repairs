@@ -5,3 +5,7 @@ access_mobile_repair_device_model,mobile.repair.device.model,model_mobile_repair
 access_mobile_repair_device_color,mobile.repair.device.color,model_mobile_repair_device_color,base.group_user,1,1,1,1
 access_mobile_repair_device_accessory,mobile.repair.device.accessory,model_mobile_repair_device_accessory,base.group_user,1,1,1,1
 access_mobile_repair_device,mobile.repair.device,model_mobile_repair_device,base.group_user,1,1,1,1
+access_mobile_repair_problem,mobile.repair.problem,model_mobile_repair_problem,base.group_user,1,0,0,0
+access_mobile_repair_problem_manager,mobile.repair.problem.manager,model_mobile_repair_problem,base.group_system,1,1,1,1
+access_mobile_repair_problem_category,mobile.repair.problem.category,model_mobile_repair_problem_category,base.group_user,1,0,0,0
+access_mobile_repair_problem_category_manager,mobile.repair.problem.category.manager,model_mobile_repair_problem_category,base.group_system,1,1,1,1

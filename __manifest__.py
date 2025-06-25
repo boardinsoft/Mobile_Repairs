@@ -31,8 +31,11 @@
         
         # Vistas principales
         'views/repair_order_views.xml',
+        'views/repair_problem_views.xml',
         'views/devices.xml',
+        'views/repair_analytics_views.xml',
         'views/dashboard.xml',
+        'views/dashboard_kanban.xml',
         'views/menus.xml',
     ],
     'demo': [

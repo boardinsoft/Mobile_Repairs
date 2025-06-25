@@ -110,7 +110,8 @@
                                 <field name="device_brand" readonly="1" invisible="not device_id"/>
                                 <field name="device_model" readonly="1" invisible="not device_id"/>
                                 <field name="device_imei" readonly="1" invisible="not device_id"/>
-                                <field name="problem_description" placeholder="Descripción detallada del problema reportado por el cliente"/>
+                                <field name="problem_id" required="1" options="{'no_quick_create': True}"/>
+                                <field name="problem_description" placeholder="Detalles adicionales específicos del problema"/>
                             </group>
                         </div>
                         <div class="col-md-6">

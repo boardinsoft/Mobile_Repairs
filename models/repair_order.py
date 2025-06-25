@@ -43,10 +43,18 @@ class RepairOrder(models.Model):
         help="Seleccionar dispositivo registrado"
     )
     
-    problem_description = fields.Text(
+    problem_id = fields.Many2one(
+        'mobile.repair.problem',
         string='Problema Reportado',
         required=True,
-        tracking=True
+        tracking=True,
+        help="Seleccionar problema del catálogo"
+    )
+    
+    problem_description = fields.Text(
+        string='Detalles Adicionales',
+        tracking=True,
+        help="Información específica adicional sobre el problema"
     )
     
     # Estados simplificados

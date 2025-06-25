@@ -11,21 +11,45 @@
               web_icon="mobile_repair_orders,static/description/icon.png"/>
 
     <!-- ============================================================ -->
-    <!-- OPERACIONES PRINCIPALES                                     -->
+    <!-- OPERACIONES PRINCIPALES (Estructura Odoo 18)               -->
     <!-- ============================================================ -->
     
     <!-- Dashboard principal -->
     <menuitem id="menu_repair_dashboard"
               name="Dashboard"
               parent="menu_repair_root"
-              action="action_repair_dashboard"
-              sequence="10"/>
+              action="action_open_dashboard_kanban"
+              sequence="5"/>
+              
+    <!-- Submenú Tablero -->
+    <menuitem id="menu_repair_board"
+              name="Tablero"
+              parent="menu_repair_root"
+              sequence="6"/>
+
+        <menuitem id="menu_repair_board_dashboard"
+                  name="Panel Kanban"
+                  parent="menu_repair_board"
+                  action="action_open_dashboard_kanban"
+                  sequence="10"/>
+
+        <menuitem id="menu_repair_board_classic"
+                  name="Panel Clásico"
+                  parent="menu_repair_board"
+                  action="action_open_dashboard"
+                  sequence="20"/>
+
+        <menuitem id="menu_repair_board_kpis"
+                  name="Indicadores"
+                  parent="menu_repair_board"
+                  action="action_repair_orders_all"
+                  sequence="30"/>
 
     <!-- Órdenes de reparación -->
     <menuitem id="menu_repair_orders"
               name="Órdenes"
               parent="menu_repair_root"
-              sequence="20"/>
+              sequence="10"/>
 
         <!-- Todas las órdenes -->
         <menuitem id="menu_repair_orders_all"
@@ -60,73 +84,152 @@
                   sequence="50"/>
 
     <!-- ============================================================ -->
-    <!-- GESTIÓN DE CLIENTES Y DISPOSITIVOS                          -->
+    <!-- REPORTING CENTRALIZADO (Estructura Odoo 18.3)              -->
     <!-- ============================================================ -->
     
-    <!-- Clientes y dispositivos -->
+    <menuitem id="menu_repair_reporting"
+              name="Informes y Análisis"
+              parent="menu_repair_root"
+              sequence="60"/>
+
+        <!-- Grupo: Análisis Operativo -->
+        <menuitem id="menu_repair_reports_operational"
+                  name="Análisis Operativo"
+                  parent="menu_repair_reporting"
+                  sequence="10"/>
+
+            <menuitem id="menu_repair_reports_monthly"
+                      name="Tendencias Mensuales"
+                      parent="menu_repair_reports_operational"
+                      action="action_repair_orders_monthly_analysis"
+                      sequence="10"/>
+
+            <menuitem id="menu_repair_reports_technician"
+                      name="Productividad por Técnico"
+                      parent="menu_repair_reports_operational"
+                      action="action_repair_orders_technician_analysis"
+                      sequence="20"/>
+
+            <menuitem id="menu_repair_reports_devices"
+                      name="Dispositivos Más Reparados"
+                      parent="menu_repair_reports_operational"
+                      action="action_repair_orders_devices_analysis"
+                      sequence="30"/>
+
+        <!-- Grupo: Reportes de Gestión -->
+        <menuitem id="menu_repair_reports_management"
+                  name="Reportes de Gestión"
+                  parent="menu_repair_reporting"
+                  sequence="20"/>
+
+            <menuitem id="menu_repair_reports_orders"
+                      name="Todas las Órdenes"
+                      parent="menu_repair_reports_management"
+                      action="action_repair_orders_all"
+                      sequence="10"/>
+
+            <menuitem id="menu_repair_reports_states"
+                      name="Estados de Reparación"
+                      parent="menu_repair_reports_management"
+                      sequence="20"/>
+
+            <menuitem id="menu_repair_reports_problems"
+                      name="Catálogo de Problemas"
+                      parent="menu_repair_reports_management"
+                      action="action_repair_problem"
+                      sequence="30"/>
+
+        <!-- Grupo: Análisis Financiero -->
+        <menuitem id="menu_repair_reports_financial"
+                  name="Análisis Financiero"
+                  parent="menu_repair_reporting"
+                  sequence="30"/>
+
+            <menuitem id="menu_repair_reports_revenue"
+                      name="Ingresos por Período"
+                      parent="menu_repair_reports_financial"
+                      sequence="10"/>
+
+            <menuitem id="menu_repair_reports_costs"
+                      name="Análisis de Costos"
+                      parent="menu_repair_reports_financial"
+                      sequence="20"/>
+
+    <!-- ============================================================ -->
+    <!-- MAESTROS DE DATOS (Estructura Odoo 18)                      -->
+    <!-- ============================================================ -->
+    
+    <!-- Clientes -->
     <menuitem id="menu_repair_customers"
               name="Clientes"
               parent="menu_repair_root"
-              sequence="30"/>
+              action="action_customer_devices"
+              sequence="70"/>
 
-        <menuitem id="menu_repair_customers_all"
-                  name="Todos los Clientes"
-                  parent="menu_repair_customers"
-                  action="action_customer_devices"
-                  sequence="10"/>
+    <!-- Dispositivos -->
+    <menuitem id="menu_repair_devices"
+              name="Dispositivos"
+              parent="menu_repair_root"
+              action="action_mobile_repair_device"
+              sequence="71"/>
 
-        <menuitem id="menu_repair_quick_registration"
-                  name="Registro Rápido"
-                  parent="menu_repair_customers"
-                  action="action_quick_device_registration"
-                  sequence="20"/>
 
     <!-- ============================================================ -->
-    <!-- CONFIGURACIÓN (Solo administradores)                        -->
+    <!-- CONFIGURACIÓN (Estructura Odoo 18)                          -->
     <!-- ============================================================ -->
     
-    <menuitem id="menu_repair_config"
+    <menuitem id="menu_repair_configuration"
               name="Configuración"
               parent="menu_repair_root"
               sequence="90"
               groups="base.group_system"/>
 
-        <!-- Datos maestros simplificados -->
-        <menuitem id="menu_repair_config_data"
-                  name="Datos Maestros"
-                  parent="menu_repair_config"
+        <!-- Configuración General -->
+        <menuitem id="menu_repair_config_general"
+                  name="General"
+                  parent="menu_repair_configuration"
                   sequence="10"/>
 
-            <!-- Solo lo esencial para configuración -->
             <menuitem id="menu_repair_technicians"
                       name="Técnicos"
-                      parent="menu_repair_config_data"
+                      parent="menu_repair_config_general"
                       action="base.action_res_users"
                       sequence="10"/>
 
-            <menuitem id="menu_repair_customers"
-                      name="Clientes"
-                      parent="menu_repair_config_data"
-                      action="base.action_partner_form"
-                      sequence="20"/>
-
-            <!-- Menú Dispositivos -->
-            <menuitem id="menu_repair_devices"
-                      name="Dispositivos"
-                      parent="menu_repair_config_data"
-                      action="action_mobile_repair_device"
-                      sequence="30"/>
-
-        <!-- Configuración avanzada -->
-        <menuitem id="menu_repair_config_advanced"
-                  name="Configuración Avanzada"
-                  parent="menu_repair_config"
-                  sequence="20"/>
-
             <menuitem id="menu_repair_sequences"
                       name="Secuencias"
-                      parent="menu_repair_config_advanced"
+                      parent="menu_repair_config_general"
                       action="base.ir_sequence_form"
+                      sequence="20"/>
+
+        <!-- Configuración de Problemas -->
+        <menuitem id="menu_repair_config_problems"
+                  name="Problemas"
+                  parent="menu_repair_configuration"
+                  sequence="20"/>
+
+            <menuitem id="menu_repair_problem_categories"
+                      name="Categorías"
+                      parent="menu_repair_config_problems"
+                      action="action_repair_problem_category"
+                      sequence="10"/>
+
+            <menuitem id="menu_repair_problem_catalog"
+                      name="Catálogo"
+                      parent="menu_repair_config_problems"
+                      action="action_repair_problem"
+                      sequence="20"/>
+
+        <!-- Herramientas -->
+        <menuitem id="menu_repair_tools"
+                  name="Herramientas"
+                  parent="menu_repair_configuration"
+                  sequence="90"/>
+
+            <menuitem id="menu_repair_quick_registration"
+                      name="Registro Rápido"
+                      parent="menu_repair_tools"
+                      action="action_quick_device_registration"
                       sequence="10"/>
 
 </odoo>
