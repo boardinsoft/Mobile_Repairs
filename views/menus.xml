@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- ============================================================ -->
-    <!-- ESTRUCTURA DE MENÚS MINIMALISTA Y EFICIENTE                 -->
+    <!-- ESTRUCTURA DE MENÚS MINIMALISTA Y LIMPIA                    -->
     <!-- ============================================================ -->
 
     <!-- Menú raíz -->
@@ -11,171 +11,80 @@
               web_icon="mobile_repair_orders,static/description/icon.png"/>
 
     <!-- ============================================================ -->
-    <!-- OPERACIONES PRINCIPALES (Estructura Odoo 18)               -->
+    <!-- ORDENES - Vista Kanban directa sin submenús                 -->
     <!-- ============================================================ -->
     
-    <!-- Dashboard principal -->
-    <menuitem id="menu_repair_dashboard"
-              name="Dashboard"
-              parent="menu_repair_root"
-              action="action_open_dashboard_kanban"
-              sequence="5"/>
-              
-    <!-- Submenú Tablero -->
-    <menuitem id="menu_repair_board"
-              name="Tablero"
-              parent="menu_repair_root"
-              sequence="6"/>
-
-        <menuitem id="menu_repair_board_dashboard"
-                  name="Panel Kanban"
-                  parent="menu_repair_board"
-                  action="action_open_dashboard_kanban"
-                  sequence="10"/>
-
-        <menuitem id="menu_repair_board_classic"
-                  name="Panel Clásico"
-                  parent="menu_repair_board"
-                  action="action_open_dashboard"
-                  sequence="20"/>
-
-        <menuitem id="menu_repair_board_kpis"
-                  name="Indicadores"
-                  parent="menu_repair_board"
-                  action="action_repair_orders_all"
-                  sequence="30"/>
-
-    <!-- Órdenes de reparación -->
     <menuitem id="menu_repair_orders"
-              name="Órdenes"
+              name="Ordenes"
               parent="menu_repair_root"
+              action="action_repair_orders_all"
               sequence="10"/>
 
-        <!-- Todas las órdenes -->
-        <menuitem id="menu_repair_orders_all"
-                  name="Todas"
-                  parent="menu_repair_orders"
-                  action="action_repair_orders_all"
-                  sequence="10"/>
-
-        <!-- Por estado -->
-        <menuitem id="menu_repair_orders_draft"
-                  name="Recibidas"
-                  parent="menu_repair_orders"
-                  action="action_repair_orders_draft"
-                  sequence="20"/>
-
-        <menuitem id="menu_repair_orders_in_progress"
-                  name="En Reparación"
-                  parent="menu_repair_orders"
-                  action="action_repair_orders_in_progress"
-                  sequence="30"/>
-
-        <menuitem id="menu_repair_orders_ready"
-                  name="Listas"
-                  parent="menu_repair_orders"
-                  action="action_repair_orders_ready"
-                  sequence="40"/>
-
-        <menuitem id="menu_repair_orders_delivered"
-                  name="Entregadas"
-                  parent="menu_repair_orders"
-                  action="action_repair_orders_delivered"
-                  sequence="50"/>
-
     <!-- ============================================================ -->
-    <!-- REPORTING CENTRALIZADO (Estructura Odoo 18.3)              -->
+    <!-- PRODUCTOS - Dispositivos, Repuestos, Servicios             -->
     <!-- ============================================================ -->
     
-    <menuitem id="menu_repair_reporting"
-              name="Informes y Análisis"
+    <menuitem id="menu_repair_products"
+              name="Productos"
               parent="menu_repair_root"
-              sequence="60"/>
+              sequence="20"/>
 
-        <!-- Grupo: Análisis Operativo -->
-        <menuitem id="menu_repair_reports_operational"
-                  name="Análisis Operativo"
-                  parent="menu_repair_reporting"
+        <menuitem id="menu_repair_devices"
+                  name="Dispositivos"
+                  parent="menu_repair_products"
+                  action="action_mobile_repair_device"
                   sequence="10"/>
 
-            <menuitem id="menu_repair_reports_monthly"
-                      name="Tendencias Mensuales"
-                      parent="menu_repair_reports_operational"
-                      action="action_repair_orders_monthly_analysis"
-                      sequence="10"/>
-
-            <menuitem id="menu_repair_reports_technician"
-                      name="Productividad por Técnico"
-                      parent="menu_repair_reports_operational"
-                      action="action_repair_orders_technician_analysis"
-                      sequence="20"/>
-
-            <menuitem id="menu_repair_reports_devices"
-                      name="Dispositivos Más Reparados"
-                      parent="menu_repair_reports_operational"
-                      action="action_repair_orders_devices_analysis"
-                      sequence="30"/>
-
-        <!-- Grupo: Reportes de Gestión -->
-        <menuitem id="menu_repair_reports_management"
-                  name="Reportes de Gestión"
-                  parent="menu_repair_reporting"
+        <menuitem id="menu_repair_spare_parts"
+                  name="Repuestos"
+                  parent="menu_repair_products"
+                  action="product.product_template_action"
                   sequence="20"/>
 
-            <menuitem id="menu_repair_reports_orders"
-                      name="Todas las Órdenes"
-                      parent="menu_repair_reports_management"
-                      action="action_repair_orders_all"
-                      sequence="10"/>
-
-            <menuitem id="menu_repair_reports_states"
-                      name="Estados de Reparación"
-                      parent="menu_repair_reports_management"
-                      sequence="20"/>
-
-            <menuitem id="menu_repair_reports_problems"
-                      name="Catálogo de Problemas"
-                      parent="menu_repair_reports_management"
-                      action="action_repair_problem"
-                      sequence="30"/>
-
-        <!-- Grupo: Análisis Financiero -->
-        <menuitem id="menu_repair_reports_financial"
-                  name="Análisis Financiero"
-                  parent="menu_repair_reporting"
+        <menuitem id="menu_repair_services"
+                  name="Servicios"
+                  parent="menu_repair_products"
+                  action="product.product_template_action_all"
                   sequence="30"/>
 
-            <menuitem id="menu_repair_reports_revenue"
-                      name="Ingresos por Período"
-                      parent="menu_repair_reports_financial"
-                      sequence="10"/>
-
-            <menuitem id="menu_repair_reports_costs"
-                      name="Análisis de Costos"
-                      parent="menu_repair_reports_financial"
-                      sequence="20"/>
-
     <!-- ============================================================ -->
-    <!-- MAESTROS DE DATOS (Estructura Odoo 18)                      -->
+    <!-- CLIENTES                                                     -->
     <!-- ============================================================ -->
     
-    <!-- Clientes -->
     <menuitem id="menu_repair_customers"
               name="Clientes"
               parent="menu_repair_root"
-              action="action_customer_devices"
-              sequence="70"/>
-
-    <!-- Dispositivos -->
-    <menuitem id="menu_repair_devices"
-              name="Dispositivos"
-              parent="menu_repair_root"
-              action="action_mobile_repair_device"
-              sequence="71"/>
-
+              action="base.action_partner_form"
+              sequence="30"/>
 
     <!-- ============================================================ -->
-    <!-- CONFIGURACIÓN (Estructura Odoo 18)                          -->
+    <!-- REPORTES - Análisis técnicos, Ordenes por estado, Ingresos -->
+    <!-- ============================================================ -->
+    
+    <menuitem id="menu_repair_reports"
+              name="Reportes"
+              parent="menu_repair_root"
+              sequence="40"/>
+
+        <menuitem id="menu_repair_reports_technicians"
+                  name="Análisis por Técnicos"
+                  parent="menu_repair_reports"
+                  action="action_repair_orders_technician_analysis"
+                  sequence="10"/>
+
+        <menuitem id="menu_repair_reports_states"
+                  name="Ordenes por Estado"
+                  parent="menu_repair_reports"
+                  action="action_repair_orders_all"
+                  sequence="20"/>
+
+        <menuitem id="menu_repair_reports_revenue"
+                  name="Ingresos por Servicios"
+                  parent="menu_repair_reports"
+                  sequence="30"/>
+
+    <!-- ============================================================ -->
+    <!-- CONFIGURACIÓN - Técnicos, Problemas/categorías, Marcas     -->
     <!-- ============================================================ -->
     
     <menuitem id="menu_repair_configuration"
@@ -184,52 +93,44 @@
               sequence="90"
               groups="base.group_system"/>
 
-        <!-- Configuración General -->
-        <menuitem id="menu_repair_config_general"
-                  name="General"
+        <menuitem id="menu_repair_technicians"
+                  name="Técnicos"
                   parent="menu_repair_configuration"
+                  action="base.action_res_users"
                   sequence="10"/>
 
-            <menuitem id="menu_repair_technicians"
-                      name="Técnicos"
-                      parent="menu_repair_config_general"
-                      action="base.action_res_users"
-                      sequence="10"/>
-
-            <menuitem id="menu_repair_sequences"
-                      name="Secuencias"
-                      parent="menu_repair_config_general"
-                      action="base.ir_sequence_form"
-                      sequence="20"/>
-
-        <!-- Configuración de Problemas -->
-        <menuitem id="menu_repair_config_problems"
-                  name="Problemas"
+        <menuitem id="menu_repair_problems_config"
+                  name="Problemas y Categorías"
                   parent="menu_repair_configuration"
                   sequence="20"/>
 
             <menuitem id="menu_repair_problem_categories"
                       name="Categorías"
-                      parent="menu_repair_config_problems"
+                      parent="menu_repair_problems_config"
                       action="action_repair_problem_category"
                       sequence="10"/>
 
             <menuitem id="menu_repair_problem_catalog"
-                      name="Catálogo"
-                      parent="menu_repair_config_problems"
+                      name="Problemas"
+                      parent="menu_repair_problems_config"
                       action="action_repair_problem"
                       sequence="20"/>
 
-        <!-- Herramientas -->
-        <menuitem id="menu_repair_tools"
-                  name="Herramientas"
+        <menuitem id="menu_repair_brands_models"
+                  name="Marcas y Modelos"
                   parent="menu_repair_configuration"
-                  sequence="90"/>
+                  sequence="30"/>
 
-            <menuitem id="menu_repair_quick_registration"
-                      name="Registro Rápido"
-                      parent="menu_repair_tools"
-                      action="action_quick_device_registration"
+            <menuitem id="menu_repair_device_brands"
+                      name="Marcas"
+                      parent="menu_repair_brands_models"
+                      action="action_mobile_repair_device_brand"
                       sequence="10"/>
+
+            <menuitem id="menu_repair_device_models"
+                      name="Modelos"
+                      parent="menu_repair_brands_models"
+                      action="action_mobile_repair_device_model"
+                      sequence="20"/>
 
 </odoo>

@@ -11,7 +11,7 @@
         <field name="arch" type="xml">
             <graph string="Órdenes por Mes" type="line" stacked="0">
                 <field name="date_received" type="row" interval="month"/>
-                <field name="id" type="measure"/>
+                <field name="id" type="measure" string="Cantidad"/>
             </graph>
         </field>
     </record>
@@ -23,7 +23,7 @@
         <field name="arch" type="xml">
             <graph string="Órdenes por Técnico" type="bar">
                 <field name="technician_id" type="row"/>
-                <field name="id" type="measure"/>
+                <field name="id" type="measure" string="Cantidad"/>
             </graph>
         </field>
     </record>
@@ -36,7 +36,7 @@
             <graph string="Dispositivos Más Reparados" type="bar">
                 <field name="device_brand" type="row"/>
                 <field name="device_model" type="col"/>
-                <field name="id" type="measure"/>
+                <field name="id" type="measure" string="Cantidad"/>
             </graph>
         </field>
     </record>
@@ -48,7 +48,7 @@
         <field name="arch" type="xml">
             <graph string="Órdenes por Estado" type="pie">
                 <field name="state" type="row"/>
-                <field name="id" type="measure"/>
+                <field name="id" type="measure" string="Cantidad"/>
             </graph>
         </field>
     </record>
@@ -61,9 +61,9 @@
             <pivot string="Análisis de Reparaciones">
                 <field name="date_received" type="row" interval="month"/>
                 <field name="technician_id" type="col"/>
-                <field name="id" type="measure"/>
+                <field name="state" type="col"/>
                 <field name="final_cost" type="measure"/>
-                <field name="duration_days" type="measure"/>
+                <field name="estimated_cost" type="measure"/>
             </pivot>
         </field>
     </record>

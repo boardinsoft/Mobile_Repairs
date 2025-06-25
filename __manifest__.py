@@ -8,10 +8,10 @@
         Módulo optimizado para la gestión eficiente de reparaciones de dispositivos móviles.
         
         Características principales:
-        • Dashboard visual con métricas clave
         • Flujo de trabajo simplificado
         • Interfaz minimalista y rápida
         • Gestión completa del ciclo de reparación
+        • Reportes y análisis integrados
     """,
     'author': 'Your Company',
     'website': 'https://www.yourcompany.com',
@@ -19,6 +19,7 @@
         'base',
         'mail',
         'web',
+        'stock',
     ],
     'data': [
         'views/device_views.xml',
@@ -34,8 +35,6 @@
         'views/repair_problem_views.xml',
         'views/devices.xml',
         'views/repair_analytics_views.xml',
-        'views/dashboard.xml',
-        'views/dashboard_kanban.xml',
         'views/menus.xml',
     ],
     'demo': [
