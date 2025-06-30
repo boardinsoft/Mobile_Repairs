@@ -25,7 +25,6 @@
             <field name="technician_id" ref="technician_demo_1"/>
             <field name="date_received" eval="DateTime.now() - timedelta(hours=4)"/>
             <field name="date_started" eval="DateTime.now() - timedelta(hours=1)"/>
-            <field name="diagnosis">Micrófono principal obstruido. Limpieza en proceso.</field>
         </record>
 
         <record id="repair_order_demo_9" model="mobile.repair.order">
@@ -38,8 +37,6 @@
             <field name="date_received" eval="DateTime.now() - timedelta(days=1, hours=6)"/>
             <field name="date_started" eval="DateTime.now() - timedelta(days=1, hours=2)"/>
             <field name="date_completed" eval="DateTime.now() - timedelta(minutes=45)"/>
-            <field name="diagnosis">Antena WiFi desconectada internamente.</field>
-            <field name="solution_applied">Reconexión de antena WiFi. Pruebas de conectividad exitosas.</field>
         </record>
 
         <record id="repair_order_demo_10" model="mobile.repair.order">
@@ -53,14 +50,13 @@
             <field name="date_started" eval="DateTime.now() - timedelta(days=2, hours=6)"/>
             <field name="date_completed" eval="DateTime.now() - timedelta(days=1, hours=4)"/>
             <field name="date_delivered" eval="DateTime.now() - timedelta(hours=8)"/>
-            <field name="diagnosis">Controlador LED defectuoso.</field>
-            <field name="solution_applied">Reemplazo de controlador LED. Sistema Glyph funcionando correctamente.</field>
         </record>
 
         <!-- Órdenes completadas en días anteriores para estadísticas -->
         <record id="repair_order_demo_11" model="mobile.repair.order">
             <field name="customer_id" ref="base.res_partner_3"/>
-            <field name="device_info">Realme GT2 - Plateado - IMEI: ***5555</field>
+            <field name="device_id" ref="device_demo_3"/>
+            <field name="problem_id" ref="mobile_repair_orders.problem_charging"/>
             <field name="problem_description">Conector de carga suelto.</field>
             <field name="state">delivered</field>
             <field name="priority">normal</field>
@@ -69,8 +65,6 @@
             <field name="date_started" eval="DateTime.now() - timedelta(days=6)"/>
             <field name="date_completed" eval="DateTime.now() - timedelta(days=5)"/>
             <field name="date_delivered" eval="DateTime.now() - timedelta(days=4)"/>
-            <field name="diagnosis">Conector USB-C desgastado.</field>
-            <field name="solution_applied">Reemplazo completo del conector de carga.</field>
         </record>
 
         <record id="repair_order_demo_12" model="mobile.repair.order">
@@ -84,8 +78,6 @@
             <field name="date_started" eval="DateTime.now() - timedelta(days=9)"/>
             <field name="date_completed" eval="DateTime.now() - timedelta(days=7)"/>
             <field name="date_delivered" eval="DateTime.now() - timedelta(days=6)"/>
-            <field name="diagnosis">Panel LCD dañado internamente.</field>
-            <field name="solution_applied">Reemplazo completo de pantalla LCD original.</field>
         </record>
 
     </data>

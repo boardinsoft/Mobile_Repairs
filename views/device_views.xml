@@ -8,6 +8,7 @@
     <record id="view_device_tree" model="ir.ui.view">
         <field name="name">mobile_repair.device.tree</field>
         <field name="model">mobile_repair.device</field>
+        <field name="type">list</field>
         <field name="arch" type="xml">
             <list string="Dispositivos" default_order="create_date desc">
                 <field name="device_code"/>
@@ -28,6 +29,7 @@
     <record id="view_device_form" model="ir.ui.view">
         <field name="name">mobile_repair.device.form</field>
         <field name="model">mobile_repair.device</field>
+        <field name="type">form</field>
         <field name="arch" type="xml">
             <form string="Dispositivo">
                 <header>
@@ -109,6 +111,7 @@
     <record id="view_device_form_simple" model="ir.ui.view">
         <field name="name">mobile_repair.device.form.simple</field>
         <field name="model">mobile_repair.device</field>
+        <field name="type">form</field>
         <field name="arch" type="xml">
             <form string="Crear Dispositivo">
                 <group>
@@ -143,6 +146,7 @@
     <record id="view_device_kanban" model="ir.ui.view">
         <field name="name">mobile_repair.device.kanban</field>
         <field name="model">mobile_repair.device</field>
+        <field name="type">kanban</field>
         <field name="arch" type="xml">
             <kanban class="o_kanban_medium_column">
                 <field name="display_name"/>
@@ -175,6 +179,7 @@
     <record id="view_device_search" model="ir.ui.view">
         <field name="name">mobile_repair.device.search</field>
         <field name="model">mobile_repair.device</field>
+        <field name="type">search</field>
         <field name="arch" type="xml">
             <search string="Buscar Dispositivos">
                 <field name="brand_id" string="Marca"/>
@@ -229,6 +234,7 @@
     <record id="view_device_brand_tree" model="ir.ui.view">
         <field name="name">mobile_repair.device.brand.tree</field>
         <field name="model">mobile_repair.device.brand</field>
+        <field name="type">list</field>
         <field name="arch" type="xml">
             <list string="Marcas" editable="bottom">
                 <field name="name"/>
@@ -241,6 +247,7 @@
     <record id="view_device_brand_form" model="ir.ui.view">
         <field name="name">mobile_repair.device.brand.form</field>
         <field name="model">mobile_repair.device.brand</field>
+        <field name="type">form</field>
         <field name="arch" type="xml">
             <form string="Marca">
                 <sheet>
@@ -272,6 +279,7 @@
     <record id="view_device_model_tree" model="ir.ui.view">
         <field name="name">mobile_repair.device.model.tree</field>
         <field name="model">mobile_repair.device.model</field>
+        <field name="type">list</field>
         <field name="arch" type="xml">
             <list string="Modelos" editable="bottom">
                 <field name="brand_id"/>
@@ -287,6 +295,7 @@
     <record id="view_device_model_form" model="ir.ui.view">
         <field name="name">mobile_repair.device.model.form</field>
         <field name="model">mobile_repair.device.model</field>
+        <field name="type">form</field>
         <field name="arch" type="xml">
             <form string="Modelo de Dispositivo">
                 <sheet>
@@ -325,6 +334,7 @@
     <record id="view_device_color_tree" model="ir.ui.view">
         <field name="name">mobile_repair.device.color.tree</field>
         <field name="model">mobile_repair.device.color</field>
+        <field name="type">list</field>
         <field name="arch" type="xml">
             <list string="Colores" editable="bottom">
                 <field name="name"/>
@@ -337,6 +347,7 @@
     <record id="view_device_color_form" model="ir.ui.view">
         <field name="name">mobile_repair.device.color.form</field>
         <field name="model">mobile_repair.device.color</field>
+        <field name="type">form</field>
         <field name="arch" type="xml">
             <form string="Color de Dispositivo">
                 <sheet>
@@ -363,6 +374,7 @@
     <record id="view_device_accessory_tree" model="ir.ui.view">
         <field name="name">mobile_repair.device.accessory.tree</field>
         <field name="model">mobile_repair.device.accessory</field>
+        <field name="type">list</field>
         <field name="arch" type="xml">
             <list string="Accesorios" editable="bottom">
                 <field name="name"/>
@@ -376,6 +388,7 @@
     <record id="view_device_accessory_form" model="ir.ui.view">
         <field name="name">mobile_repair.device.accessory.form</field>
         <field name="model">mobile_repair.device.accessory</field>
+        <field name="type">form</field>
         <field name="arch" type="xml">
             <form string="Accesorio de Dispositivo">
                 <sheet>

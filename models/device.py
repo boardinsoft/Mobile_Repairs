@@ -13,18 +13,23 @@ class RepairDeviceBrand(models.Model):
     active = fields.Boolean(string='Activo', default=True)
     image = fields.Image(string='Logo', max_width=128, max_height=128)
     
-    # Campos computados
+    # MEJORA: Se añade el campo One2many para que la dependencia del cómputo funcione correctamente.
+    model_ids = fields.One2many(
+        'mobile_repair.device.model',
+        'brand_id',
+        string='Modelos'
+    )
+    
     model_count = fields.Integer(
         string='Modelos', 
         compute='_compute_model_count'
     )
     
-    @api.depends('name')
+    # MEJORA: La dependencia ahora es correcta.
+    @api.depends('model_ids')
     def _compute_model_count(self):
         for brand in self:
-            brand.model_count = self.env['mobile_repair.device.model'].search_count([
-                ('brand_id', '=', brand.id)
-            ])
+            brand.model_count = len(brand.model_ids)
 
 class RepairDeviceModel(models.Model):
     """Modelos de dispositivos optimizado"""
@@ -43,7 +48,7 @@ class RepairDeviceModel(models.Model):
     
     # Información técnica
     release_year = fields.Integer(string='Año de Lanzamiento')
-    screen_size = fields.Float(string='Tamaño Pantalla (pulgadas)', digits=(3,1))
+    screen_size = fields.Float(string='Tamaño Pantalla (pulgadas)', digits='Product Unit of Measure')
     operating_system = fields.Selection([
         ('android', 'Android'),
         ('ios', 'iOS'),

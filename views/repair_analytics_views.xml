@@ -1,178 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- ============================================================ -->
-    <!-- VISTAS DE ANÁLISIS CON GRÁFICOS NATIVOS DE ODOO 18         -->
-    <!-- ============================================================ -->
-    
-    <!-- Vista Graph: Órdenes por Mes -->
-    <record id="view_repair_orders_graph_monthly" model="ir.ui.view">
-        <field name="name">repair.orders.graph.monthly</field>
-        <field name="model">mobile.repair.order</field>
-        <field name="arch" type="xml">
-            <graph string="Órdenes por Mes" type="line" stacked="0">
-                <field name="date_received" type="row" interval="month"/>
-                <field name="id" type="measure" string="Cantidad"/>
-            </graph>
-        </field>
-    </record>
-    
-    <!-- Vista Graph: Órdenes por Técnico -->
-    <record id="view_repair_orders_graph_technician" model="ir.ui.view">
-        <field name="name">repair.orders.graph.technician</field>
-        <field name="model">mobile.repair.order</field>
-        <field name="arch" type="xml">
-            <graph string="Órdenes por Técnico" type="bar">
-                <field name="technician_id" type="row"/>
-                <field name="id" type="measure" string="Cantidad"/>
-            </graph>
-        </field>
-    </record>
-    
-    <!-- Vista Graph: Dispositivos Más Reparados -->
-    <record id="view_repair_orders_graph_devices" model="ir.ui.view">
-        <field name="name">repair.orders.graph.devices</field>
-        <field name="model">mobile.repair.order</field>
-        <field name="arch" type="xml">
-            <graph string="Dispositivos Más Reparados" type="bar">
-                <field name="device_brand" type="row"/>
-                <field name="device_model" type="col"/>
-                <field name="id" type="measure" string="Cantidad"/>
-            </graph>
-        </field>
-    </record>
-    
-    <!-- Vista Graph: Órdenes por Estado -->
-    <record id="view_repair_orders_graph_state" model="ir.ui.view">
-        <field name="name">repair.orders.graph.state</field>
-        <field name="model">mobile.repair.order</field>
-        <field name="arch" type="xml">
-            <graph string="Órdenes por Estado" type="pie">
-                <field name="state" type="row"/>
-                <field name="id" type="measure" string="Cantidad"/>
-            </graph>
-        </field>
-    </record>
-    
-    <!-- Vista Pivot: Análisis Completo -->
     <record id="view_repair_orders_pivot" model="ir.ui.view">
         <field name="name">repair.orders.pivot</field>
         <field name="model">mobile.repair.order</field>
+        <field name="type">pivot</field>
         <field name="arch" type="xml">
             <pivot string="Análisis de Reparaciones">
                 <field name="date_received" type="row" interval="month"/>
                 <field name="technician_id" type="col"/>
                 <field name="state" type="col"/>
-                <field name="total_amount" type="measure"/>
+                <field name="amount_total" type="measure"/>
             </pivot>
         </field>
     </record>
-    
-    <!-- ============================================================ -->
-    <!-- ACCIONES PARA LOS GRÁFICOS                                  -->
-    <!-- ============================================================ -->
-    
-    <!-- Acción: Análisis Mensual -->
-    <record id="action_repair_orders_monthly_analysis" model="ir.actions.act_window">
-        <field name="name">Análisis Mensual</field>
-        <field name="res_model">mobile.repair.order</field>
-        <field name="view_mode">graph,pivot,list</field>
-        <field name="view_id" ref="view_repair_orders_graph_monthly"/>
-        <field name="context">{'search_default_filter_this_year': 1}</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Análisis de órdenes por mes
-            </p>
-            <p>
-                Visualiza las tendencias mensuales de órdenes de reparación.
-            </p>
-        </field>
-    </record>
-    
-    <!-- Acción: Análisis por Técnico -->
+
     <record id="action_repair_orders_technician_analysis" model="ir.actions.act_window">
-        <field name="name">Análisis por Técnico</field>
+        <field name="name">Análisis por Técnicos</field>
         <field name="res_model">mobile.repair.order</field>
-        <field name="view_mode">graph,pivot,list</field>
-        <field name="view_id" ref="view_repair_orders_graph_technician"/>
-        <field name="context">{'search_default_filter_assigned': 1}</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Productividad por técnico
-            </p>
-            <p>
-                Compara el rendimiento de los técnicos de reparación.
-            </p>
-        </field>
+        <field name="view_mode">pivot,graph</field>
+        <field name="view_id" ref="view_repair_orders_pivot"/>
+        <field name="context">{'group_by': ['technician_id']}</field>
     </record>
-    
-    <!-- Acción: Análisis de Dispositivos -->
-    <record id="action_repair_orders_devices_analysis" model="ir.actions.act_window">
-        <field name="name">Dispositivos Más Reparados</field>
-        <field name="res_model">mobile.repair.order</field>
-        <field name="view_mode">graph,pivot,list</field>
-        <field name="view_id" ref="view_repair_orders_graph_devices"/>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Dispositivos populares
-            </p>
-            <p>
-                Identifica qué dispositivos se reparan con más frecuencia.
-            </p>
-        </field>
-    </record>
-    
-    <!-- ============================================================ -->
-    <!-- FILTROS DE BÚSQUEDA PARA ANÁLISIS                          -->
-    <!-- ============================================================ -->
-    
-    <record id="view_repair_order_search_analytics" model="ir.ui.view">
-        <field name="name">repair.order.search.analytics</field>
-        <field name="model">mobile.repair.order</field>
-        <field name="arch" type="xml">
-            <search>
-                <field name="name"/>
-                <field name="customer_id"/>
-                <field name="technician_id"/>
-                <field name="device_brand"/>
-                <field name="device_model"/>
-                <field name="state"/>
-                <field name="priority"/>
-                
-                <!-- Filtros predefinidos -->
-                <filter string="Este Año" name="filter_this_year"
-                        domain="[('date_received', '&gt;=', (context_today() - relativedelta(years=1)).strftime('%Y-01-01'))]"/>
-                
-                <filter string="Este Mes" name="filter_this_month"
-                        domain="[('date_received', '&gt;=', (context_today().replace(day=1)).strftime('%Y-%m-%d'))]"/>
-                
-                <filter string="Últimos 30 días" name="filter_last_30_days"
-                        domain="[('date_received', '&gt;=', (context_today() - relativedelta(days=30)).strftime('%Y-%m-%d'))]"/>
-                
-                <filter string="Con Técnico Asignado" name="filter_assigned"
-                        domain="[('technician_id', '!=', False)]"/>
-                
-                <filter string="Completadas" name="filter_completed"
-                        domain="[('state', 'in', ['ready', 'delivered'])]"/>
-                
-                <filter string="En Proceso" name="filter_in_progress"
-                        domain="[('state', 'in', ['draft', 'in_progress'])]"/>
-                
-                <separator/>
-                
-                <!-- Agrupaciones -->
-                <group expand="1" string="Agrupar Por">
-                    <filter string="Estado" name="group_by_state" context="{'group_by': 'state'}"/>
-                    <filter string="Técnico" name="group_by_technician" context="{'group_by': 'technician_id'}"/>
-                    <filter string="Prioridad" name="group_by_priority" context="{'group_by': 'priority'}"/>
-                    <filter string="Marca Dispositivo" name="group_by_brand" context="{'group_by': 'device_brand'}"/>
-                    <filter string="Modelo Dispositivo" name="group_by_model" context="{'group_by': 'device_model'}"/>
-                    <filter string="Fecha (Mes)" name="group_by_date_month" context="{'group_by': 'date_received:month'}"/>
-                    <filter string="Fecha (Semana)" name="group_by_date_week" context="{'group_by': 'date_received:week'}"/>
-                </group>
-            </search>
-        </field>
-    </record>
-    
-    <!-- Los menús ahora están centralizados en menus.xml -->
-    
 </odoo>
