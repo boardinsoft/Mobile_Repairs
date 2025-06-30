@@ -20,6 +20,9 @@
         'mail',
         'web',
         'stock',
+        'sale_stock',
+        'sale_management',
+        'account',
     ],
     'data': [
         'views/device_views.xml',

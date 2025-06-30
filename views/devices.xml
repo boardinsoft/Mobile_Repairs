@@ -156,9 +156,10 @@
                     </group>
                     
                     <group string="Estimación Inicial" groups="base.group_user">
-                        <field name="estimated_cost" 
+                        <field name="total_amount" 
                                widget="monetary"
-                               placeholder="Presupuesto estimado"/>
+                               placeholder="Presupuesto estimado"
+                               readonly="1"/>
                     </group>
                     
                     <group string="Notas Adicionales">

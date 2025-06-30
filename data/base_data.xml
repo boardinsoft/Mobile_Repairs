@@ -58,7 +58,6 @@
             <field name="state">draft</field>
             <field name="priority">normal</field>
             <field name="date_received" eval="DateTime.now() - timedelta(hours=2)"/>
-            <field name="estimated_cost">150.00</field>
         </record>
 
         <!-- Orden 2: En reparación -->
@@ -71,7 +70,6 @@
             <field name="technician_id" ref="technician_demo_1"/>
             <field name="date_received" eval="DateTime.now() - timedelta(days=1)"/>
             <field name="date_started" eval="DateTime.now() - timedelta(hours=3)"/>
-            <field name="estimated_cost">80.00</field>
             <field name="diagnosis">Batería degradada. Capacidad actual: 65%. Requiere reemplazo de batería original.</field>
         </record>
 
@@ -86,8 +84,6 @@
             <field name="date_received" eval="DateTime.now() - timedelta(days=2)"/>
             <field name="date_started" eval="DateTime.now() - timedelta(days=1, hours=8)"/>
             <field name="date_completed" eval="DateTime.now() - timedelta(hours=1)"/>
-            <field name="estimated_cost">120.00</field>
-            <field name="final_cost">95.00</field>
             <field name="diagnosis">Daño por líquido en placa base. Corrosión en conectores de batería y carga.</field>
             <field name="solution_applied">Limpieza profunda con alcohol isopropílico, reemplazo de conectores dañados y secado completo. Dispositivo funcionando al 100%.</field>
         </record>
@@ -104,8 +100,6 @@
             <field name="date_started" eval="DateTime.now() - timedelta(days=4)"/>
             <field name="date_completed" eval="DateTime.now() - timedelta(days=2)"/>
             <field name="date_delivered" eval="DateTime.now() - timedelta(days=1)"/>
-            <field name="estimated_cost">60.00</field>
-            <field name="final_cost">55.00</field>
             <field name="diagnosis">Flex de botones de volumen deteriorado.</field>
             <field name="solution_applied">Reemplazo del flex de botones de volumen. Pruebas completas realizadas.</field>
         </record>
@@ -120,7 +114,6 @@
             <field name="technician_id" ref="technician_demo_2"/>
             <field name="date_received" eval="DateTime.now() - timedelta(hours=6)"/>
             <field name="date_started" eval="DateTime.now() - timedelta(hours=2)"/>
-            <field name="estimated_cost">200.00</field>
             <field name="diagnosis">Posible daño en pantalla LCD y/o placa base. Investigando causa raíz.</field>
             <field name="customer_notes">Cliente necesita el dispositivo urgentemente para trabajo, contiene información importante.</field>
         </record>
@@ -133,7 +126,6 @@
             <field name="state">cancelled</field>
             <field name="priority">normal</field>
             <field name="date_received" eval="DateTime.now() - timedelta(days=3)"/>
-            <field name="estimated_cost">90.00</field>
             <field name="customer_notes">Cliente decidió comprar dispositivo nuevo en lugar de reparar.</field>
         </record>
 

@@ -62,8 +62,7 @@
                 <field name="date_received" type="row" interval="month"/>
                 <field name="technician_id" type="col"/>
                 <field name="state" type="col"/>
-                <field name="final_cost" type="measure"/>
-                <field name="estimated_cost" type="measure"/>
+                <field name="total_amount" type="measure"/>
             </pivot>
         </field>
     </record>

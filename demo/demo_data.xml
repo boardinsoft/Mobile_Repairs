@@ -14,7 +14,6 @@
             <field name="state">draft</field>
             <field name="priority">normal</field>
             <field name="date_received" eval="DateTime.now() - timedelta(minutes=30)"/>
-            <field name="estimated_cost">70.00</field>
         </record>
 
         <record id="repair_order_demo_8" model="mobile.repair.order">
@@ -26,7 +25,6 @@
             <field name="technician_id" ref="technician_demo_1"/>
             <field name="date_received" eval="DateTime.now() - timedelta(hours=4)"/>
             <field name="date_started" eval="DateTime.now() - timedelta(hours=1)"/>
-            <field name="estimated_cost">85.00</field>
             <field name="diagnosis">Micrófono principal obstruido. Limpieza en proceso.</field>
         </record>
 
@@ -40,8 +38,6 @@
             <field name="date_received" eval="DateTime.now() - timedelta(days=1, hours=6)"/>
             <field name="date_started" eval="DateTime.now() - timedelta(days=1, hours=2)"/>
             <field name="date_completed" eval="DateTime.now() - timedelta(minutes=45)"/>
-            <field name="estimated_cost">65.00</field>
-            <field name="final_cost">60.00</field>
             <field name="diagnosis">Antena WiFi desconectada internamente.</field>
             <field name="solution_applied">Reconexión de antena WiFi. Pruebas de conectividad exitosas.</field>
         </record>
@@ -57,8 +53,6 @@
             <field name="date_started" eval="DateTime.now() - timedelta(days=2, hours=6)"/>
             <field name="date_completed" eval="DateTime.now() - timedelta(days=1, hours=4)"/>
             <field name="date_delivered" eval="DateTime.now() - timedelta(hours=8)"/>
-            <field name="estimated_cost">45.00</field>
-            <field name="final_cost">40.00</field>
             <field name="diagnosis">Controlador LED defectuoso.</field>
             <field name="solution_applied">Reemplazo de controlador LED. Sistema Glyph funcionando correctamente.</field>
         </record>
@@ -75,8 +69,6 @@
             <field name="date_started" eval="DateTime.now() - timedelta(days=6)"/>
             <field name="date_completed" eval="DateTime.now() - timedelta(days=5)"/>
             <field name="date_delivered" eval="DateTime.now() - timedelta(days=4)"/>
-            <field name="estimated_cost">50.00</field>
-            <field name="final_cost">45.00</field>
             <field name="diagnosis">Conector USB-C desgastado.</field>
             <field name="solution_applied">Reemplazo completo del conector de carga.</field>
         </record>
@@ -92,8 +84,6 @@
             <field name="date_started" eval="DateTime.now() - timedelta(days=9)"/>
             <field name="date_completed" eval="DateTime.now() - timedelta(days=7)"/>
             <field name="date_delivered" eval="DateTime.now() - timedelta(days=6)"/>
-            <field name="estimated_cost">180.00</field>
-            <field name="final_cost">170.00</field>
             <field name="diagnosis">Panel LCD dañado internamente.</field>
             <field name="solution_applied">Reemplazo completo de pantalla LCD original.</field>
         </record>

@@ -9,3 +9,4 @@ access_mobile_repair_problem,mobile.repair.problem,model_mobile_repair_problem,b
 access_mobile_repair_problem_manager,mobile.repair.problem.manager,model_mobile_repair_problem,base.group_system,1,1,1,1
 access_mobile_repair_problem_category,mobile.repair.problem.category,model_mobile_repair_problem_category,base.group_user,1,0,0,0
 access_mobile_repair_problem_category_manager,mobile.repair.problem.category.manager,model_mobile_repair_problem_category,base.group_system,1,1,1,1
+access_mobile_repair_quote_line_user,mobile.repair.quote.line.user,model_mobile_repair_quote_line,base.group_user,1,1,1,1

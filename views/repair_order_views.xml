@@ -34,16 +34,21 @@
                 <field name="technician_id" optional="show" widget="many2one_avatar_user"/>
                 <field name="date_received"/>
                 <field name="duration_days" optional="hide" widget="float_time"/>
-                <field name="final_cost" 
+                <field name="total_amount" 
                        widget="monetary" 
                        sum="Total" 
-                       optional="hide"/>
+                       optional="show"/>
+                <field name="invoiced" optional="show" widget="boolean_toggle"/>
+                <field name="invoice_state" optional="hide"/>
                        
                 <!-- Campos ocultos para filtros y funcionalidad -->
                 <field name="currency_id" column_invisible="1"/>
                 <field name="progress_percentage" column_invisible="1"/>
                 <field name="date_started" column_invisible="1"/>
                 <field name="date_completed" column_invisible="1"/>
+                <field name="sale_order_id" column_invisible="1"/>
+                <field name="invoice_id" column_invisible="1"/>
+                <field name="total_amount" column_invisible="1"/>
             </list>
         </field>
     </record>
@@ -76,6 +81,25 @@
                             type="object" 
                             class="btn-info" 
                             invisible="state != 'ready'"/>
+                    
+                    <!-- Botones de facturación -->
+                    <button name="action_create_invoice" 
+                            string="Crear Factura" 
+                            type="object" 
+                            class="btn-warning" 
+                            invisible="invoiced or state == 'cancelled'"/>
+                    
+                    <button name="action_view_invoice" 
+                            string="Ver Factura" 
+                            type="object" 
+                            class="btn-info" 
+                            invisible="not invoice_id"/>
+                    
+                    <button name="action_view_sale_order" 
+                            string="Ver Orden de Venta" 
+                            type="object" 
+                            class="btn-secondary" 
+                            invisible="not sale_order_id"/>
                     
                     <button name="action_cancel" 
                             string="Cancelar" 
@@ -118,8 +142,15 @@
                             <group string="Asignación y Fechas">
                                 <field name="technician_id" options="{'no_quick_create': True}"/>
                                 <field name="date_received"/>
-                                <field name="estimated_cost" widget="monetary" groups="base.group_user"/>
-                                <field name="final_cost" widget="monetary" groups="base.group_user"/>
+                                <field name="total_amount" widget="monetary" groups="base.group_user" readonly="1"/>
+                            </group>
+                            
+                            <!-- Información de facturación -->
+                            <group string="Facturación" invisible="not sale_order_id and not invoice_id">
+                                <field name="sale_order_id" invisible="not sale_order_id"/>
+                                <field name="invoice_id" invisible="not invoice_id"/>
+                                <field name="invoice_state" invisible="not invoice_id"/>
+                                <field name="invoiced" invisible="not invoice_id"/>
                             </group>
                         </div>
                     </div>
@@ -152,6 +183,27 @@
                     
                     <!-- Información técnica en pestañas -->
                     <notebook>
+                        <page string="Presupuesto" name="quote">
+                            <field name="quote_line_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="product_id" required="1"/>
+                                    <field name="description" required="1"/>
+                                    <field name="quantity" required="1"/>
+                                    <field name="unit_price" required="1" widget="monetary"/>
+                                    <field name="subtotal" widget="monetary" sum="Total"/>
+                                    <field name="product_type" invisible="1"/>
+                                </list>
+                            </field>
+                            <div class="row mt-3">
+                                <div class="col-md-6 offset-md-6">
+                                    <div class="alert alert-info">
+                                        <h5>Total del Presupuesto: <field name="total_amount" widget="monetary" readonly="1"/></h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </page>
+                        
                         <page string="Diagnóstico y Solución" name="technical">
                             <group>
                                 <field name="diagnosis" 
@@ -185,8 +237,10 @@
                     <field name="message_ids"/>
                 </div>
                 
-                <!-- Campo oculto -->
+                <!-- Campos ocultos -->
                 <field name="currency_id" invisible="1"/>
+                <field name="invoiced" invisible="1"/>
+                <field name="total_amount" invisible="1"/>
             </form>
         </field>
     </record>
@@ -213,7 +267,7 @@
                 <field name="technician_id"/>
                 <field name="date_received"/>
                 <field name="progress_percentage"/>
-                <field name="final_cost"/>
+                <field name="total_amount"/>
                 <field name="currency_id"/>
                 
                 <templates>
@@ -243,7 +297,7 @@
                                     <field name="date_received" widget="date"/>
                                 </div>
                                 <div>
-                                    <field name="final_cost" widget="monetary"/>
+                                    <field name="total_amount" widget="monetary"/>
                                 </div>
                                 <div>
                                     <field name="technician_id" widget="many2one_avatar_user"/>
@@ -301,6 +355,12 @@
                         domain="[('date_received', '&gt;=', context_today().strftime('%Y-%m-%d 00:00:00'))]"/>
                 <filter string="Esta Semana" name="this_week" 
                         domain="[('date_received', '&gt;=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                        
+                <separator/>
+                
+                <!-- Filtros de facturación -->
+                <filter string="Facturadas" name="invoiced" domain="[('invoiced', '=', True)]"/>
+                <filter string="Sin Facturar" name="not_invoiced" domain="[('invoiced', '=', False), ('state', 'in', ['ready', 'delivered'])]"/>
                 
                 <!-- Agrupaciones -->
                 <group expand="0" string="Agrupar Por">

@@ -107,17 +107,12 @@ class RepairOrder(models.Model):
         tracking=True
     )
     
-    # Información financiera
-    estimated_cost = fields.Monetary(
-        string='Presupuesto',
-        currency_field='currency_id',
-        tracking=True
-    )
-    
-    final_cost = fields.Monetary(
-        string='Costo Final',
-        currency_field='currency_id',
-        tracking=True
+    # Líneas de presupuesto (servicios y repuestos)
+    quote_line_ids = fields.One2many(
+        'mobile.repair.quote.line',
+        'repair_order_id',
+        string='Líneas de Presupuesto',
+        copy=True
     )
     
     currency_id = fields.Many2one(
@@ -125,6 +120,42 @@ class RepairOrder(models.Model):
         string='Moneda',
         default=lambda self: self.env.company.currency_id,
         required=True
+    )
+    
+    # Integración con ventas y facturación
+    sale_order_id = fields.Many2one(
+        'sale.order',
+        string='Orden de Venta',
+        readonly=True,
+        copy=False,
+        tracking=True
+    )
+    
+    invoice_id = fields.Many2one(
+        'account.move',
+        string='Factura',
+        readonly=True,
+        copy=False,
+        tracking=True
+    )
+    
+    invoice_state = fields.Selection(
+        related='invoice_id.state',
+        string='Estado Factura',
+        readonly=True
+    )
+    
+    invoiced = fields.Boolean(
+        string='Facturado',
+        compute='_compute_invoiced',
+        store=True
+    )
+    
+    total_amount = fields.Monetary(
+        string='Importe Total',
+        compute='_compute_total_amount',
+        store=True,
+        currency_field='currency_id'
     )
     
     # Información técnica
@@ -241,6 +272,18 @@ class RepairOrder(models.Model):
                 device_name = record.device_id.display_name
                 parts.append(device_name[:30] + '...' if len(device_name) > 30 else device_name)
             record.display_name = ' - '.join(parts)
+    
+    @api.depends('invoice_id')
+    def _compute_invoiced(self):
+        """Calcula si la orden está facturada"""
+        for record in self:
+            record.invoiced = bool(record.invoice_id and record.invoice_id.state == 'posted')
+    
+    @api.depends('quote_line_ids.subtotal')
+    def _compute_total_amount(self):
+        """Calcula el importe total basado en las líneas de presupuesto"""
+        for record in self:
+            record.total_amount = sum(record.quote_line_ids.mapped('subtotal'))
 
     # ============================================================
     # MÉTODOS DE NEGOCIO
@@ -343,6 +386,125 @@ class RepairOrder(models.Model):
         })
         return True
     
+    def action_create_invoice(self):
+        """Crear factura para la orden de reparación"""
+        self.ensure_one()
+        
+        if self.invoice_id:
+            raise UserError("Esta orden ya tiene una factura asociada.")
+        
+        if not self.total_amount:
+            raise UserError("Debe establecer un costo estimado o final antes de facturar.")
+        
+        # Buscar o crear producto de servicio de reparación
+        repair_product = self._get_or_create_repair_product()
+        
+        # Crear líneas de orden de venta desde las líneas de presupuesto
+        order_lines = []
+        for line in self.quote_line_ids:
+            order_lines.append((0, 0, {
+                'product_id': line.product_id.id,
+                'name': line.description or line.product_id.name,
+                'product_uom_qty': line.quantity,
+                'price_unit': line.unit_price,
+            }))
+        
+        # Si no hay líneas, usar producto de servicio genérico
+        if not order_lines:
+            order_lines.append((0, 0, {
+                'product_id': repair_product.id,
+                'name': f'Reparación {self.device_brand} {self.device_model} - {self.problem_id.name}',
+                'product_uom_qty': 1,
+                'price_unit': self.total_amount or 0.0,
+            }))
+        
+        # Crear orden de venta
+        sale_order_vals = {
+            'partner_id': self.customer_id.id,
+            'origin': self.name,
+            'order_line': order_lines,
+            'repair_order_id': self.id,
+        }
+        
+        sale_order = self.env['sale.order'].create(sale_order_vals)
+        self.sale_order_id = sale_order.id
+        
+        # Confirmar orden de venta y crear factura
+        sale_order.action_confirm()
+        
+        # Crear factura desde la orden de venta
+        invoice = sale_order._create_invoices()
+        if invoice:
+            self.invoice_id = invoice[0].id
+            
+            # Mensaje de seguimiento
+            self.message_post(
+                body=f"<b>Factura creada</b><br/>Número: {invoice[0].name}<br/>Importe: {self.total_amount} {self.currency_id.symbol}",
+                message_type='notification'
+            )
+        
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Factura',
+            'res_model': 'account.move',
+            'res_id': self.invoice_id.id,
+            'view_mode': 'form',
+            'target': 'current'
+        }
+    
+    def action_view_invoice(self):
+        """Ver factura asociada"""
+        self.ensure_one()
+        if not self.invoice_id:
+            raise UserError("Esta orden no tiene factura asociada.")
+        
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Factura',
+            'res_model': 'account.move',
+            'res_id': self.invoice_id.id,
+            'view_mode': 'form',
+            'target': 'current'
+        }
+    
+    def action_view_sale_order(self):
+        """Ver orden de venta asociada"""
+        self.ensure_one()
+        if not self.sale_order_id:
+            raise UserError("Esta orden no tiene orden de venta asociada.")
+        
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Orden de Venta',
+            'res_model': 'sale.order',
+            'res_id': self.sale_order_id.id,
+            'view_mode': 'form',
+            'target': 'current'
+        }
+    
+    def _get_or_create_repair_product(self):
+        """Obtiene un producto de servicio de reparación desde el módulo de inventario"""
+        # Buscar productos de servicio que puedan ser usados para reparaciones
+        repair_products = self.env['product.product'].search([
+            ('type', '=', 'service'),
+            ('sale_ok', '=', True),
+            ('active', '=', True)
+        ], limit=1)
+        
+        if not repair_products:
+            # Crear un producto de servicio básico si no existe ninguno
+            repair_products = self.env['product.product'].create({
+                'name': 'Servicio de Reparación Móvil',
+                'type': 'service',
+                'sale_ok': True,
+                'purchase_ok': False,
+                'list_price': 0.0,
+                'invoice_policy': 'order',
+                'categ_id': self.env.ref('product.product_category_all').id,
+            })
+        
+        return repair_products
+    
     def action_create_device(self):
         """Crear dispositivo rápidamente"""
         self.ensure_one()
@@ -362,12 +524,15 @@ class RepairOrder(models.Model):
     # VALIDACIONES
     # ============================================================
     
-    @api.constrains('estimated_cost', 'final_cost')
-    def _check_costs(self):
-        """Valida que los costos no sean negativos"""
+    @api.constrains('quote_line_ids')
+    def _check_quote_lines(self):
+        """Valida las líneas de presupuesto"""
         for record in self:
-            if record.estimated_cost < 0 or record.final_cost < 0:
-                raise ValidationError("Los costos no pueden ser negativos.")
+            for line in record.quote_line_ids:
+                if line.quantity <= 0:
+                    raise ValidationError("La cantidad debe ser mayor a cero.")
+                if line.unit_price < 0:
+                    raise ValidationError("El precio unitario no puede ser negativo.")
     
     @api.constrains('date_received', 'date_started', 'date_completed')
     def _check_dates(self):
@@ -471,4 +636,136 @@ class ResPartner(models.Model):
                 'search_default_group_by_state': 1,
                 'default_customer_id': self.id
             }
+        }
+
+
+# ============================================================
+# MODELO DE LÍNEAS DE PRESUPUESTO
+# ============================================================
+
+class RepairQuoteLine(models.Model):
+    """Líneas de presupuesto para servicios y repuestos"""
+    _name = 'mobile.repair.quote.line'
+    _description = 'Línea de Presupuesto de Reparación'
+    _order = 'sequence, id'
+    
+    repair_order_id = fields.Many2one(
+        'mobile.repair.order',
+        string='Orden de Reparación',
+        required=True,
+        ondelete='cascade',
+        index=True
+    )
+    
+    sequence = fields.Integer(
+        string='Secuencia',
+        default=10
+    )
+    
+    product_id = fields.Many2one(
+        'product.product',
+        string='Producto/Servicio',
+        required=True,
+        domain=[('sale_ok', '=', True)],
+        change_default=True
+    )
+    
+    description = fields.Text(
+        string='Descripción',
+        required=True
+    )
+    
+    quantity = fields.Float(
+        string='Cantidad',
+        digits='Product Unit of Measure',
+        required=True,
+        default=1.0
+    )
+    
+    unit_price = fields.Monetary(
+        string='Precio Unitario',
+        currency_field='currency_id',
+        required=True
+    )
+    
+    subtotal = fields.Monetary(
+        string='Subtotal',
+        currency_field='currency_id',
+        compute='_compute_subtotal',
+        store=True
+    )
+    
+    currency_id = fields.Many2one(
+        related='repair_order_id.currency_id',
+        store=True,
+        readonly=True
+    )
+    
+    product_type = fields.Selection(
+        related='product_id.type',
+        readonly=True
+    )
+    
+    @api.depends('quantity', 'unit_price')
+    def _compute_subtotal(self):
+        """Calcula el subtotal de la línea"""
+        for line in self:
+            line.subtotal = line.quantity * line.unit_price
+    
+    @api.onchange('product_id')
+    def _onchange_product_id(self):
+        """Actualiza descripción y precio al cambiar producto"""
+        if self.product_id:
+            self.description = self.product_id.name
+            self.unit_price = self.product_id.list_price
+    
+    def name_get(self):
+        """Personaliza el nombre mostrado"""
+        result = []
+        for line in self:
+            name = f"{line.product_id.name} x {line.quantity}"
+            result.append((line.id, name))
+        return result
+
+
+# ============================================================
+# EXTENSIÓN DEL MODELO DE ÓRDENES DE VENTA
+# ============================================================
+
+class SaleOrder(models.Model):
+    """Extensión del modelo de órdenes de venta para vincular con reparaciones"""
+    _inherit = 'sale.order'
+    
+    repair_order_id = fields.Many2one(
+        'mobile.repair.order',
+        string='Orden de Reparación',
+        readonly=True,
+        copy=False
+    )
+    
+    is_repair_order = fields.Boolean(
+        string='Es Orden de Reparación',
+        compute='_compute_is_repair_order',
+        store=True
+    )
+    
+    @api.depends('repair_order_id')
+    def _compute_is_repair_order(self):
+        """Marca si la orden de venta proviene de una reparación"""
+        for order in self:
+            order.is_repair_order = bool(order.repair_order_id)
+    
+    def action_view_repair_order(self):
+        """Ver orden de reparación asociada"""
+        self.ensure_one()
+        if not self.repair_order_id:
+            raise UserError("Esta orden de venta no tiene orden de reparación asociada.")
+        
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Orden de Reparación',
+            'res_model': 'mobile.repair.order',
+            'res_id': self.repair_order_id.id,
+            'view_mode': 'form',
+            'target': 'current'
         }
