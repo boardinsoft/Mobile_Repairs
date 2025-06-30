@@ -139,7 +139,7 @@
                 <field name="date_received"/>
                 <field name="activity_ids"/>
                 <field name="activity_state"/>
-                <progressbar field="activity_state" colors='{"overdue": "danger", "today": "warning", "planned": "success"}'/>
+                <progressbar field="state" colors='{"draft": "secondary", "in_progress": "warning", "ready": "success", "delivered": "primary", "cancelled": "danger"}'/>
                 <templates>
                     <t t-name="kanban-box">
                         <div t-attf-class="oe_kanban_global_click">
@@ -163,9 +163,9 @@
                                             <a t-if="widget.deletable" role="menuitem" type="delete" class="dropdown-item">Eliminar</a>
                                             <div role="separator" class="dropdown-divider"/>
                                             <div class="dropdown-item-text text-muted">Estado:</div>
-                                            <a name="action_start_repair" type="object" class="dropdown-item" t-if="record.state.raw_value == 'draft'">Iniciar Reparación</a>
-                                            <a name="action_mark_ready" type="object" class="dropdown-item" t-if="record.state.raw_value == 'in_progress'">Marcar Listo</a>
-                                            <a name="action_deliver" type="object" class="dropdown-item" t-if="record.state.raw_value == 'ready'">Entregar</a>
+                                            <a name="action_start_repair" type="object" class="dropdown-item text-purple" t-if="record.state.raw_value == 'draft'">Iniciar Reparación</a>
+                                            <a name="action_mark_ready" type="object" class="dropdown-item text-muted" t-if="record.state.raw_value == 'in_progress'">Marcar Listo</a>
+                                            <a name="action_deliver" type="object" class="dropdown-item text-purple" t-if="record.state.raw_value == 'ready'">Entregar</a>
                                         </div>
                                     </div>
                                 </div>
