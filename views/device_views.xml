@@ -1,14 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- ============================================================ -->
-    <!-- VISTAS PARA DISPOSITIVOS - ODOO 18 NATIVO                  -->
-    <!-- ============================================================ -->
-    
-    <!-- Vista de lista para dispositivos -->
     <record id="view_device_tree" model="ir.ui.view">
         <field name="name">mobile_repair.device.tree</field>
         <field name="model">mobile_repair.device</field>
-        <field name="type">list</field>
         <field name="arch" type="xml">
             <list string="Dispositivos" default_order="create_date desc">
                 <field name="device_code"/>
@@ -24,12 +18,10 @@
             </list>
         </field>
     </record>
-    
-    <!-- Vista de formulario para dispositivos -->
+
     <record id="view_device_form" model="ir.ui.view">
         <field name="name">mobile_repair.device.form</field>
         <field name="model">mobile_repair.device</field>
-        <field name="type">form</field>
         <field name="arch" type="xml">
             <form string="Dispositivo">
                 <header>
@@ -39,27 +31,21 @@
                             class="btn-primary"
                             invisible="repair_count == 0"/>
                 </header>
-                
                 <sheet>
                     <div class="oe_title">
-                        <h1>
-                            <field name="display_name" readonly="1"/>
-                        </h1>
+                        <h1><field name="display_name" readonly="1"/></h1>
                     </div>
-                    
                     <group>
                         <group string="Información del Dispositivo">
                             <field name="device_code" readonly="1"/>
                             <field name="brand_id" required="1"/>
                             <field name="model_id" 
                                    domain="[('brand_id','=',brand_id)]" 
-                                   required="1"
-                                   options="{'no_quick_create': True}"/>
+                                   required="1"/>
                             <field name="imei"/>
                             <field name="color_ids" widget="many2many_tags" 
-                                   options="{'color_field': 'color_code', 'no_quick_create': True}"/>
+                                   options="{'color_field': 'color_code'}"/>
                         </group>
-                        
                         <group string="Estado y Seguridad">
                             <field name="physical_state" required="1" widget="radio"/>
                             <field name="powers_on" widget="boolean_toggle"/>
@@ -67,37 +53,27 @@
                             <field name="has_lock_code" invisible="lock_type == 'none'"/>
                         </group>
                     </group>
-                    
                     <group string="Accesorios Incluidos">
-                        <field name="accessory_ids" 
-                               widget="many2many_tags" 
-                               options="{'color_field': 'color_code', 'no_quick_create': True}"
-                               nolabel="1"/>
+                        <field name="accessory_ids" widget="many2many_tags" 
+                               options="{'color_field': 'color_code'}" nolabel="1"/>
                     </group>
-                    
-                    <group string="Observaciones" invisible="not notes and not create_uid">
+                    <group string="Observaciones">
                         <field name="notes" nolabel="1" placeholder="Observaciones adicionales sobre el dispositivo..."/>
                     </group>
-                    
-                    <!-- Estadísticas de reparaciones -->
                     <div class="row" invisible="repair_count == 0">
                         <div class="col-md-6">
-                            <div class="card border-info">
-                                <div class="card-body text-center">
-                                    <h4 class="text-info">
-                                        <field name="repair_count"/>
-                                    </h4>
+                            <div class="card border-info text-center">
+                                <div class="card-body">
+                                    <h4><field name="repair_count"/></h4>
                                     <p class="card-text text-muted">Reparaciones</p>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6" invisible="not last_repair_date">
-                            <div class="card border-secondary">
-                                <div class="card-body text-center">
-                                    <p class="h6 text-dark">Última Reparación</p>
-                                    <small class="text-muted">
-                                        <field name="last_repair_date" widget="datetime"/>
-                                    </small>
+                            <div class="card border-secondary text-center">
+                                <div class="card-body">
+                                    <h6 class="text-dark">Última Reparación</h6>
+                                    <small class="text-muted"><field name="last_repair_date" widget="datetime"/></small>
                                 </div>
                             </div>
                         </div>
@@ -106,66 +82,25 @@
             </form>
         </field>
     </record>
-    
-    <!-- Vista simplificada para creación rápida -->
-    <record id="view_device_form_simple" model="ir.ui.view">
-        <field name="name">mobile_repair.device.form.simple</field>
-        <field name="model">mobile_repair.device</field>
-        <field name="type">form</field>
-        <field name="arch" type="xml">
-            <form string="Crear Dispositivo">
-                <group>
-                    <group>
-                        <field name="brand_id" required="1"/>
-                        <field name="model_id" 
-                               domain="[('brand_id','=',brand_id)]" 
-                               required="1"/>
-                        <field name="imei"/>
-                        <field name="color_ids" widget="many2many_tags" 
-                               options="{'color_field': 'color_code'}"/>
-                    </group>
-                    <group>
-                        <field name="physical_state" required="1"/>
-                        <field name="powers_on"/>
-                        <field name="lock_type"/>
-                        <field name="has_lock_code" invisible="lock_type == 'none'"/>
-                    </group>
-                </group>
-                <group string="Accesorios Incluidos">
-                    <field name="accessory_ids" widget="many2many_tags" 
-                           options="{'color_field': 'color_code'}" nolabel="1"/>
-                </group>
-                <group>
-                    <field name="notes" nolabel="1" placeholder="Observaciones adicionales..."/>
-                </group>
-            </form>
-        </field>
-    </record>
-    
-    <!-- Vista kanban para dispositivos simplificada -->
+
     <record id="view_device_kanban" model="ir.ui.view">
         <field name="name">mobile_repair.device.kanban</field>
         <field name="model">mobile_repair.device</field>
-        <field name="type">kanban</field>
         <field name="arch" type="xml">
             <kanban class="o_kanban_medium_column">
                 <field name="display_name"/>
                 <field name="physical_state"/>
                 <field name="repair_count"/>
-                
                 <templates>
-                    <t t-name="card">
+                    <t t-name="kanban-box">
                         <div class="oe_kanban_card oe_kanban_global_click">
                             <div class="o_kanban_record_top">
-                                <strong class="o_kanban_record_title">
-                                    <field name="display_name"/>
-                                </strong>
+                                <strong class="o_kanban_record_title"><field name="display_name"/></strong>
                                 <field name="physical_state" widget="badge"/>
                             </div>
-                            
                             <div class="o_kanban_record_body">
                                 <div class="text-muted small">
-                                    <field name="repair_count"/> reparaciones realizadas
+                                    <field name="repair_count"/> reparaciones
                                 </div>
                             </div>
                         </div>
@@ -174,31 +109,19 @@
             </kanban>
         </field>
     </record>
-    
-    <!-- Vista de búsqueda para dispositivos -->
+
     <record id="view_device_search" model="ir.ui.view">
         <field name="name">mobile_repair.device.search</field>
         <field name="model">mobile_repair.device</field>
-        <field name="type">search</field>
         <field name="arch" type="xml">
             <search string="Buscar Dispositivos">
-                <field name="brand_id" string="Marca"/>
-                <field name="model_id" string="Modelo"/>
-                <field name="imei" string="IMEI"/>
-                <field name="color_ids" string="Color"/>
-                
-                <!-- Filtros -->
-                <filter string="Excelente Estado" name="excellent" domain="[('physical_state', '=', 'excellent')]"/>
-                <filter string="Buen Estado" name="good" domain="[('physical_state', '=', 'good')]"/>
-                <filter string="Estado Regular" name="fair" domain="[('physical_state', '=', 'fair')]"/>
-                <filter string="Con Bloqueo" name="locked" domain="[('lock_type', '!=', 'none')]"/>
-                
-                <separator/>
-                
+                <field name="brand_id"/>
+                <field name="model_id"/>
+                <field name="imei"/>
+                <field name="device_code"/>
+                <filter string="Buen Estado" name="good_state" domain="[('physical_state', '=', 'good')]"/>
+                <filter string="Pantalla Rota" name="screen_broken" domain="[('physical_state', '=', 'screen_broken')]"/>
                 <filter string="Con Reparaciones" name="with_repairs" domain="[('repair_count', '>', 0)]"/>
-                <filter string="Sin Reparaciones" name="no_repairs" domain="[('repair_count', '=', 0)]"/>
-                
-                <!-- Agrupaciones -->
                 <group expand="0" string="Agrupar Por">
                     <filter string="Marca" name="group_by_brand" context="{'group_by': 'brand_id'}"/>
                     <filter string="Modelo" name="group_by_model" context="{'group_by': 'model_id'}"/>
@@ -207,34 +130,20 @@
             </search>
         </field>
     </record>
-    
-    <!-- ============================================================ -->
-    <!-- ACCIONES PARA DISPOSITIVOS                                  -->
-    <!-- ============================================================ -->
-    
+
     <record id="action_mobile_repair_device" model="ir.actions.act_window">
         <field name="name">Dispositivos</field>
         <field name="res_model">mobile_repair.device</field>
         <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="view_device_search"/>
         <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Crear un nuevo dispositivo
-            </p>
-            <p>
-                Registra los dispositivos móviles que ingresan para reparación.
-            </p>
+            <p class="o_view_nocontent_smiling_face">Crear un nuevo dispositivo</p>
         </field>
     </record>
-    
-    <!-- ============================================================ -->
-    <!-- VISTAS PARA MARCAS Y MODELOS - MEJORADAS                   -->
-    <!-- ============================================================ -->
-    
-    <!-- Marcas -->
+
     <record id="view_device_brand_tree" model="ir.ui.view">
         <field name="name">mobile_repair.device.brand.tree</field>
         <field name="model">mobile_repair.device.brand</field>
-        <field name="type">list</field>
         <field name="arch" type="xml">
             <list string="Marcas" editable="bottom">
                 <field name="name"/>
@@ -247,20 +156,12 @@
     <record id="view_device_brand_form" model="ir.ui.view">
         <field name="name">mobile_repair.device.brand.form</field>
         <field name="model">mobile_repair.device.brand</field>
-        <field name="type">form</field>
         <field name="arch" type="xml">
             <form string="Marca">
                 <sheet>
                     <field name="image" widget="image" class="oe_avatar"/>
-                    <div class="oe_title">
-                        <h1>
-                            <field name="name" required="1"/>
-                        </h1>
-                    </div>
-                    <group>
-                        <field name="active"/>
-                        <field name="model_count"/>
-                    </group>
+                    <div class="oe_title"><h1><field name="name" required="1"/></h1></div>
+                    <group><field name="active"/><field name="model_count"/></group>
                 </sheet>
             </form>
         </field>
@@ -270,16 +171,11 @@
         <field name="name">Marcas de Dispositivo</field>
         <field name="res_model">mobile_repair.device.brand</field>
         <field name="view_mode">list,form</field>
-        <field name="help" type="html">
-            <p>Gestión de marcas de dispositivos móviles.</p>
-        </field>
     </record>
     
-    <!-- Modelos -->
     <record id="view_device_model_tree" model="ir.ui.view">
         <field name="name">mobile_repair.device.model.tree</field>
         <field name="model">mobile_repair.device.model</field>
-        <field name="type">list</field>
         <field name="arch" type="xml">
             <list string="Modelos" editable="bottom">
                 <field name="brand_id"/>
@@ -295,26 +191,13 @@
     <record id="view_device_model_form" model="ir.ui.view">
         <field name="name">mobile_repair.device.model.form</field>
         <field name="model">mobile_repair.device.model</field>
-        <field name="type">form</field>
         <field name="arch" type="xml">
             <form string="Modelo de Dispositivo">
                 <sheet>
-                    <div class="oe_title">
-                        <h1>
-                            <field name="display_name" readonly="1"/>
-                        </h1>
-                    </div>
+                    <div class="oe_title"><h1><field name="display_name" readonly="1"/></h1></div>
                     <group>
-                        <group>
-                            <field name="brand_id"/>
-                            <field name="name"/>
-                            <field name="active"/>
-                        </group>
-                        <group>
-                            <field name="operating_system"/>
-                            <field name="release_year"/>
-                            <field name="screen_size"/>
-                        </group>
+                        <group><field name="brand_id"/><field name="name"/><field name="active"/></group>
+                        <group><field name="operating_system"/><field name="release_year"/><field name="screen_size"/></group>
                     </group>
                 </sheet>
             </form>
@@ -325,91 +208,32 @@
         <field name="name">Modelos de Dispositivo</field>
         <field name="res_model">mobile_repair.device.model</field>
         <field name="view_mode">list,form</field>
-        <field name="help" type="html">
-            <p>Gestión de modelos de dispositivos móviles.</p>
-        </field>
     </record>
-    
-    <!-- Colores -->
+
     <record id="view_device_color_tree" model="ir.ui.view">
         <field name="name">mobile_repair.device.color.tree</field>
         <field name="model">mobile_repair.device.color</field>
-        <field name="type">list</field>
         <field name="arch" type="xml">
-            <list string="Colores" editable="bottom">
-                <field name="name"/>
-                <field name="color_code" widget="color"/>
-                <field name="active"/>
-            </list>
+            <list string="Colores" editable="bottom"><field name="name"/><field name="color_code" widget="color"/><field name="active"/></list>
         </field>
     </record>
-    
-    <record id="view_device_color_form" model="ir.ui.view">
-        <field name="name">mobile_repair.device.color.form</field>
-        <field name="model">mobile_repair.device.color</field>
-        <field name="type">form</field>
-        <field name="arch" type="xml">
-            <form string="Color de Dispositivo">
-                <sheet>
-                    <group>
-                        <field name="name"/>
-                        <field name="color_code" widget="color"/>
-                        <field name="active"/>
-                    </group>
-                </sheet>
-            </form>
-        </field>
-    </record>
-
     <record id="action_mobile_repair_device_color" model="ir.actions.act_window">
         <field name="name">Colores de Dispositivo</field>
         <field name="res_model">mobile_repair.device.color</field>
         <field name="view_mode">list,form</field>
-        <field name="help" type="html">
-            <p>Gestión de colores para dispositivos móviles.</p>
-        </field>
     </record>
 
-    <!-- Accesorios -->
     <record id="view_device_accessory_tree" model="ir.ui.view">
         <field name="name">mobile_repair.device.accessory.tree</field>
         <field name="model">mobile_repair.device.accessory</field>
-        <field name="type">list</field>
         <field name="arch" type="xml">
-            <list string="Accesorios" editable="bottom">
-                <field name="name"/>
-                <field name="accessory_type"/>
-                <field name="color_code" widget="color"/>
-                <field name="active"/>
-            </list>
+            <list string="Accesorios" editable="bottom"><field name="name"/><field name="accessory_type"/><field name="color_code" widget="color" readonly="1"/><field name="active"/></list>
         </field>
     </record>
-    
-    <record id="view_device_accessory_form" model="ir.ui.view">
-        <field name="name">mobile_repair.device.accessory.form</field>
-        <field name="model">mobile_repair.device.accessory</field>
-        <field name="type">form</field>
-        <field name="arch" type="xml">
-            <form string="Accesorio de Dispositivo">
-                <sheet>
-                    <group>
-                        <field name="name"/>
-                        <field name="accessory_type"/>
-                        <field name="color_code" widget="color" readonly="1"/>
-                        <field name="active"/>
-                    </group>
-                </sheet>
-            </form>
-        </field>
-    </record>
-    
     <record id="action_mobile_repair_device_accessory" model="ir.actions.act_window">
         <field name="name">Accesorios de Dispositivo</field>
         <field name="res_model">mobile_repair.device.accessory</field>
         <field name="view_mode">list,form</field>
-        <field name="help" type="html">
-            <p>Gestión de accesorios de dispositivos móviles.</p>
-        </field>
     </record>
 
 </odoo>

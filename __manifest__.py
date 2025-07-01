@@ -25,18 +25,17 @@
         'account',
     ],
     'data': [
-        'views/device_views.xml',
-        # Seguridad
+        # Seguridad (se carga primero)
         'security/ir.model.access.csv',
         
         # Datos base
         'data/sequences.xml',
         'data/base_data.xml',
         
-        # Vistas principales
-        'views/repair_order_views.xml',
+        # Vistas (en orden lógico)
+        'views/device_views.xml',
         'views/repair_problem_views.xml',
-        'views/devices.xml',
+        'views/repair_order_views.xml',
         'views/repair_analytics_views.xml',
         'views/menus.xml',
     ],

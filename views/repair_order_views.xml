@@ -1,27 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Vista específica para líneas de presupuesto -->
     <record id="view_repair_quote_line_tree" model="ir.ui.view">
         <field name="name">mobile.repair.quote.line.tree</field>
         <field name="model">mobile.repair.quote.line</field>
-        <field name="type">list</field>
         <field name="arch" type="xml">
             <list string="Líneas de Presupuesto" editable="bottom">
+                <control>
+                    <create name="add_product_control" string="Añadir producto"/>
+                    <create name="add_section_control" string="Añadir sección" context="{'default_display_type': 'line_section'}"/>
+                    <create name="add_note_control" string="Añadir nota" context="{'default_display_type': 'line_note'}"/>
+                </control>
+
                 <field name="sequence" widget="handle"/>
-                <field name="product_id" required="1"
+                <field name="display_type" column_invisible="True"/>
+                <field name="currency_id" column_invisible="True"/>
+
+                <field name="product_id"
+                       required="1"
                        invisible="context.get('default_display_type')"
-                       options="{'no_create': True, 'no_edit': True}"/>
+                       force_save="1"
+                       options="{'no_open': True}"
+                       domain="[('sale_ok', '=', True)]"/>
+                
                 <field name="name" string="Descripción" widget="section_and_note_text"/>
+                
                 <field name="quantity" string="Cant."/>
-                <field name="product_uom" string="UdM" groups="uom.group_uom"/>
+                <field name="product_uom" string="UdM" groups="uom.group_uom" required="1" options='{"no_open": True}'/>
                 <field name="price_unit" string="Precio Unitario"/>
-                <field name="discount" string="Desc. %" groups="product.group_discount_per_so_line"/>
-                <field name="tax_id" widget="many2many_tags" options="{'no_create': True}"/>
-                <field name="price_subtotal" string="Subtotal" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                <field name="price_total" string="Total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                <field name="currency_id" invisible="1"/>
-                <field name="display_type" invisible="1"/>
+                
+                <field name="tax_id"
+                       widget="many2many_tags"
+                       options="{'no_create': True}"
+                       domain="[('type_tax_use', '=', 'sale'), ('company_id', '=', parent.company_id)]"/>
+                
+                <field name="discount" string="Desc. %"/>
+                
+                <field name="price_subtotal"
+                       string="Subtotal"
+                       widget="monetary"
+                       options="{'currency_field': 'currency_id'}"/>
             </list>
         </field>
     </record>
@@ -55,19 +73,21 @@
     <record id="view_repair_order_form" model="ir.ui.view">
         <field name="name">mobile.repair.order.form</field>
         <field name="model">mobile.repair.order</field>
-        <field name="type">form</field>
         <field name="arch" type="xml">
             <form string="Orden de Reparación">
                 <header>
                     <button name="action_start_repair" string="Iniciar Reparación" type="object" class="btn-primary" invisible="state != 'draft'"/>
                     <button name="action_mark_ready" string="Marcar Listo" type="object" class="btn-success" invisible="state != 'in_progress'"/>
                     <button name="action_deliver" string="Entregar" type="object" class="btn-info" invisible="state != 'ready'"/>
-                    <button name="action_create_invoice" string="Crear Orden de Venta" type="object" class="btn-warning" invisible="sale_order_id"/>
+                    <button name="action_create_invoice" string="Crear Orden de Venta" type="object" class="btn-warning" invisible="sale_order_id or state in ('cancelled', 'delivered')"/>
                     <button name="action_cancel" string="Cancelar" type="object" confirm="¿Está seguro de cancelar esta orden?" invisible="state in ('delivered','cancelled')"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,in_progress,ready,delivered"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
+                        <button name="action_view_stock_picking" type="object" class="oe_stat_button" icon="fa-truck" invisible="picking_count == 0">
+                            <field name="picking_count" widget="statinfo" string="Transferencia"/>
+                        </button>
                         <button name="action_view_sale_order" type="object" class="oe_stat_button" icon="fa-shopping-cart" invisible="not sale_order_id">
                             <field name="sale_order_id" readonly="1"/>
                         </button>
@@ -76,38 +96,46 @@
                         </button>
                     </div>
                     <div class="oe_title">
-                        <h1>
-                            <field name="name" readonly="1"/>
-                        </h1>
+                        <h1><field name="name" readonly="1"/></h1>
                         <field name="priority" widget="priority"/>
                     </div>
                     <group>
                         <group>
-                            <field name="customer_id" required="1"/>
-                            <field name="device_id" required="1"/>
-                            <field name="problem_id" required="1"/>
+                            <field name="customer_id" required="1" readonly="state != 'draft'"/>
+                            <field name="device_id" required="1" readonly="state != 'draft'"/>
+                            <field name="problem_id" required="1" readonly="state != 'draft'"/>
                         </group>
                         <group>
                             <field name="technician_id"/>
+                            <field name="location_id" readonly="state != 'draft'"/>
                             <field name="date_received"/>
-                            <field name="problem_description" placeholder="Detalles adicionales sobre el problema reportado..."/>
+                            <field name="problem_description" placeholder="Detalles adicionales..." readonly="state != 'draft'"/>
                         </group>
                     </group>
 
                     <notebook>
-                        <page string="Presupuesto" name="quote">
-                            <field name="quote_line_ids" view_id="view_repair_quote_line_tree"/>
+                        <page string="Presupuesto y Diagnóstico" name="quote_and_diagnosis">
+                            <group>
+                                <group string="Diagnóstico y Solución">
+                                    <field name="diagnosis" placeholder="Diagnóstico técnico detallado del problema..." invisible="state == 'draft'" readonly="state in ('ready', 'delivered', 'cancelled')"/>
+                                    <field name="solution_applied" placeholder="Solución detallada y los pasos realizados..." invisible="state in ('draft', 'in_progress')" readonly="state in ('delivered', 'cancelled')"/>
+                                </group>
+                            </group>
+                            <separator string="Líneas de Presupuesto (Repuestos y Servicios)"/>
+                            <field name="quote_line_ids" view_id="view_repair_quote_line_tree" readonly="state != 'draft'"/>
                             <group class="oe_subtotal_footer oe_right">
-                                <field name="amount_untaxed" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                                <field name="amount_tax" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                                <field name="amount_total" class="oe_subtotal_footer_separator" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="tax_totals" widget="account-tax-totals-field" nolabel="1" readonly="1"/>
                             </group>
                         </page>
-                        <page string="Diagnóstico y Solución" name="technical_info">
-                             <group>
-                                <field name="diagnosis" placeholder="Diagnóstico técnico detallado del problema encontrado..." invisible="state == 'draft'"/>
-                                <field name="solution_applied" placeholder="Solución detallada y los pasos realizados..." invisible="state in ('draft', 'in_progress')"/>
-                            </group>
+                        <page string="Otra Información" name="other_info">
+                           <group>
+                               <group string="Seguimiento Interno">
+                                   <field name="company_id" groups="base.group_multi_company"/>
+                                   <field name="sale_order_id"/>
+                                   <field name="stock_picking_id"/>
+                                   <field name="invoice_id"/>
+                               </group>
+                           </group>
                         </page>
                     </notebook>
                 </sheet>
@@ -139,7 +167,7 @@
                 <field name="date_received"/>
                 <field name="activity_ids"/>
                 <field name="activity_state"/>
-                <progressbar field="state" colors='{"draft": "secondary", "in_progress": "warning", "ready": "success", "delivered": "primary", "cancelled": "danger"}'/>
+                <progressbar field="activity_state" colors='{"overdue": "danger", "today": "warning", "planned": "success"}'/>
                 <templates>
                     <t t-name="kanban-box">
                         <div t-attf-class="oe_kanban_global_click">
@@ -163,9 +191,9 @@
                                             <a t-if="widget.deletable" role="menuitem" type="delete" class="dropdown-item">Eliminar</a>
                                             <div role="separator" class="dropdown-divider"/>
                                             <div class="dropdown-item-text text-muted">Estado:</div>
-                                            <a name="action_start_repair" type="object" class="dropdown-item text-purple" t-if="record.state.raw_value == 'draft'">Iniciar Reparación</a>
-                                            <a name="action_mark_ready" type="object" class="dropdown-item text-muted" t-if="record.state.raw_value == 'in_progress'">Marcar Listo</a>
-                                            <a name="action_deliver" type="object" class="dropdown-item text-purple" t-if="record.state.raw_value == 'ready'">Entregar</a>
+                                            <a name="action_start_repair" type="object" class="dropdown-item" t-if="record.state.raw_value == 'draft'">Iniciar Reparación</a>
+                                            <a name="action_mark_ready" type="object" class="dropdown-item" t-if="record.state.raw_value == 'in_progress'">Marcar Listo</a>
+                                            <a name="action_deliver" type="object" class="dropdown-item" t-if="record.state.raw_value == 'ready'">Entregar</a>
                                         </div>
                                     </div>
                                 </div>
