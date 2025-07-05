@@ -81,6 +81,7 @@ class RepairOrder(models.Model):
         string='Estado', default='draft', tracking=True, index=True
     )
     priority = fields.Selection([('normal', 'Normal'), ('high', 'Alta'), ('urgent', 'Urgente')], string='Prioridad', default='normal', tracking=True)
+    color = fields.Integer(string='Color', default=0)
     technician_id = fields.Many2one('res.users', string='Técnico', domain=[('active', '=', True)], tracking=True, index=True)
     
     diagnosis = fields.Text(string='Diagnóstico Técnico', tracking=True)
