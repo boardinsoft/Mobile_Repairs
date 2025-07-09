@@ -30,7 +30,6 @@
         
         # Datos base
         'data/sequences.xml',
-        'data/base_data.xml',
         
         # Vistas (en orden lógico)
         'views/device_views.xml',
