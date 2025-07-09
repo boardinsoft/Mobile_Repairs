@@ -3,9 +3,9 @@
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError, UserError
 
-class RepairQuoteLine(models.Model):
+class RepairOrderLine(models.Model):
     """Línea de presupuesto para una orden de reparación. Puede ser un producto o un servicio."""
-    _name = 'mobile.repair.quote.line'
+    _name = 'mobile.repair.order.line'
     _description = 'Línea de Presupuesto de Reparación'
     _order = 'sequence, id'
     
@@ -20,7 +20,7 @@ class RepairQuoteLine(models.Model):
     
     product_id = fields.Many2one('product.product', string='Producto/Servicio', domain=[('sale_ok', '=', True)], change_default=True)
     name = fields.Text(string='Descripción', required=True)
-    quantity = fields.Float(string='Cantidad', digits='Product Unit of Measure', default=1.0)
+    product_uom_qty = fields.Float(string='Cantidad', digits='Product Unit of Measure', default=1.0)
     product_uom = fields.Many2one('uom.uom', string='Unidad de Medida', domain="[('category_id', '=', product_uom_category_id)]")
     product_uom_category_id = fields.Many2one(related='product_id.uom_id.category_id')
     
@@ -32,7 +32,7 @@ class RepairQuoteLine(models.Model):
     price_total = fields.Monetary(string='Total', currency_field='currency_id', compute='_compute_amount', store=True)
     currency_id = fields.Many2one(related='repair_order_id.currency_id', store=True)
 
-    @api.depends('quantity', 'discount', 'price_unit', 'tax_id')
+    @api.depends('product_uom_qty', 'discount', 'price_unit', 'tax_id')
     def _compute_amount(self):
         """Calcula los importes de la línea, aplicando descuentos e impuestos."""
         for line in self:
@@ -44,7 +44,7 @@ class RepairQuoteLine(models.Model):
             taxes = line.tax_id.compute_all(
                 price,
                 line.repair_order_id.currency_id,
-                line.quantity,
+                line.product_uom_qty,
                 product=line.product_id,
                 partner=line.repair_order_id.customer_id
             )
@@ -72,7 +72,7 @@ class RepairOrder(models.Model):
 
     name = fields.Char(string='Número', required=True, copy=False, readonly=True, index=True, default='Nuevo')
     customer_id = fields.Many2one('res.partner', string='Cliente', required=True, tracking=True, index=True)
-    device_id = fields.Many2one('mobile_repair.device', string='Dispositivo', required=True, tracking=True, index=True)
+    device_id = fields.Many2one('mobile.repair.device', string='Dispositivo', required=True, tracking=True, index=True)
     problem_id = fields.Many2one('mobile.repair.problem', string='Problema Reportado', required=True, tracking=True)
     problem_description = fields.Text(string='Detalles Adicionales', tracking=True)
     state = fields.Selection([
@@ -92,7 +92,8 @@ class RepairOrder(models.Model):
     date_completed = fields.Datetime(string='Reparación Completa', readonly=True, tracking=True)
     date_delivered = fields.Datetime(string='Fecha Entrega', readonly=True, tracking=True)
 
-    quote_line_ids = fields.One2many('mobile.repair.quote.line', 'repair_order_id', string='Líneas de Presupuesto', copy=True)
+    # CAMBIO PRINCIPAL: usar mobile.repair.order.line en lugar de mobile.repair.quote.line
+    order_line = fields.One2many('mobile.repair.order.line', 'repair_order_id', string='Líneas de Presupuesto', copy=True)
     
     device_info = fields.Char(string='Información del Dispositivo', compute='_compute_device_info', store=True)
     currency_id = fields.Many2one('res.currency', string='Moneda', default=_get_default_currency_id, required=True)
@@ -101,7 +102,6 @@ class RepairOrder(models.Model):
     amount_untaxed = fields.Monetary(string='Base Imponible', compute='_compute_amounts', store=True)
     amount_tax = fields.Monetary(string='Impuestos', compute='_compute_amounts', store=True)
     amount_total = fields.Monetary(string='Importe Total', compute='_compute_amounts', store=True)
-    tax_totals = fields.Json(string="Resumen de Impuestos", compute='_compute_tax_totals')
 
     location_id = fields.Many2one(
         'stock.location', string='Ubicación de Repuestos', domain=[('usage', '=', 'internal')], required=True,
@@ -119,25 +119,16 @@ class RepairOrder(models.Model):
         for order in self:
             order.picking_count = 1 if order.stock_picking_id else 0
 
-    @api.depends('quote_line_ids.price_total')
+    @api.depends('order_line.price_total')
     def _compute_amounts(self):
         for order in self:
-            amount_untaxed = sum(order.quote_line_ids.mapped('price_subtotal'))
-            amount_total = sum(order.quote_line_ids.mapped('price_total'))
-            order.update({'amount_untaxed': amount_untaxed, 'amount_tax': amount_total - amount_untaxed, 'amount_total': amount_total})
-
-    @api.depends('quote_line_ids.price_subtotal', 'customer_id', 'currency_id')
-    def _compute_tax_totals(self):
-        for order in self:
-            base_lines = []
-            for line in order.quote_line_ids.filtered(lambda l: not l.display_type):
-                base_lines.append(self.env['account.tax']._prepare_base_line_for_taxes_computation(
-                    line, **{'tax_ids': line.tax_id, 'price_unit': line.price_unit, 'quantity': line.quantity,
-                             'discount': line.discount, 'currency_id': order.currency_id, 'product_id': line.product_id,
-                             'partner_id': order.customer_id}))
-            self.env['account.tax']._add_tax_details_in_base_lines(base_lines, order.company_id)
-            self.env['account.tax']._round_base_lines_tax_details(base_lines, order.company_id)
-            order.tax_totals = self.env['account.tax']._get_tax_totals_summary(base_lines, order.currency_id, order.company_id)
+            amount_untaxed = sum(order.order_line.mapped('price_subtotal'))
+            amount_total = sum(order.order_line.mapped('price_total'))
+            order.update({
+                'amount_untaxed': amount_untaxed, 
+                'amount_tax': amount_total - amount_untaxed, 
+                'amount_total': amount_total
+            })
     
     @api.depends('sale_order_id.invoice_ids')
     def _compute_invoice_id(self):
@@ -159,7 +150,8 @@ class RepairOrder(models.Model):
         self.ensure_one()
         if not self.technician_id:
             raise UserError("Debe asignar un técnico antes de iniciar la reparación.")
-        if not self.stock_picking_id: self._create_stock_picking()
+        if not self.stock_picking_id: 
+            self._create_stock_picking()
         self.write({'state': 'in_progress', 'date_started': fields.Datetime.now()})
         return True
 
@@ -169,32 +161,44 @@ class RepairOrder(models.Model):
             self.stock_picking_id.button_validate()
         self.write({'state': 'ready', 'date_completed': fields.Datetime.now()})
         return True
-        
+    
     def action_deliver(self):
         self.ensure_one()
         self.write({'state': 'delivered', 'date_delivered': fields.Datetime.now()})
         return True
 
     def action_cancel(self):
-        if self.stock_picking_id: self.stock_picking_id.action_cancel()
-        return super().action_cancel()
-        
+        if self.stock_picking_id: 
+            self.stock_picking_id.action_cancel()
+        self.write({'state': 'cancelled'})
+        return True
+    
     def _create_stock_picking(self):
         self.ensure_one()
         picking_type = self.env['stock.picking.type'].search([
             ('code', '=', 'outgoing'), ('warehouse_id.company_id', '=', self.company_id.id)], limit=1)
-        if not picking_type: raise UserError("No se encontró un tipo de albarán de 'Salidas' para su almacén.")
-        storable_lines = self.quote_line_ids.filtered(lambda l: not l.display_type and l.product_id.type == 'product')
-        if not storable_lines: return
+        if not picking_type: 
+            raise UserError("No se encontró un tipo de albarán de 'Salidas' para su almacén.")
+        
+        storable_lines = self.order_line.filtered(lambda l: not l.display_type and l.product_id.type == 'product')
+        if not storable_lines: 
+            return
         
         picking = self.env['stock.picking'].create({
-            'partner_id': self.customer_id.id, 'picking_type_id': picking_type.id,
-            'location_id': self.location_id.id, 'location_dest_id': self.env.ref('stock.stock_location_customers').id,
-            'origin': self.name, 'company_id': self.company_id.id,
-            'move_ids': [(0, 0, {'name': line.product_id.name, 'product_id': line.product_id.id,
-                                 'product_uom_qty': line.quantity, 'product_uom': line.product_uom.id,
-                                 'location_id': self.location_id.id, 'location_dest_id': self.env.ref('stock.stock_location_customers').id})
-                         for line in storable_lines],
+            'partner_id': self.customer_id.id, 
+            'picking_type_id': picking_type.id,
+            'location_id': self.location_id.id, 
+            'location_dest_id': self.env.ref('stock.stock_location_customers').id,
+            'origin': self.name, 
+            'company_id': self.company_id.id,
+            'move_ids': [(0, 0, {
+                'name': line.product_id.name, 
+                'product_id': line.product_id.id,
+                'product_uom_qty': line.product_uom_qty, 
+                'product_uom': line.product_uom.id,
+                'location_id': self.location_id.id, 
+                'location_dest_id': self.env.ref('stock.stock_location_customers').id
+            }) for line in storable_lines],
         })
         picking.action_confirm()
         picking.action_assign()
@@ -203,24 +207,43 @@ class RepairOrder(models.Model):
 
     def action_view_stock_picking(self):
         self.ensure_one()
-        return {'type': 'ir.actions.act_window', 'name': 'Transferencia de Stock',
-                'res_model': 'stock.picking', 'res_id': self.stock_picking_id.id, 'view_mode': 'form', 'target': 'current'}
+        return {
+            'type': 'ir.actions.act_window', 
+            'name': 'Transferencia de Stock',
+            'res_model': 'stock.picking', 
+            'res_id': self.stock_picking_id.id, 
+            'view_mode': 'form', 
+            'target': 'current'
+        }
 
     def action_create_invoice(self):
         self.ensure_one()
-        if not self.amount_total: raise UserError("No se puede crear una factura con importe total cero.")
+        if not self.amount_total: 
+            raise UserError("No se puede crear una factura con importe total cero.")
+        
         sale_order = self.env['sale.order'].create({
-            'partner_id': self.customer_id.id, 'origin': self.name, 'repair_order_id': self.id,
-            'order_line': [(0, 0, {'product_id': line.product_id.id, 'name': line.name,
-                                   'product_uom_qty': line.quantity, 'price_unit': line.price_unit,
-                                   'discount': line.discount, 'tax_id': [(6, 0, line.tax_id.ids)]})
-                           for line in self.quote_line_ids.filtered(lambda l: not l.display_type)],
+            'partner_id': self.customer_id.id, 
+            'origin': self.name, 
+            'repair_order_id': self.id,
+            'order_line': [(0, 0, {
+                'product_id': line.product_id.id, 
+                'name': line.name,
+                'product_uom_qty': line.product_uom_qty, 
+                'price_unit': line.price_unit,
+                'discount': line.discount, 
+                'tax_id': [(6, 0, line.tax_id.ids)]
+            }) for line in self.order_line.filtered(lambda l: not l.display_type)],
         })
         self.sale_order_id = sale_order.id
-        return {'type': 'ir.actions.act_window', 'name': 'Orden de Venta',
-                'res_model': 'sale.order', 'res_id': sale_order.id, 'view_mode': 'form', 'target': 'current'}
+        return {
+            'type': 'ir.actions.act_window', 
+            'name': 'Orden de Venta',
+            'res_model': 'sale.order', 
+            'res_id': sale_order.id, 
+            'view_mode': 'form', 
+            'target': 'current'
+        }
 
-    # --- CORRECCIÓN: Métodos para los botones inteligentes que fueron eliminados ---
     def action_view_sale_order(self):
         self.ensure_one()
         return {

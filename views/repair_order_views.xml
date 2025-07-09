@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <record id="view_repair_quote_line_tree" model="ir.ui.view">
-        <field name="name">mobile.repair.quote.line.tree</field>
-        <field name="model">mobile.repair.quote.line</field>
+    <!-- Vista para las líneas de presupuesto -->
+    <record id="view_repair_order_line_tree" model="ir.ui.view">
+        <field name="name">mobile.repair.order.line.tree</field>
+        <field name="model">mobile.repair.order.line</field>
+        <field name="type">list</field>
         <field name="arch" type="xml">
             <list string="Líneas de Presupuesto" editable="bottom">
                 <control>
@@ -17,33 +19,34 @@
                 <field name="currency_id" column_invisible="True"/>
 
                 <field name="product_id"
-                       required="1"
-                       invisible="context.get('default_display_type')"
-                       force_save="1"
-                       options="{'no_open': True}"
-                       domain="[('sale_ok', '=', True)]"/>
+                    required="1"
+                    invisible="context.get('default_display_type')"
+                    force_save="1"
+                    options="{'no_open': True}"
+                    domain="[('sale_ok', '=', True)]"/>
                 
                 <field name="name" string="Descripción" widget="section_and_note_text"/>
                 
-                <field name="quantity" string="Cant."/>
-                <field name="product_uom" string="UdM" groups="uom.group_uom" required="1" options='{"no_open": True}'/>
+                <field name="product_uom_qty" string="Cantidad"/>
+                <field name="product_uom" string="UdM" groups="uom.group_uom" options="{'no_open': True}"/>
                 <field name="price_unit" string="Precio Unitario"/>
                 
                 <field name="tax_id"
-                       widget="many2many_tags"
-                       options="{'no_create': True}"
-                       domain="[('type_tax_use', '=', 'sale'), ('company_id', '=', parent.company_id)]"/>
+                    widget="many2many_tags"
+                    options="{'no_create': True}"
+                    domain="[('type_tax_use', '=', 'sale'), ('company_id', '=', parent.company_id)]"/>
                 
                 <field name="discount" string="Desc. %"/>
                 
                 <field name="price_subtotal"
-                       string="Subtotal"
-                       widget="monetary"
-                       options="{'currency_field': 'currency_id'}"/>
+                    string="Subtotal"
+                    widget="monetary"
+                    options="{'currency_field': 'currency_id'}"/>
             </list>
         </field>
     </record>
 
+    <!-- Vista lista de órdenes de reparación -->
     <record id="view_repair_order_tree" model="ir.ui.view">
         <field name="name">mobile.repair.order.tree</field>
         <field name="model">mobile.repair.order</field>
@@ -52,24 +55,24 @@
             <list string="Órdenes de Reparación" multi_edit="1">
                 <field name="name" readonly="1"/>
                 <field name="customer_id"/>
-                <field name="device_id" widget="many2one_avatar"/>
+                <field name="device_id"/>
                 <field name="technician_id" optional="show" widget="many2one_avatar_user"/>
                 <field name="date_received"/>
                 <field name="amount_total" widget="monetary" sum="Total"/>
                 <field name="state"
-                       decoration-info="state == 'draft'"
-                       decoration-warning="state == 'in_progress'"
-                       decoration-success="state == 'ready'"
-                       decoration-primary="state == 'delivered'"
-                       decoration-muted="state == 'cancelled'"
-                       widget="badge"/>
+                    decoration-info="state == 'draft'"
+                    decoration-warning="state == 'in_progress'"
+                    decoration-success="state == 'ready'"
+                    decoration-primary="state == 'delivered'"
+                    decoration-muted="state == 'cancelled'"
+                    widget="badge"/>
                 <field name="priority" widget="priority"/>
-                <field name="invoiced" optional="show" widget="boolean_toggle"/>
                 <field name="currency_id" column_invisible="1"/>
             </list>
         </field>
     </record>
 
+    <!-- Vista formulario de orden de reparación -->
     <record id="view_repair_order_form" model="ir.ui.view">
         <field name="name">mobile.repair.order.form</field>
         <field name="model">mobile.repair.order</field>
@@ -81,20 +84,9 @@
                     <button name="action_deliver" string="Entregar" type="object" class="btn-info" invisible="state != 'ready'"/>
                     <button name="action_create_invoice" string="Crear Orden de Venta" type="object" class="btn-warning" invisible="sale_order_id or state in ('cancelled', 'delivered')"/>
                     <button name="action_cancel" string="Cancelar" type="object" confirm="¿Está seguro de cancelar esta orden?" invisible="state in ('delivered','cancelled')"/>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,in_progress,ready,delivered" statusbar_colors="{'draft': 'info', 'in_progress': 'warning', 'ready': 'success', 'delivered': 'primary'}"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,in_progress,ready,delivered"/>
                 </header>
                 <sheet>
-                    <div class="oe_button_box" name="button_box">
-                        <button name="action_view_stock_picking" type="object" class="oe_stat_button" icon="fa-truck" invisible="picking_count == 0">
-                            <field name="picking_count" widget="statinfo" string="Transferencia"/>
-                        </button>
-                        <button name="action_view_sale_order" type="object" class="oe_stat_button" icon="fa-shopping-cart" invisible="not sale_order_id">
-                            <field name="sale_order_id" readonly="1"/>
-                        </button>
-                        <button name="action_view_invoice" type="object" class="oe_stat_button" icon="fa-pencil-square-o" invisible="not invoice_id">
-                            <field name="invoice_id" readonly="1"/>
-                        </button>
-                    </div>
                     <div class="oe_title">
                         <h1><field name="name" readonly="1"/></h1>
                     </div>
@@ -111,10 +103,10 @@
                             <field name="location_id" readonly="state != 'draft'"/>
                         </group>
                     </group>
-    
-                    <label for="problem_description" string="Descripción Detallada del Problema" class="o_form_label"/>
+                    
+                    <label for="problem_description" string="Descripción Detallada del Problema"/>
                     <field name="problem_description" nolabel="1" placeholder="Detalles adicionales del problema reportado por el cliente..." readonly="state != 'draft'"/>
-    
+                    
                     <notebook>
                         <page string="Presupuesto y Diagnóstico" name="quote_and_diagnosis">
                             <group string="Diagnóstico y Solución">
@@ -122,10 +114,17 @@
                                 <field name="solution_applied" placeholder="Solución detallada y los pasos realizados..." invisible="state in ('draft', 'in_progress')" readonly="state in ('delivered', 'cancelled')"/>
                             </group>
                             
-                            <h2>Repuestos y Servicios</h2>
-                            <field name="quote_line_ids" view_id="view_repair_quote_line_tree" readonly="state != 'draft'"/>
+                            <field name="order_line" 
+                                   widget="section_and_note_one2many" 
+                                   readonly="state != 'draft'"/>
+                            
                             <group class="oe_subtotal_footer oe_right">
-                                <field name="tax_totals" widget="account-tax-totals-field" nolabel="1" readonly="1"/>
+                                <field name="amount_untaxed" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="amount_tax" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <div class="oe_subtotal_footer_separator oe_inline o_td_label">
+                                    <label for="amount_total"/>
+                                </div>
+                                <field name="amount_total" nolabel="1" class="oe_subtotal_footer_separator" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                             </group>
                         </page>
                     </notebook>
@@ -139,103 +138,77 @@
         </field>
     </record>
 
-    <record id="view_repair_order_kanban" model="ir.ui.view">
-        <field name="name">mobile.repair.order.kanban</field>
-        <field name="model">mobile.repair.order</field>
-        <field name="arch" type="xml">
-            <kanban default_group_by="state" class="o_kanban_mobile" quick_create="false" sample="1">
-                <!-- Campos necesarios -->
-                <field name="id"/>
-                <field name="name"/>
-                <field name="customer_id"/>
-                <field name="problem_id"/>
-                <field name="technician_id"/>
-                <field name="device_info"/>
-                <field name="amount_total"/>
-                <field name="currency_id"/>
-                <field name="priority"/>
-                <field name="activity_ids"/>
-                <field name="activity_state"/>
-                <field name="state"/>
-                <field name="color"/>
-                <field name="date_received"/>
-                <field name="invoiced"/>
-                <field name="sale_order_id"/>
-                
-                <!-- Progressbar para estados -->
-                <progressbar field="state" colors='{"draft": "secondary", "in_progress": "warning", "ready": "success", "delivered": "info", "cancelled": "danger"}'/>
-                
-                <templates>
-                    <t t-name="kanban-box">
-                        <div t-attf-class="#{!selection_mode ? kanban_color(record.color.raw_value) : ''} oe_kanban_global_click oe_kanban_card d-flex flex-column" style="min-height: 160px; width: 340px;">
-                            <!-- Encabezado -->
-                            <div class="o_kanban_record_top mb-2">
-                                <div class="o_kanban_record_headings">
-                                    <strong class="o_kanban_record_title">
-                                        <field name="name"/>
-                                    </strong>
-                                </div>
-                            </div>
-                            
-                            <!-- Cuerpo -->
-                            <div class="o_kanban_record_body flex-grow-1 mb-2">
-                                <div class="mb-2">
-                                    <span t-if="record.customer_id.raw_value" class="badge badge-light text-success border-success">
-                                        <field name="customer_id"/>
-                                    </span>
-                                </div>
-                                <div class="mb-2">
-                                    <span t-if="record.device_info.raw_value" class="badge badge-secondary">
-                                        <i class="fa fa-mobile me-1"/>
-                                        <field name="device_info"/>
-                                    </span>
-                                </div>
-                                <div class="small text-muted">
-                                    <div t-if="record.problem_id.raw_value">
-                                        <i class="fa fa-wrench me-1"/>
-                                        <field name="problem_id"/>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Footer -->
-                            <div class="o_kanban_record_bottom pt-2 border-top">
-                                <div class="oe_kanban_bottom_left">
-                                    <field name="priority" widget="priority"/>
-                                    <i t-if="record.invoiced.raw_value" class="fa fa-check-circle text-success ms-2"/>
-                                </div>
-                                <div class="oe_kanban_bottom_right d-flex align-items-center">
-                                    <field name="activity_ids" widget="kanban_activity"/>
-                                    <span class="mx-2 fw-semibold">
-                                        <field name="amount_total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                                    </span>
-                                    <field name="technician_id" widget="many2one_avatar_user"/>
-                                    
-                                    <!-- Dropdown menu integrado al final del footer -->
-                                    <div class="o_dropdown_kanban dropdown ms-1" t-if="!selection_mode">
-                                        <a class="dropdown-toggle o-no-caret btn btn-sm p-0" data-bs-toggle="dropdown" href="#" role="button" aria-label="Dropdown" title="Dropdown menu">
-                                            <span class="fa fa-ellipsis-v small"/>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-end" role="menu">
-                                            <t t-if="widget.editable">
-                                                <a role="menuitem" type="edit" class="dropdown-item">Editar</a>
-                                            </t>
-                                            <t t-if="widget.deletable">
-                                                <a role="menuitem" type="delete" class="dropdown-item">Eliminar</a>
-                                            </t>
-                                            <div role="separator" class="dropdown-divider"/>
-                                            <ul class="oe_kanban_colorpicker" data-field="color"/>
-                                        </div>
-                                    </div>
-                                </div>
+    <!-- Vista kanban compatible con Odoo 18 -->
+<record id="view_repair_order_kanban" model="ir.ui.view">
+    <field name="name">mobile.repair.order.kanban</field>
+    <field name="model">mobile.repair.order</field>
+    <field name="arch" type="xml">
+        <kanban default_group_by="state" class="o_kanban_mobile" quick_create="false" sample="1">
+            <field name="id"/>
+            <field name="name"/>
+            <field name="customer_id"/>
+            <field name="problem_id"/>
+            <field name="technician_id"/>
+            <field name="device_info"/>
+            <field name="amount_total"/>
+            <field name="currency_id"/>
+            <field name="priority"/>
+            <field name="state"/>
+            <field name="color"/>
+            <field name="date_received"/>
+            <field name="invoiced"/>
+            
+            <progressbar field="state" colors='{"draft": "secondary", "in_progress": "warning", "ready": "success", "delivered": "info", "cancelled": "danger"}'/>
+            
+            <templates>
+                <t t-name="card">
+                    <div class="oe_kanban_global_click oe_kanban_card d-flex flex-column">
+                        <div class="o_kanban_record_top mb-2">
+                            <div class="o_kanban_record_headings">
+                                <strong class="o_kanban_record_title">
+                                    <field name="name"/>
+                                </strong>
                             </div>
                         </div>
-                     </t>
-                </templates>
-            </kanban>
-        </field>
-    </record>
+                        
+                        <div class="o_kanban_record_body flex-grow-1 mb-2">
+                            <div class="mb-2">
+                                <span class="badge badge-light text-success border-success">
+                                    <field name="customer_id"/>
+                                </span>
+                            </div>
+                            <div class="mb-2" t-if="record.device_info.raw_value">
+                                <span class="badge badge-secondary">
+                                    <i class="fa fa-mobile" title="Dispositivo"/> 
+                                    <field name="device_info"/>
+                                </span>
+                            </div>
+                            <div class="small text-muted" t-if="record.problem_id.raw_value">
+                                <i class="fa fa-wrench" title="Problema"/> 
+                                <field name="problem_id"/>
+                            </div>
+                        </div>
+                        
+                        <div class="o_kanban_record_bottom pt-2 border-top">
+                            <div class="oe_kanban_bottom_left">
+                                <field name="priority" widget="priority"/>
+                                <i t-if="record.invoiced.raw_value" class="fa fa-check-circle text-success ms-2" title="Facturado"/>
+                            </div>
+                            <div class="oe_kanban_bottom_right d-flex align-items-center">
+                                <span class="mx-2 fw-semibold">
+                                    <field name="amount_total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                </span>
+                                <field name="technician_id" widget="many2one_avatar_user"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </templates>
+        </kanban>
+    </field>
+</record>
     
+    <!-- Acción para mostrar las órdenes de reparación -->
     <record id="action_repair_orders_all" model="ir.actions.act_window">
         <field name="name">Órdenes de Reparación</field>
         <field name="res_model">mobile.repair.order</field>
