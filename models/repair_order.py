@@ -133,7 +133,30 @@ class RepairOrder(models.Model):
     invoice_id = fields.Many2one('account.move', string='Factura', compute='_compute_invoice_id', store=True, readonly=True, copy=False)
     invoiced = fields.Boolean(string='Facturado', compute='_compute_invoiced', store=True, help="Indica si la factura asociada ha sido pagada.", index=True)
 
+    problem_count = fields.Integer(string="Problem Count", compute='_compute_problem_count', store=True)
+    progress_percentage = fields.Integer(string="Progress Percentage", compute='_compute_progress_percentage', store=True)
+    technician_image = fields.Binary(related='technician_id.image_128', string="Technician Avatar", readonly=True)
+
     # --- MÉTODOS DE CÓMPUTO ---
+
+    @api.depends('problem_ids')
+    def _compute_problem_count(self):
+        for order in self:
+            order.problem_count = len(order.problem_ids)
+
+    @api.depends('state')
+    def _compute_progress_percentage(self):
+        for order in self:
+            if order.state == 'draft':
+                order.progress_percentage = 0
+            elif order.state == 'in_repair':
+                order.progress_percentage = 50
+            elif order.state == 'repaired':
+                order.progress_percentage = 75
+            elif order.state == 'delivered':
+                order.progress_percentage = 100
+            else:
+                order.progress_percentage = 0
 
     @api.constrains('date_promised', 'date_received')
     def _check_dates(self):

@@ -173,29 +173,80 @@
         <field name="name">mobile.repair.order.kanban</field>
         <field name="model">mobile.repair.order</field>
         <field name="arch" type="xml">
-            <kanban default_group_by="state" class="o_kanban_small_column">
+            <kanban class="o_kanban_mobile" 
+                    records_draggable="true" 
+                    default_group_by="state" 
+                    quick_create_view="mobile.repair.order.form.quick" 
+                    archivable="false"
+                    color="color"
+                    on_create="quick_create"
+                    create_text="Nueva Reparación">
+                <field name="id"/>
                 <field name="name"/>
                 <field name="partner_id"/>
                 <field name="device_id"/>
-                <field name="state"/>
+                <field name="date_received"/>
                 <field name="amount_total"/>
+                <field name="priority"/>
+                <field name="state"/>
+                <field name="technician_id"/>
+                <field name="technician_image"/>
+                <field name="problem_count"/>
+                <field name="progress_percentage"/>
                 <field name="currency_id"/>
+                <field name="color"/>
+                <field name="activity_ids"/>
+                <field name="problem_ids"/>
+                
                 <templates>
-                    <t t-name="kanban-box">
-                        <div class="oe_kanban_card oe_kanban_global_click">
-                            <div class="oe_kanban_content">
-                                <div class="oe_kanban_details">
-                                    <strong class="o_kanban_record_title">
-                                        <field name="name"/>
-                                    </strong>
-                                    <div class="o_kanban_record_body">
-                                        <field name="partner_id"/>
-                                        <br/>
-                                        <field name="device_id"/>
+                    <t t-name="card">
+                        <div t-attf-class="oe_kanban_global_click oe_kanban_card position-relative {{ {1: 'border-start border-danger', 2: 'border-start border-warning', 3: 'border-start border-success', 4: 'border-start border-primary', 5: 'border-start border-info', 6: 'border-start border-secondary', 7: 'border-start border-dark'}[record.color.raw_value] }}" 
+                             t-attf-style="{{ record.color.raw_value > 0 ? 'border-left-width: 3px;' : '' }}">
+                            
+                            <div class="p-3">
+                                <!-- Header con información principal -->
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-0 text-truncate fw-bold">
+                                            <field name="name"/>
+                                        </h6>
+                                        <small class="text-muted"><field name="date_received" widget="relative"/></small>
+                                    </div>
+                                    <div class="flex-shrink-0 ms-2">
+                                        <span class="badge bg-light text-dark fw-bold">
+                                            <field name="amount_total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                        </span>
                                     </div>
                                 </div>
-                                <div class="oe_kanban_bottom_right">
-                                    <field name="amount_total" widget="monetary"/>
+                                
+                                <!-- Información del cliente -->
+                                <div class="mb-2">
+                                    <field name="partner_id" class="text-truncate"/>
+                                </div>
+                                
+                                <!-- Información del dispositivo -->
+                                <div class="mb-2">
+                                    <span class="badge bg-secondary text-truncate d-inline-block" style="max-width: 100%;">
+                                        <field name="device_id"/>
+                                    </span>
+                                </div>
+                                
+                                <!-- Problemas reportados -->
+                                <div t-if="record.problem_count.raw_value > 0" class="mb-3">
+                                    <small class="text-muted d-block">Problemas:</small>
+                                    <field name="problem_ids" widget="many2many_tags" options="{'no_edit': true, 'no_create': true, 'limit': 3}"/>
+                                </div>
+    
+                                <!-- Footer posicionado absolutamente -->
+                                <div class="position-absolute bottom-0 start-0 end-0 d-flex justify-content-between align-items-end p-3">
+                                    <div>
+                                        <field name="activity_ids" widget="kanban_activity"/>
+                                    </div>
+                                    <div>
+                                        <field name="technician_id" widget="many2one_avatar" readonly="1" 
+                                               options="{'size': 'small', 'no_label': true}" 
+                                               t-if="record.technician_id.raw_value"/>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -204,7 +255,7 @@
             </kanban>
         </field>
     </record>
-
+    
     <!-- VISTA BÚSQUEDA -->
     <record id="view_repair_order_search" model="ir.ui.view">
         <field name="name">mobile.repair.order.search</field>
@@ -225,6 +276,7 @@
                 <group expand="0" string="Agrupar Por">
                     <filter string="Estado" name="group_by_state" context="{'group_by': 'state'}"/>
                     <filter string="Técnico" name="group_by_technician" context="{'group_by': 'technician_id'}"/>
+                <filter string="Tipo de Problema" name="group_by_problem" context="{'group_by': 'problem_ids'}"/>
                     <filter string="Cliente" name="group_by_partner" context="{'group_by': 'partner_id'}"/>
                     <filter string="Fecha Recibido" name="group_by_date_received" context="{'group_by': 'date_received'}"/>
                 </group>
