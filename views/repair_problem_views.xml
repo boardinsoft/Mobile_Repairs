@@ -1,122 +1,156 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Vistas para Categorías de Problemas -->
-    <record id="view_repair_problem_category_form" model="ir.ui.view">
-        <field name="name">mobile.repair.problem.category.form</field>
-        <field name="model">mobile.repair.problem.category</field>
-        <field name="type">form</field>
-        <field name="arch" type="xml">
-            <form string="Categoría de Problemas">
-                <sheet>
-                    <group>
-                        <group>
-                            <field name="name"/>
-                            <field name="sequence"/>
-                        </group>
-                        <group>
-                            <field name="color" widget="color"/>
-                            <field name="active"/>
-                        </group>
-                    </group>
-                </sheet>
-            </form>
-        </field>
-    </record>
 
+    <!-- CATEGORÍAS DE PROBLEMAS -->
     <record id="view_repair_problem_category_tree" model="ir.ui.view">
         <field name="name">mobile.repair.problem.category.tree</field>
         <field name="model">mobile.repair.problem.category</field>
-        <field name="type">list</field>
         <field name="arch" type="xml">
-            <list string="Categorías de Problemas" editable="bottom" default_order="sequence">
+            <list string="Categorías de Problemas" editable="bottom">
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
-                <field name="problems_count" string="Problemas"/>
+                <field name="problems_count"/>
+                <field name="color" widget="color"/>
                 <field name="active"/>
             </list>
         </field>
     </record>
 
-    <!-- Vistas para Problemas -->
-    <record id="view_repair_problem_form" model="ir.ui.view">
-        <field name="name">mobile.repair.problem.form</field>
-        <field name="model">mobile.repair.problem</field>
-        <field name="type">form</field>
+    <record id="view_repair_problem_category_form" model="ir.ui.view">
+        <field name="name">mobile.repair.problem.category.form</field>
+        <field name="model">mobile.repair.problem.category</field>
         <field name="arch" type="xml">
-            <form string="Problema de Reparación">
+            <form string="Categoría de Problema">
                 <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" required="1"/></h1>
+                    </div>
                     <group>
                         <group>
-                            <field name="name"/>
-                            <field name="category_id"/>
                             <field name="sequence"/>
+                            <field name="color" widget="color"/>
+                            <field name="active"/>
                         </group>
                         <group>
-                            <field name="estimated_repair_time" widget="timesheet_uom"/>
-                            <field name="estimated_cost"/>
-                            <field name="currency_id" invisible="1"/>
-                            <field name="active"/>
-                            <field name="usage_count" readonly="1"/>
+                            <field name="problems_count"/>
                         </group>
-                    </group>
-                    <group>
-                        <field name="description" placeholder="Descripción detallada del problema..."/>
-                    </group>
-                    <group>
-                        <field name="solution_template" placeholder="Plantilla de solución típica para este problema..."/>
                     </group>
                 </sheet>
             </form>
         </field>
     </record>
 
+    <record id="action_repair_problem_category" model="ir.actions.act_window">
+        <field name="name">Categorías de Problemas</field>
+        <field name="res_model">mobile.repair.problem.category</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crear una nueva categoría de problema
+            </p>
+            <p>
+                Las categorías ayudan a organizar los problemas más comunes
+                para acelerar el proceso de registro de reparaciones.
+            </p>
+        </field>
+    </record>
+
+    <!-- PROBLEMAS DE REPARACIÓN -->
     <record id="view_repair_problem_tree" model="ir.ui.view">
         <field name="name">mobile.repair.problem.tree</field>
         <field name="model">mobile.repair.problem</field>
-        <field name="type">list</field>
         <field name="arch" type="xml">
-            <list string="Problemas de Reparación" default_order="sequence">
+            <list string="Problemas de Reparación" editable="bottom">
                 <field name="sequence" widget="handle"/>
-                <field name="name"/>
                 <field name="category_id"/>
-                <field name="estimated_repair_time" widget="timesheet_uom"/>
-                <field name="estimated_cost"/>
+                <field name="name"/>
+                <field name="estimated_repair_time"/>
+                <field name="estimated_cost" widget="monetary"/>
+                <field name="currency_id" column_invisible="True"/>
                 <field name="usage_count"/>
                 <field name="active"/>
             </list>
+        </field>
+    </record>
+
+    <record id="view_repair_problem_form" model="ir.ui.view">
+        <field name="name">mobile.repair.problem.form</field>
+        <field name="model">mobile.repair.problem</field>
+        <field name="arch" type="xml">
+            <form string="Problema de Reparación">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_repair_orders" 
+                                string="Ver Reparaciones" 
+                                type="object" 
+                                class="oe_stat_button" 
+                                icon="fa-wrench"
+                                invisible="usage_count == 0">
+                            <field name="usage_count" widget="statinfo" string="Usado en"/>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <h1><field name="name" required="1"/></h1>
+                    </div>
+
+                    <group>
+                        <group string="Información General">
+                            <field name="category_id" required="1"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                        <group string="Estimaciones">
+                            <field name="estimated_repair_time"/>
+                            <field name="estimated_cost" widget="monetary"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <group string="Descripción Detallada">
+                        <field name="description" nolabel="1" placeholder="Descripción más específica del problema..."/>
+                    </group>
+
+                    <group string="Plantilla de Solución">
+                        <field name="solution_template" nolabel="1" placeholder="Plantilla de solución típica para este problema..."/>
+                    </group>
+                </sheet>
+            </form>
         </field>
     </record>
 
     <record id="view_repair_problem_kanban" model="ir.ui.view">
         <field name="name">mobile.repair.problem.kanban</field>
         <field name="model">mobile.repair.problem</field>
-        <field name="type">kanban</field>
         <field name="arch" type="xml">
-            <kanban default_group_by="category_id" class="o_kanban_mobile">
+            <kanban default_group_by="category_id" class="o_kanban_small_column">
                 <field name="category_id"/>
                 <field name="name"/>
                 <field name="estimated_cost"/>
+                <field name="currency_id" column_invisible="True"/>
                 <field name="estimated_repair_time"/>
                 <field name="usage_count"/>
                 <templates>
                     <t t-name="kanban-box">
                         <div class="oe_kanban_card oe_kanban_global_click">
-                            <div class="o_kanban_record_top">
-                                <div class="o_kanban_record_headings">
+                            <div class="oe_kanban_content">
+                                <div class="oe_kanban_details">
                                     <strong class="o_kanban_record_title">
                                         <field name="name"/>
                                     </strong>
+                                    <div class="o_kanban_record_body">
+                                        <div class="text-muted">
+                                            <i class="fa fa-clock-o"/> <field name="estimated_repair_time"/> hrs
+                                        </div>
+                                        <div class="text-muted">
+                                            <i class="fa fa-money"/> <field name="estimated_cost" widget="monetary"/>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="o_kanban_record_body">
-                                    <div t-if="record.estimated_cost.value">
-                                        <i class="fa fa-money"/> <field name="estimated_cost"/>
-                                    </div>
-                                    <div t-if="record.estimated_repair_time.value">
-                                        <i class="fa fa-clock-o"/> <field name="estimated_repair_time"/> hrs
-                                    </div>
-                                    <div>
-                                        <i class="fa fa-bar-chart"/> Usado <field name="usage_count"/> veces
-                                    </div>
+                                <div class="oe_kanban_bottom_right">
+                                    <span class="badge badge-pill badge-info">
+                                        <field name="usage_count"/> usos
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -126,34 +160,42 @@
         </field>
     </record>
 
-    <!-- Acciones y Menús -->
-    <record id="action_repair_problem_category" model="ir.actions.act_window">
-        <field name="name">Categorías de Problemas</field>
-        <field name="res_model">mobile.repair.problem.category</field>
-        <field name="view_mode">list,form</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Crear una nueva categoría de problemas
-            </p>
-            <p>
-                Las categorías ayudan a organizar los problemas comunes de reparación.
-            </p>
+    <record id="view_repair_problem_search" model="ir.ui.view">
+        <field name="name">mobile.repair.problem.search</field>
+        <field name="model">mobile.repair.problem</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Problemas">
+                <field name="name"/>
+                <field name="category_id"/>
+                <field name="description"/>
+                <filter string="Activos" name="active" domain="[('active', '=', True)]"/>
+                <filter string="Más Usados" name="most_used" domain="[('usage_count', '>', 0)]"/>
+                <separator/>
+                <filter string="Reparación Rápida" name="quick_repair" domain="[('estimated_repair_time', '&lt;=', 2)]"/>
+                <filter string="Reparación Lenta" name="slow_repair" domain="[('estimated_repair_time', '&gt;', 4)]"/>
+                <group expand="0" string="Agrupar Por">
+                    <filter string="Categoría" name="group_by_category" context="{'group_by': 'category_id'}"/>
+                    <filter string="Tiempo Estimado" name="group_by_time" context="{'group_by': 'estimated_repair_time'}"/>
+                </group>
+            </search>
         </field>
     </record>
 
     <record id="action_repair_problem" model="ir.actions.act_window">
-        <field name="name">Catálogo de Problemas</field>
+        <field name="name">Problemas de Reparación</field>
         <field name="res_model">mobile.repair.problem</field>
         <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="view_repair_problem_search"/>
+        <field name="context">{'search_default_active': 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Crear un nuevo problema común
+                Crear un nuevo problema de reparación
             </p>
             <p>
-                Define problemas comunes para acelerar el registro de órdenes de reparación.
+                Define los problemas más comunes para acelerar el registro
+                de nuevas órdenes de reparación.
             </p>
         </field>
     </record>
-
 
 </odoo>
