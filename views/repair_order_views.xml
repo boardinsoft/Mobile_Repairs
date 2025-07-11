@@ -180,7 +180,10 @@
                     archivable="false"
                     color="color"
                     on_create="quick_create"
-                    create_text="Nueva Reparación">
+                    create_text="Nueva Reparación"
+                    kanban_group_decorate="state"
+                    kanban_color_picker="true">
+                <field name="state"/>
                 <field name="id"/>
                 <field name="name"/>
                 <field name="partner_id"/>
@@ -199,51 +202,62 @@
                 <field name="problem_ids"/>
                 
                 <templates>
-                    <t t-name="card">
-                        <div t-attf-class="oe_kanban_global_click oe_kanban_card position-relative {{ {1: 'border-start border-danger', 2: 'border-start border-warning', 3: 'border-start border-success', 4: 'border-start border-primary', 5: 'border-start border-info', 6: 'border-start border-secondary', 7: 'border-start border-dark'}[record.color.raw_value] }}" 
-                             t-attf-style="{{ record.color.raw_value > 0 ? 'border-left-width: 3px;' : '' }}">
-                            
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_global_click oe_kanban_card o_kanban_record_has_image position-relative shadow-sm hover-shadow-lg rounded-3 overflow-hidden {{ kanban_color(record.color.raw_value) }}"
+                             t-att-data-record-id="record.id.raw_value">
+                            <div t-attf-class="o_kanban_card_header_border {{ {'draft': 'border-info', 'in_repair': 'border-warning', 'repaired': 'border-success', 'delivered': 'border-muted', 'cancelled': 'border-danger'}[record.state.raw_value] }}"></div>
                             <div class="p-3">
-                                <!-- Header con información principal -->
+                                <!-- Header con número de orden y monto en badge flotante -->
                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                     <div class="flex-grow-1">
-                                        <h6 class="mb-0 text-truncate fw-bold">
+                                        <h6 class="mb-0 text-truncate fw-bold" t-att-title="record.name.value">
                                             <field name="name"/>
                                         </h6>
-                                        <small class="text-muted"><field name="date_received" widget="relative"/></small>
+                                        <small class="text-muted" t-att-title="record.date_received.value">
+                                            <field name="date_received" widget="relative"/>
+                                        </small>
                                     </div>
                                     <div class="flex-shrink-0 ms-2">
-                                        <span class="badge bg-light text-dark fw-bold">
+                                        <span class="badge bg-primary text-white fw-bold p-2 rounded-pill shadow-sm">
                                             <field name="amount_total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                                         </span>
                                     </div>
                                 </div>
                                 
-                                <!-- Información del cliente -->
+                                <!-- Información del cliente y dispositivo con badges de colores -->
                                 <div class="mb-2">
-                                    <field name="partner_id" class="text-truncate"/>
-                                </div>
-                                
-                                <!-- Información del dispositivo -->
-                                <div class="mb-2">
-                                    <span class="badge bg-secondary text-truncate d-inline-block" style="max-width: 100%;">
-                                        <field name="device_id"/>
+                                    <span class="badge bg-secondary text-white text-truncate d-inline-block me-2" style="max-width: calc(50% - 10px);" t-att-title="record.partner_id.value">
+                                        <i class="fa fa-user me-1"></i><field name="partner_id"/>
+                                    </span>
+                                    <span class="badge bg-info text-white text-truncate d-inline-block" style="max-width: calc(50% - 10px);" t-att-title="record.device_id.value">
+                                        <i class="fa fa-mobile me-1"></i><field name="device_id"/>
                                     </span>
                                 </div>
                                 
-                                <!-- Problemas reportados -->
+                                <!-- Problemas reportados con tags limitados y mejor diseño -->
                                 <div t-if="record.problem_count.raw_value > 0" class="mb-3">
-                                    <small class="text-muted d-block">Problemas:</small>
+                                    <small class="text-muted d-block mb-1">Problemas:</small>
                                     <field name="problem_ids" widget="many2many_tags" options="{'no_edit': true, 'no_create': true, 'limit': 3}"/>
                                 </div>
     
-                                <!-- Footer posicionado absolutamente -->
-                                <div class="position-absolute bottom-0 start-0 end-0 d-flex justify-content-between align-items-end p-3">
+                                <!-- Indicador de carga/progreso por estado -->
+                                <div class="progress mb-3" t-if="record.progress_percentage.raw_value > 0">
+                                    <div t-attf-class="progress-bar {{ {'draft': 'bg-info', 'in_repair': 'bg-warning', 'repaired': 'bg-success', 'delivered': 'bg-primary', 'cancelled': 'bg-danger'}[record.state.raw_value] }}"
+                                         role="progressbar"
+                                         t-att-style="'width: ' + record.progress_percentage.raw_value + '%'"
+                                         t-att-aria-valuenow="record.progress_percentage.raw_value"
+                                         aria-valuemin="0" aria-valuemax="100">
+                                        <t t-esc="record.progress_percentage.raw_value"/>%
+                                    </div>
+                                </div>
+
+                                <!-- Footer fijo con actividades y avatar -->
+                                <div class="o_kanban_record_bottom position-absolute bottom-0 start-0 end-0 d-flex justify-content-between align-items-center p-3 bg-white border-top">
                                     <div>
                                         <field name="activity_ids" widget="kanban_activity"/>
                                     </div>
                                     <div>
-                                        <field name="technician_id" widget="many2one_avatar" readonly="1" 
+                                        <field name="technician_id" widget="many2one_avatar_user" readonly="1" 
                                                options="{'size': 'small', 'no_label': true}" 
                                                t-if="record.technician_id.raw_value"/>
                                     </div>
