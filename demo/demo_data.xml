@@ -1,83 +1,197 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
+    <data noupdate="1">
         
         <!-- ============================================================ -->
-        <!-- DATOS ADICIONALES PARA DEMOSTRACIÓN                         -->
+        <!-- CATEGORÍAS DE PROBLEMAS                                     -->
         <!-- ============================================================ -->
         
-        <!-- Más órdenes para mostrar variedad en el dashboard -->
-        <record id="repair_order_demo_7" model="mobile.repair.order">
-            <field name="customer_id" ref="base.res_partner_2"/>
-            <field name="device_info">OnePlus 11 - Verde - IMEI: ***1111</field>
-            <field name="problem_description">Carga muy lenta, tarda más de 4 horas en cargar completamente.</field>
-            <field name="state">draft</field>
-            <field name="priority">normal</field>
-            <field name="date_received" eval="DateTime.now() - timedelta(minutes=30)"/>
+        <record id="category_screen" model="mobile.repair.problem.category">
+            <field name="name">Pantalla</field>
+            <field name="sequence">10</field>
+            <field name="color">1</field>
+        </record>
+        
+        <record id="category_battery" model="mobile.repair.problem.category">
+            <field name="name">Batería</field>
+            <field name="sequence">20</field>
+            <field name="color">3</field>
+        </record>
+        
+        <record id="category_charging" model="mobile.repair.problem.category">
+            <field name="name">Carga</field>
+            <field name="sequence">30</field>
+            <field name="color">4</field>
+        </record>
+        
+        <record id="category_audio" model="mobile.repair.problem.category">
+            <field name="name">Audio</field>
+            <field name="sequence">40</field>
+            <field name="color">6</field>
+        </record>
+        
+        <record id="category_software" model="mobile.repair.problem.category">
+            <field name="name">Software</field>
+            <field name="sequence">50</field>
+            <field name="color">9</field>
         </record>
 
-        <record id="repair_order_demo_8" model="mobile.repair.order">
-            <field name="customer_id" ref="base.res_partner_3"/>
-            <field name="device_info">Google Pixel 7 - Blanco - IMEI: ***2222</field>
-            <field name="problem_description">Micrófono no funciona durante las llamadas.</field>
-            <field name="state">in_progress</field>
-            <field name="priority">high</field>
-            <field name="technician_id" ref="technician_demo_1"/>
-            <field name="date_received" eval="DateTime.now() - timedelta(hours=4)"/>
-            <field name="date_started" eval="DateTime.now() - timedelta(hours=1)"/>
+        <!-- ============================================================ -->
+        <!-- PROBLEMAS COMUNES                                           -->
+        <!-- ============================================================ -->
+        
+        <record id="problem_screen_broken" model="mobile.repair.problem">
+            <field name="name">Pantalla rota</field>
+            <field name="category_id" ref="category_screen"/>
+            <field name="description">Pantalla con grietas o completamente rota</field>
+            <field name="estimated_repair_time">2.0</field>
+            <field name="estimated_cost">150.00</field>
+            <field name="solution_template">Reemplazar pantalla completa con digitalizador</field>
+            <field name="sequence">10</field>
+        </record>
+        
+        <record id="problem_screen_black" model="mobile.repair.problem">
+            <field name="name">Pantalla negra</field>
+            <field name="category_id" ref="category_screen"/>
+            <field name="description">Pantalla no enciende o se ve negra</field>
+            <field name="estimated_repair_time">1.5</field>
+            <field name="estimated_cost">120.00</field>
+            <field name="solution_template">Verificar conexiones y reemplazar LCD si es necesario</field>
+            <field name="sequence">20</field>
+        </record>
+        
+        <record id="problem_battery_drain" model="mobile.repair.problem">
+            <field name="name">Batería se agota rápido</field>
+            <field name="category_id" ref="category_battery"/>
+            <field name="description">La batería no dura lo esperado</field>
+            <field name="estimated_repair_time">1.0</field>
+            <field name="estimated_cost">80.00</field>
+            <field name="solution_template">Reemplazar batería y calibrar sistema</field>
+            <field name="sequence">10</field>
+        </record>
+        
+        <record id="problem_no_charge" model="mobile.repair.problem">
+            <field name="name">No carga</field>
+            <field name="category_id" ref="category_charging"/>
+            <field name="description">El dispositivo no carga al conectar el cable</field>
+            <field name="estimated_repair_time">1.5</field>
+            <field name="estimated_cost">60.00</field>
+            <field name="solution_template">Limpiar puerto de carga o reemplazar conector</field>
+            <field name="sequence">10</field>
+        </record>
+        
+        <record id="problem_no_sound" model="mobile.repair.problem">
+            <field name="name">Sin sonido</field>
+            <field name="category_id" ref="category_audio"/>
+            <field name="description">No se escucha audio en llamadas o multimedia</field>
+            <field name="estimated_repair_time">1.0</field>
+            <field name="estimated_cost">45.00</field>
+            <field name="solution_template">Verificar altavoces y reemplazar si es necesario</field>
+            <field name="sequence">10</field>
         </record>
 
-        <record id="repair_order_demo_9" model="mobile.repair.order">
-            <field name="customer_id" ref="base.res_partner_4"/>
-            <field name="device_info">Oppo Find X5 - Azul - IMEI: ***3333</field>
-            <field name="problem_description">WiFi no se conecta a ninguna red.</field>
-            <field name="state">ready</field>
-            <field name="priority">normal</field>
-            <field name="technician_id" ref="technician_demo_2"/>
-            <field name="date_received" eval="DateTime.now() - timedelta(days=1, hours=6)"/>
-            <field name="date_started" eval="DateTime.now() - timedelta(days=1, hours=2)"/>
-            <field name="date_completed" eval="DateTime.now() - timedelta(minutes=45)"/>
+        <!-- ============================================================ -->
+        <!-- MARCAS DE DISPOSITIVOS                                      -->
+        <!-- ============================================================ -->
+        
+        <record id="brand_apple" model="mobile.repair.device.brand">
+            <field name="name">Apple</field>
+        </record>
+        
+        <record id="brand_samsung" model="mobile.repair.device.brand">
+            <field name="name">Samsung</field>
+        </record>
+        
+        <record id="brand_huawei" model="mobile.repair.device.brand">
+            <field name="name">Huawei</field>
+        </record>
+        
+        <record id="brand_xiaomi" model="mobile.repair.device.brand">
+            <field name="name">Xiaomi</field>
         </record>
 
-        <record id="repair_order_demo_10" model="mobile.repair.order">
-            <field name="customer_id" ref="base.res_partner_2"/>
-            <field name="device_info">Nothing Phone 1 - Negro - IMEI: ***4444</field>
-            <field name="problem_description">LED trasero no funciona correctamente.</field>
-            <field name="state">delivered</field>
-            <field name="priority">normal</field>
-            <field name="technician_id" ref="technician_demo_1"/>
-            <field name="date_received" eval="DateTime.now() - timedelta(days=3)"/>
-            <field name="date_started" eval="DateTime.now() - timedelta(days=2, hours=6)"/>
-            <field name="date_completed" eval="DateTime.now() - timedelta(days=1, hours=4)"/>
-            <field name="date_delivered" eval="DateTime.now() - timedelta(hours=8)"/>
+        <!-- ============================================================ -->
+        <!-- MODELOS DE DISPOSITIVOS                                     -->
+        <!-- ============================================================ -->
+        
+        <record id="model_iphone_15" model="mobile.repair.device.model">
+            <field name="name">iPhone 15</field>
+            <field name="brand_id" ref="brand_apple"/>
+            <field name="release_year">2023</field>
+            <field name="screen_size">6.1</field>
+            <field name="operating_system">ios</field>
+        </record>
+        
+        <record id="model_iphone_14" model="mobile.repair.device.model">
+            <field name="name">iPhone 14</field>
+            <field name="brand_id" ref="brand_apple"/>
+            <field name="release_year">2022</field>
+            <field name="screen_size">6.1</field>
+            <field name="operating_system">ios</field>
+        </record>
+        
+        <record id="model_galaxy_s24" model="mobile.repair.device.model">
+            <field name="name">Galaxy S24</field>
+            <field name="brand_id" ref="brand_samsung"/>
+            <field name="release_year">2024</field>
+            <field name="screen_size">6.2</field>
+            <field name="operating_system">android</field>
+        </record>
+        
+        <record id="model_galaxy_a54" model="mobile.repair.device.model">
+            <field name="name">Galaxy A54</field>
+            <field name="brand_id" ref="brand_samsung"/>
+            <field name="release_year">2023</field>
+            <field name="screen_size">6.4</field>
+            <field name="operating_system">android</field>
         </record>
 
-        <!-- Órdenes completadas en días anteriores para estadísticas -->
-        <record id="repair_order_demo_11" model="mobile.repair.order">
-            <field name="customer_id" ref="base.res_partner_3"/>
-            <field name="device_id" ref="device_demo_3"/>
-            <field name="problem_id" ref="mobile_repair_orders.problem_charging"/>
-            <field name="problem_description">Conector de carga suelto.</field>
-            <field name="state">delivered</field>
-            <field name="priority">normal</field>
-            <field name="technician_id" ref="technician_demo_2"/>
-            <field name="date_received" eval="DateTime.now() - timedelta(days=7)"/>
-            <field name="date_started" eval="DateTime.now() - timedelta(days=6)"/>
-            <field name="date_completed" eval="DateTime.now() - timedelta(days=5)"/>
-            <field name="date_delivered" eval="DateTime.now() - timedelta(days=4)"/>
+        <!-- ============================================================ -->
+        <!-- COLORES                                                     -->
+        <!-- ============================================================ -->
+        
+        <record id="color_black" model="mobile.repair.device.color">
+            <field name="name">Negro</field>
+            <field name="color_code">#000000</field>
+        </record>
+        
+        <record id="color_white" model="mobile.repair.device.color">
+            <field name="name">Blanco</field>
+            <field name="color_code">#FFFFFF</field>
+        </record>
+        
+        <record id="color_blue" model="mobile.repair.device.color">
+            <field name="name">Azul</field>
+            <field name="color_code">#0066CC</field>
+        </record>
+        
+        <record id="color_red" model="mobile.repair.device.color">
+            <field name="name">Rojo</field>
+            <field name="color_code">#CC0000</field>
         </record>
 
-        <record id="repair_order_demo_12" model="mobile.repair.order">
-            <field name="customer_id" ref="base.res_partner_4"/>
-            <field name="device_info">Motorola Edge 40 - Verde - IMEI: ***6666</field>
-            <field name="problem_description">Pantalla con líneas verticales.</field>
-            <field name="state">delivered</field>
-            <field name="priority">high</field>
-            <field name="technician_id" ref="technician_demo_1"/>
-            <field name="date_received" eval="DateTime.now() - timedelta(days=10)"/>
-            <field name="date_started" eval="DateTime.now() - timedelta(days=9)"/>
-            <field name="date_completed" eval="DateTime.now() - timedelta(days=7)"/>
-            <field name="date_delivered" eval="DateTime.now() - timedelta(days=6)"/>
+        <!-- ============================================================ -->
+        <!-- ACCESORIOS                                                  -->
+        <!-- ============================================================ -->
+        
+        <record id="accessory_back_cover" model="mobile.repair.device.accessory">
+            <field name="name">Tapa trasera</field>
+            <field name="accessory_type">tapa</field>
+        </record>
+        
+        <record id="accessory_sim_card" model="mobile.repair.device.accessory">
+            <field name="name">Tarjeta SIM</field>
+            <field name="accessory_type">sim</field>
+        </record>
+        
+        <record id="accessory_sd_card" model="mobile.repair.device.accessory">
+            <field name="name">Memoria SD</field>
+            <field name="accessory_type">sd_card</field>
+        </record>
+        
+        <record id="accessory_sim_tray" model="mobile.repair.device.accessory">
+            <field name="name">Bandeja SIM</field>
+            <field name="accessory_type">sim_tray</field>
         </record>
 
     </data>

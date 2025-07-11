@@ -1,134 +1,164 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Vista para las líneas de presupuesto -->
-    <record id="view_repair_order_line_tree" model="ir.ui.view">
-        <field name="name">mobile.repair.order.line.tree</field>
-        <field name="model">mobile.repair.order.line</field>
-        <field name="type">list</field>
-        <field name="arch" type="xml">
-            <list string="Líneas de Presupuesto" editable="bottom">
-                <control>
-                    <create name="add_product_control" string="Añadir producto"/>
-                    <create name="add_section_control" string="Añadir sección" context="{'default_display_type': 'line_section'}"/>
-                    <create name="add_note_control" string="Añadir nota" context="{'default_display_type': 'line_note'}"/>
-                </control>
-
-                <field name="sequence" widget="handle"/>
-                <field name="display_type" column_invisible="True"/>
-                <field name="currency_id" column_invisible="True"/>
-
-                <field name="product_id"
-                    required="1"
-                    invisible="context.get('default_display_type')"
-                    force_save="1"
-                    options="{'no_open': True}"
-                    domain="[('sale_ok', '=', True)]"/>
-                
-                <field name="name" string="Descripción" widget="section_and_note_text"/>
-                
-                <field name="product_uom_qty" string="Cantidad"/>
-                <field name="product_uom" string="UdM" groups="uom.group_uom" options="{'no_open': True}"/>
-                <field name="price_unit" string="Precio Unitario"/>
-                
-                <field name="tax_id"
-                    widget="many2many_tags"
-                    options="{'no_create': True}"
-                    domain="[('type_tax_use', '=', 'sale'), ('company_id', '=', parent.company_id)]"/>
-                
-                <field name="discount" string="Desc. %"/>
-                
-                <field name="price_subtotal"
-                    string="Subtotal"
-                    widget="monetary"
-                    options="{'currency_field': 'currency_id'}"/>
-            </list>
-        </field>
-    </record>
-
-    <!-- Vista lista de órdenes de reparación -->
+    <!-- VISTA LISTA DE ÓRDENES DE REPARACIÓN -->
     <record id="view_repair_order_tree" model="ir.ui.view">
         <field name="name">mobile.repair.order.tree</field>
         <field name="model">mobile.repair.order</field>
-        <field name="type">list</field>
         <field name="arch" type="xml">
-            <list string="Órdenes de Reparación" multi_edit="1">
-                <field name="name" readonly="1"/>
-                <field name="customer_id"/>
+            <list string="Órdenes de Reparación" default_order="create_date desc" 
+                  decoration-info="state == 'draft'" 
+                  decoration-warning="state == 'in_repair'" 
+                  decoration-success="state == 'repaired'" 
+                  decoration-muted="state == 'delivered'">
+                <field name="name"/>
+                <field name="partner_id"/>
                 <field name="device_id"/>
-                <field name="technician_id" optional="show" widget="many2one_avatar_user"/>
+                <field name="state" widget="badge" 
+                       decoration-info="state == 'draft'"
+                       decoration-warning="state == 'in_repair'" 
+                       decoration-success="state == 'repaired'"
+                       decoration-muted="state == 'delivered'"/>
+                <field name="technician_id" optional="show"/>
                 <field name="date_received"/>
-                <field name="amount_total" widget="monetary" sum="Total"/>
-                <field name="state"
-                    decoration-info="state == 'draft'"
-                    decoration-warning="state == 'in_progress'"
-                    decoration-success="state == 'ready'"
-                    decoration-primary="state == 'delivered'"
-                    decoration-muted="state == 'cancelled'"
-                    widget="badge"/>
-                <field name="priority" widget="priority"/>
-                <field name="currency_id" column_invisible="1"/>
+                <field name="date_promised" optional="show"/>
+                <field name="amount_total" widget="monetary" optional="show"/>
+                <field name="currency_id" column_invisible="True"/>
             </list>
         </field>
     </record>
 
-    <!-- Vista formulario de orden de reparación -->
+    <!-- VISTA FORMULARIO DE ORDEN DE REPARACIÓN -->
     <record id="view_repair_order_form" model="ir.ui.view">
         <field name="name">mobile.repair.order.form</field>
         <field name="model">mobile.repair.order</field>
         <field name="arch" type="xml">
             <form string="Orden de Reparación">
                 <header>
-                    <button name="action_start_repair" string="Iniciar Reparación" type="object" class="btn-primary" invisible="state != 'draft'"/>
-                    <button name="action_mark_ready" string="Marcar Listo" type="object" class="btn-success" invisible="state != 'in_progress'"/>
-                    <button name="action_deliver" string="Entregar" type="object" class="btn-info" invisible="state != 'ready'"/>
-                    <button name="action_create_invoice" string="Crear Orden de Venta" type="object" class="btn-warning" invisible="sale_order_id or state in ('cancelled', 'delivered')"/>
-                    <button name="action_cancel" string="Cancelar" type="object" confirm="¿Está seguro de cancelar esta orden?" invisible="state in ('delivered','cancelled')"/>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,in_progress,ready,delivered"/>
+                    <button name="action_start_repair" string="Iniciar Reparación" 
+                            type="object" class="oe_highlight" 
+                            invisible="state != 'draft'"/>
+                    <button name="action_mark_repaired" string="Marcar como Reparado" 
+                            type="object" class="oe_highlight" 
+                            invisible="state != 'in_repair'"/>
+                    <button name="action_deliver" string="Entregar" 
+                            type="object" class="oe_highlight" 
+                            invisible="state != 'repaired'"/>
+                    <button name="action_create_invoice" string="Crear Factura" 
+                            type="object" class="btn-primary" 
+                            invisible="state not in ('repaired', 'delivered') or invoiced"/>
+                    <button name="action_cancel" string="Cancelar" 
+                            type="object" class="btn-secondary" 
+                            invisible="state in ('delivered', 'cancelled')"/>
+                    <field name="state" widget="statusbar" 
+                           statusbar_visible="draft,in_repair,repaired,delivered"/>
                 </header>
+                
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_sale_order" type="object" 
+                                class="oe_stat_button" icon="fa-shopping-cart"
+                                invisible="not sale_order_id">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Orden de</span>
+                                <span class="o_stat_text">Venta</span>
+                            </div>
+                        </button>
+                    </div>
+
                     <div class="oe_title">
                         <h1><field name="name" readonly="1"/></h1>
                     </div>
+
                     <group>
-                        <group>
-                            <field name="customer_id" required="1" readonly="state != 'draft'"/>
-                            <field name="device_id" required="1" readonly="state != 'draft'"/>
-                            <field name="problem_id" required="1" readonly="state != 'draft'"/>
-                            <field name="technician_id"/>
+                        <group string="Información del Cliente">
+                            <field name="partner_id" required="1"/>
+                            <field name="partner_phone"/>
+                            <field name="partner_email"/>
                         </group>
-                        <group>
-                            <field name="date_received"/>
+                        <group string="Información de la Reparación">
+                            <field name="device_id" required="1"/>
+                            <field name="technician_id"/>
                             <field name="priority" widget="priority"/>
-                            <field name="location_id" readonly="state != 'draft'"/>
+                            <field name="date_received"/>
+                            <field name="date_promised"/>
                         </group>
                     </group>
-                    
-                    <label for="problem_description" string="Descripción Detallada del Problema"/>
-                    <field name="problem_description" nolabel="1" placeholder="Detalles adicionales del problema reportado por el cliente..." readonly="state != 'draft'"/>
-                    
+
                     <notebook>
-                        <page string="Presupuesto y Diagnóstico" name="quote_and_diagnosis">
-                            <group string="Diagnóstico y Solución">
-                                <field name="diagnosis" placeholder="Diagnóstico técnico detallado del problema..." invisible="state == 'draft'" readonly="state in ('ready', 'delivered', 'cancelled')"/>
-                                <field name="solution_applied" placeholder="Solución detallada y los pasos realizados..." invisible="state in ('draft', 'in_progress')" readonly="state in ('delivered', 'cancelled')"/>
+                        <page string="Problemas y Diagnóstico">
+                            <group>
+                                <group string="Problemas Reportados">
+                                    <field name="problem_ids" widget="many2many_tags" nolabel="1"/>
+                                </group>
+                                
                             </group>
-                            
-                            <field name="order_line" 
-                                   widget="section_and_note_one2many" 
-                                   readonly="state != 'draft'"/>
+                            <group string="Diagnóstico y Observaciones">
+                                <field name="diagnosis" nolabel="1" placeholder="Diagnóstico técnico detallado..."/>
+                                <field name="internal_notes" nolabel="1" placeholder="Notas internas para el técnico..."/>
+                            </group>
+                        </page>
+
+                        <page string="Presupuesto">
+                            <field name="order_line" nolabel="1">
+                                <list string="Líneas de Presupuesto" editable="bottom">
+                                    <control>
+                                        <create name="add_product_control" string="Agregar producto"/>
+                                        <create name="add_section_control" string="Agregar sección" context="{'default_display_type': 'line_section'}"/>
+                                        <create name="add_note_control" string="Agregar nota" context="{'default_display_type': 'line_note'}"/>
+                                    </control>
+
+                                    <field name="display_type" column_invisible="True"/>
+                                    <field name="currency_id" column_invisible="True"/>
+                                    
+                                    <field name="product_id" 
+                                           invisible="display_type in ('line_section', 'line_note')"
+                                           required="display_type not in ('line_section', 'line_note')"
+                                           context="{'partner_id': parent.partner_id, 'quantity': product_uom_qty, 'uom': product_uom}"/>
+                                    
+                                    <field name="name" widget="section_and_note_text" optional="show"/>
+                                    
+                                    <field name="product_uom_qty" 
+                                           invisible="display_type in ('line_section', 'line_note')"/>
+                                    
+                                    <field name="product_uom" 
+                                           invisible="display_type in ('line_section', 'line_note')"
+                                           groups="uom.group_uom" 
+                                           optional="show"/>
+                                    
+                                    <field name="price_unit" 
+                                           invisible="display_type in ('line_section', 'line_note')"/>
+                                    
+                                    <field name="discount" 
+                                           invisible="display_type in ('line_section', 'line_note')" 
+                                           groups="product.group_discount_per_so_line" 
+                                           optional="show"/>
+                                    
+                                    <field name="tax_id" 
+                                           invisible="display_type in ('line_section', 'line_note')"
+                                           widget="many2many_tags" 
+                                           optional="hide"/>
+                                    
+                                    <field name="price_subtotal" 
+                                           invisible="display_type in ('line_section', 'line_note')"
+                                           widget="monetary"/>
+                                </list>
+                            </field>
                             
                             <group class="oe_subtotal_footer oe_right">
-                                <field name="amount_untaxed" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                                <field name="amount_tax" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="amount_untaxed" widget="monetary"/>
+                                <field name="amount_tax" widget="monetary"/>
                                 <div class="oe_subtotal_footer_separator oe_inline o_td_label">
                                     <label for="amount_total"/>
                                 </div>
-                                <field name="amount_total" nolabel="1" class="oe_subtotal_footer_separator" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="amount_total" nolabel="1" class="oe_subtotal_footer_separator" widget="monetary"/>
                             </group>
                         </page>
+
+                        
                     </notebook>
                 </sheet>
+                
                 <div class="oe_chatter">
                     <field name="message_follower_ids"/>
                     <field name="activity_ids"/>
@@ -138,88 +168,97 @@
         </field>
     </record>
 
-    <!-- Vista kanban compatible con Odoo 18 -->
-<record id="view_repair_order_kanban" model="ir.ui.view">
-    <field name="name">mobile.repair.order.kanban</field>
-    <field name="model">mobile.repair.order</field>
-    <field name="arch" type="xml">
-        <kanban default_group_by="state" class="o_kanban_mobile" quick_create="false" sample="1">
-            <field name="id"/>
-            <field name="name"/>
-            <field name="customer_id"/>
-            <field name="problem_id"/>
-            <field name="technician_id"/>
-            <field name="device_info"/>
-            <field name="amount_total"/>
-            <field name="currency_id"/>
-            <field name="priority"/>
-            <field name="state"/>
-            <field name="color"/>
-            <field name="date_received"/>
-            <field name="invoiced"/>
-            
-            <progressbar field="state" colors='{"draft": "secondary", "in_progress": "warning", "ready": "success", "delivered": "info", "cancelled": "danger"}'/>
-            
-            <templates>
-                <t t-name="card">
-                    <div class="oe_kanban_global_click oe_kanban_card d-flex flex-column">
-                        <div class="o_kanban_record_top mb-2">
-                            <div class="o_kanban_record_headings">
-                                <strong class="o_kanban_record_title">
-                                    <field name="name"/>
-                                </strong>
+    <!-- VISTA KANBAN -->
+    <record id="view_repair_order_kanban" model="ir.ui.view">
+        <field name="name">mobile.repair.order.kanban</field>
+        <field name="model">mobile.repair.order</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" class="o_kanban_small_column">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="device_id"/>
+                <field name="state"/>
+                <field name="amount_total"/>
+                <field name="currency_id"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click">
+                            <div class="oe_kanban_content">
+                                <div class="oe_kanban_details">
+                                    <strong class="o_kanban_record_title">
+                                        <field name="name"/>
+                                    </strong>
+                                    <div class="o_kanban_record_body">
+                                        <field name="partner_id"/>
+                                        <br/>
+                                        <field name="device_id"/>
+                                    </div>
+                                </div>
+                                <div class="oe_kanban_bottom_right">
+                                    <field name="amount_total" widget="monetary"/>
+                                </div>
                             </div>
                         </div>
-                        
-                        <div class="o_kanban_record_body flex-grow-1 mb-2">
-                            <div class="mb-2">
-                                <span class="badge badge-light text-success border-success">
-                                    <field name="customer_id"/>
-                                </span>
-                            </div>
-                            <div class="mb-2" t-if="record.device_info.raw_value">
-                                <span class="badge badge-secondary">
-                                    <i class="fa fa-mobile" title="Dispositivo"/> 
-                                    <field name="device_info"/>
-                                </span>
-                            </div>
-                            <div class="small text-muted" t-if="record.problem_id.raw_value">
-                                <i class="fa fa-wrench" title="Problema"/> 
-                                <field name="problem_id"/>
-                            </div>
-                        </div>
-                        
-                        <div class="o_kanban_record_bottom pt-2 border-top">
-                            <div class="oe_kanban_bottom_left">
-                                <field name="priority" widget="priority"/>
-                                <i t-if="record.invoiced.raw_value" class="fa fa-check-circle text-success ms-2" title="Facturado"/>
-                            </div>
-                            <div class="oe_kanban_bottom_right d-flex align-items-center">
-                                <span class="mx-2 fw-semibold">
-                                    <field name="amount_total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                                </span>
-                                <field name="technician_id" widget="many2one_avatar_user"/>
-                            </div>
-                        </div>
-                    </div>
-                </t>
-            </templates>
-        </kanban>
-    </field>
-</record>
-    
-    <!-- Acción para mostrar las órdenes de reparación -->
-    <record id="action_repair_orders_all" model="ir.actions.act_window">
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- VISTA BÚSQUEDA -->
+    <record id="view_repair_order_search" model="ir.ui.view">
+        <field name="name">mobile.repair.order.search</field>
+        <field name="model">mobile.repair.order</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Órdenes de Reparación">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="device_id"/>
+                <field name="technician_id"/>
+                <filter string="Borradores" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="En Reparación" name="in_repair" domain="[('state', '=', 'in_repair')]"/>
+                <filter string="Reparadas" name="repaired" domain="[('state', '=', 'repaired')]"/>
+                <filter string="Entregadas" name="delivered" domain="[('state', '=', 'delivered')]"/>
+                <separator/>
+                <filter string="Mis Reparaciones" name="my_repairs" domain="[('technician_id', '=', uid)]"/>
+                <filter string="Vencidas" name="overdue" domain="[('date_promised', '&lt;', context_today().strftime('%Y-%m-%d')), ('state', 'in', ['draft', 'in_repair'])]"/>
+                <group expand="0" string="Agrupar Por">
+                    <filter string="Estado" name="group_by_state" context="{'group_by': 'state'}"/>
+                    <filter string="Técnico" name="group_by_technician" context="{'group_by': 'technician_id'}"/>
+                    <filter string="Cliente" name="group_by_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Fecha Recibido" name="group_by_date_received" context="{'group_by': 'date_received'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ACCIÓN PRINCIPAL -->
+    <record id="action_repair_order" model="ir.actions.act_window">
         <field name="name">Órdenes de Reparación</field>
         <field name="res_model">mobile.repair.order</field>
         <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="view_repair_order_search"/>
+        <field name="context">{'search_default_draft': 1, 'search_default_in_repair': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crear una nueva orden de reparación
+            </p>
+            <p>
+                Gestiona las reparaciones de dispositivos móviles desde la recepción
+                hasta la entrega, incluyendo diagnóstico, presupuesto y seguimiento.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_repair_orders_all" model="ir.actions.act_window">
+        <field name="name">Todas las Órdenes de Reparación</field>
+        <field name="res_model">mobile.repair.order</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="view_repair_order_search"/>
         <field name="context">{}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                ¡Crea tu primera orden de reparación!
-            </p>
-            <p>
-                Gestiona las reparaciones de dispositivos móviles de forma simple y eficiente.
+                Aún no hay órdenes de reparación.
             </p>
         </field>
     </record>

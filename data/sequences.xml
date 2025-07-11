@@ -25,7 +25,7 @@
         
         <record id="seq_mobile_repair_device" model="ir.sequence">
             <field name="name">Dispositivos Móviles</field>
-            <field name="code">mobile_repair.device</field>
+            <field name="code">mobile.repair.device</field>
             <field name="prefix">DEV</field>
             <field name="suffix"></field>
             <field name="padding">3</field>

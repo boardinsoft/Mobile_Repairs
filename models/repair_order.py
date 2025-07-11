@@ -28,9 +28,9 @@ class RepairOrderLine(models.Model):
     discount = fields.Float(string='Descuento (%)', digits='Discount', default=0.0)
     tax_id = fields.Many2many('account.tax', string='Impuestos', domain=['|', ('active', '=', False), ('active', '=', True)])
     
+    currency_id = fields.Many2one(related='repair_order_id.currency_id', store=True, readonly=True, depends=['repair_order_id.currency_id'])
     price_subtotal = fields.Monetary(string='Subtotal', currency_field='currency_id', compute='_compute_amount', store=True)
     price_total = fields.Monetary(string='Total', currency_field='currency_id', compute='_compute_amount', store=True)
-    currency_id = fields.Many2one(related='repair_order_id.currency_id', store=True)
 
     @api.depends('product_uom_qty', 'discount', 'price_unit', 'tax_id')
     def _compute_amount(self):
@@ -46,7 +46,7 @@ class RepairOrderLine(models.Model):
                 line.repair_order_id.currency_id,
                 line.product_uom_qty,
                 product=line.product_id,
-                partner=line.repair_order_id.customer_id
+                partner=line.repair_order_id.partner_id
             )
             line.update({'price_subtotal': taxes['total_excluded'], 'price_total': taxes['total_included']})
 
@@ -67,22 +67,41 @@ class RepairOrder(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'priority desc, create_date desc'
 
+    _sql_constraints = [
+        ('name_uniq', 'UNIQUE(name)', 'El número de orden debe ser único'),
+        ('positive_amount', 'CHECK(amount_total >= 0)', 'El importe total no puede ser negativo'),
+    ]
+
+    @api.depends_context('company')
     def _get_default_currency_id(self):
         return self.env.company.currency_id.id
 
     name = fields.Char(string='Número', required=True, copy=False, readonly=True, index=True, default='Nuevo')
-    customer_id = fields.Many2one('res.partner', string='Cliente', required=True, tracking=True, index=True)
-    device_id = fields.Many2one('mobile.repair.device', string='Dispositivo', required=True, tracking=True, index=True)
-    problem_id = fields.Many2one('mobile.repair.problem', string='Problema Reportado', required=True, tracking=True)
+    partner_id = fields.Many2one('res.partner', string='Cliente', required=True, tracking=True, index=True, ondelete='restrict')
+    device_id = fields.Many2one('mobile.repair.device', string='Dispositivo', required=True, tracking=True, index=True, ondelete='restrict')
+    partner_phone = fields.Char(related='partner_id.phone', string='Teléfono', readonly=True, store=True, index=True)
+    partner_email = fields.Char(related='partner_id.email', string='Email', readonly=True, store=True, index=True)
+    problem_ids = fields.Many2many('mobile.repair.problem', 'mobile_repair_problem_order_rel', 'order_id', 'problem_id', string='Problemas Reportados', required=True, tracking=True)
+    device_condition = fields.Text(string='Condición del Dispositivo')
+    accessories_included = fields.Text(string='Accesorios Incluidos')
+    internal_notes = fields.Text(string='Notas Internas')
+    date_start = fields.Datetime(string='Fecha de Inicio', tracking=True)
+    date_finished = fields.Datetime(string='Fecha de Finalización', tracking=True)
+    date_promised = fields.Datetime(string='Fecha Prometida', tracking=True, index=True)
     problem_description = fields.Text(string='Detalles Adicionales', tracking=True)
+    
+    # ESTADOS CORREGIDOS según requerimientos
     state = fields.Selection([
-        ('draft', 'Recibido'), ('in_progress', 'En Reparación'), ('ready', 'Listo'),
-        ('delivered', 'Entregado'), ('cancelled', 'Cancelado')],
-        string='Estado', default='draft', tracking=True, index=True
-    )
+        ('draft', 'Borrador'),
+        ('in_repair', 'En reparación'), 
+        ('repaired', 'Reparado'),
+        ('delivered', 'Entregado'),
+        ('cancelled', 'Cancelado')
+    ], string='Estado', default='draft', tracking=True, index=True)
+    
     priority = fields.Selection([('normal', 'Normal'), ('high', 'Alta'), ('urgent', 'Urgente')], string='Prioridad', default='normal', tracking=True)
     color = fields.Integer(string='Color', default=0)
-    technician_id = fields.Many2one('res.users', string='Técnico', domain=[('active', '=', True)], tracking=True, index=True)
+    technician_id = fields.Many2one('res.users', string='Técnico', domain=[('active', '=', True)], tracking=True, index=True, ondelete='set null')
     
     diagnosis = fields.Text(string='Diagnóstico Técnico', tracking=True)
     solution_applied = fields.Text(string='Solución Aplicada', tracking=True)
@@ -92,16 +111,16 @@ class RepairOrder(models.Model):
     date_completed = fields.Datetime(string='Reparación Completa', readonly=True, tracking=True)
     date_delivered = fields.Datetime(string='Fecha Entrega', readonly=True, tracking=True)
 
-    # CAMBIO PRINCIPAL: usar mobile.repair.order.line en lugar de mobile.repair.quote.line
+    # Líneas de presupuesto heredadas de ventas
     order_line = fields.One2many('mobile.repair.order.line', 'repair_order_id', string='Líneas de Presupuesto', copy=True)
     
-    device_info = fields.Char(string='Información del Dispositivo', compute='_compute_device_info', store=True)
+    device_info = fields.Char(string='Información del Dispositivo', compute='_compute_device_info', store=True, precompute=True)
     currency_id = fields.Many2one('res.currency', string='Moneda', default=_get_default_currency_id, required=True)
     company_id = fields.Many2one('res.company', string='Compañía', default=lambda self: self.env.company, required=True)
     
-    amount_untaxed = fields.Monetary(string='Base Imponible', compute='_compute_amounts', store=True)
-    amount_tax = fields.Monetary(string='Impuestos', compute='_compute_amounts', store=True)
-    amount_total = fields.Monetary(string='Importe Total', compute='_compute_amounts', store=True)
+    amount_untaxed = fields.Monetary(string='Base Imponible', compute='_compute_amounts', store=True, readonly=True)
+    amount_tax = fields.Monetary(string='Impuestos', compute='_compute_amounts', store=True, readonly=True)
+    amount_total = fields.Monetary(string='Importe Total', compute='_compute_amounts', store=True, readonly=True)
 
     location_id = fields.Many2one(
         'stock.location', string='Ubicación de Repuestos', domain=[('usage', '=', 'internal')], required=True,
@@ -112,9 +131,16 @@ class RepairOrder(models.Model):
     
     sale_order_id = fields.Many2one('sale.order', string='Orden de Venta', readonly=True, copy=False, tracking=True)
     invoice_id = fields.Many2one('account.move', string='Factura', compute='_compute_invoice_id', store=True, readonly=True, copy=False)
-    invoiced = fields.Boolean(string='Facturado', compute='_compute_invoiced', store=True, help="Indica si la factura asociada ha sido pagada.")
+    invoiced = fields.Boolean(string='Facturado', compute='_compute_invoiced', store=True, help="Indica si la factura asociada ha sido pagada.", index=True)
 
     # --- MÉTODOS DE CÓMPUTO ---
+
+    @api.constrains('date_promised', 'date_received')
+    def _check_dates(self):
+        for order in self:
+            if order.date_promised and order.date_promised < order.date_received:
+                raise ValidationError('La fecha prometida no puede ser anterior a la fecha de recepción')
+
     def _compute_picking_count(self):
         for order in self:
             order.picking_count = 1 if order.stock_picking_id else 0
@@ -122,13 +148,10 @@ class RepairOrder(models.Model):
     @api.depends('order_line.price_total')
     def _compute_amounts(self):
         for order in self:
-            amount_untaxed = sum(order.order_line.mapped('price_subtotal'))
-            amount_total = sum(order.order_line.mapped('price_total'))
-            order.update({
-                'amount_untaxed': amount_untaxed, 
-                'amount_tax': amount_total - amount_untaxed, 
-                'amount_total': amount_total
-            })
+            order_lines = order.order_line
+            order.amount_untaxed = sum(order_lines.mapped('price_subtotal'))
+            order.amount_total = sum(order_lines.mapped('price_total'))
+            order.amount_tax = order.amount_total - order.amount_untaxed
     
     @api.depends('sale_order_id.invoice_ids')
     def _compute_invoice_id(self):
@@ -143,34 +166,47 @@ class RepairOrder(models.Model):
     @api.depends('device_id')
     def _compute_device_info(self):
         for record in self:
-            record.device_info = record.device_id.display_name if record.device_id else "Sin dispositivo"
+            if record.device_id:
+                record.device_info = record.device_id.display_name
+            else:
+                record.device_info = "Sin dispositivo"
 
-    # --- MÉTODOS DE ACCIÓN (BOTONES) ---
+    # --- MÉTODOS DE ACCIÓN CORREGIDOS PARA NUEVOS ESTADOS ---
     def action_start_repair(self):
+        """Inicia la reparación (draft -> in_repair)"""
         self.ensure_one()
         if not self.technician_id:
             raise UserError("Debe asignar un técnico antes de iniciar la reparación.")
         if not self.stock_picking_id: 
             self._create_stock_picking()
-        self.write({'state': 'in_progress', 'date_started': fields.Datetime.now()})
+        self.write({'state': 'in_repair', 'date_started': fields.Datetime.now()})
         return True
 
-    def action_mark_ready(self):
+    def action_mark_repaired(self):
+        """Marca como reparado (in_repair -> repaired)"""
         self.ensure_one()
         if self.stock_picking_id and self.stock_picking_id.state == 'assigned':
             self.stock_picking_id.button_validate()
-        self.write({'state': 'ready', 'date_completed': fields.Datetime.now()})
+        self.write({'state': 'repaired', 'date_completed': fields.Datetime.now()})
         return True
     
     def action_deliver(self):
+        """Entrega el dispositivo (repaired -> delivered)"""
         self.ensure_one()
         self.write({'state': 'delivered', 'date_delivered': fields.Datetime.now()})
         return True
 
     def action_cancel(self):
+        """Cancela la orden"""
         if self.stock_picking_id: 
             self.stock_picking_id.action_cancel()
         self.write({'state': 'cancelled'})
+        return True
+    
+    def action_reset_to_draft(self):
+        """Regresa a borrador"""
+        self.ensure_one()
+        self.write({'state': 'draft'})
         return True
     
     def _create_stock_picking(self):
@@ -185,7 +221,7 @@ class RepairOrder(models.Model):
             return
         
         picking = self.env['stock.picking'].create({
-            'partner_id': self.customer_id.id, 
+            'partner_id': self.partner_id.id, 
             'picking_type_id': picking_type.id,
             'location_id': self.location_id.id, 
             'location_dest_id': self.env.ref('stock.stock_location_customers').id,
@@ -218,30 +254,43 @@ class RepairOrder(models.Model):
 
     def action_create_invoice(self):
         self.ensure_one()
-        if not self.amount_total: 
-            raise UserError("No se puede crear una factura con importe total cero.")
+        if not self.order_line:
+            raise UserError("No hay líneas para facturar.")
         
-        sale_order = self.env['sale.order'].create({
-            'partner_id': self.customer_id.id, 
-            'origin': self.name, 
-            'repair_order_id': self.id,
-            'order_line': [(0, 0, {
-                'product_id': line.product_id.id, 
-                'name': line.name,
-                'product_uom_qty': line.product_uom_qty, 
-                'price_unit': line.price_unit,
-                'discount': line.discount, 
-                'tax_id': [(6, 0, line.tax_id.ids)]
-            }) for line in self.order_line.filtered(lambda l: not l.display_type)],
-        })
-        self.sale_order_id = sale_order.id
+        invoice_vals = self._prepare_invoice()
+        invoice = self.env['account.move'].create(invoice_vals)
+        invoice.action_post()
+        
+        self.invoice_id = invoice
+        
         return {
-            'type': 'ir.actions.act_window', 
-            'name': 'Orden de Venta',
-            'res_model': 'sale.order', 
-            'res_id': sale_order.id, 
-            'view_mode': 'form', 
-            'target': 'current'
+            'type': 'ir.actions.act_window',
+            'name': 'Factura',
+            'res_model': 'account.move',
+            'res_id': invoice.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
+
+    def _prepare_invoice(self):
+        return {
+            'move_type': 'out_invoice',
+            'partner_id': self.partner_id.id,
+            'currency_id': self.currency_id.id,
+            'ref': self.name,
+            'invoice_origin': self.name,
+            'invoice_line_ids': [(0, 0, self._prepare_invoice_line(line)) 
+                                 for line in self.order_line.filtered(lambda l: not l.display_type)],
+        }
+
+    def _prepare_invoice_line(self, line):
+        return {
+            'product_id': line.product_id.id,
+            'name': line.name,
+            'quantity': line.product_uom_qty,
+            'price_unit': line.price_unit,
+            'discount': line.discount,
+            'tax_ids': [(6, 0, line.tax_id.ids)],
         }
 
     def action_view_sale_order(self):
@@ -273,6 +322,12 @@ class RepairOrder(models.Model):
                 vals['name'] = self.env['ir.sequence'].next_by_code('mobile.repair.order') or 'Nuevo'
         return super().create(vals_list)
 
+    def unlink(self):
+        for order in self:
+            if order.state != 'cancelled':
+                raise UserError("No se puede eliminar una orden de reparación que no esté en estado 'Cancelado'.")
+        return super().unlink()
+
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
     repair_order_id = fields.Many2one('mobile.repair.order', string='Orden de Reparación', readonly=True, copy=False)
@@ -287,10 +342,10 @@ class ResPartner(models.Model):
             self.repair_orders_count = 0
             return
         repair_data = self.env['mobile.repair.order'].read_group(
-            [('customer_id', 'in', self.ids)],
-            ['customer_id'],
-            ['customer_id']
+            [('partner_id', 'in', self.ids)],
+            ['partner_id'],
+            ['partner_id']
         )
-        count_map = {item['customer_id'][0]: item['customer_id_count'] for item in repair_data}
+        count_map = {item['partner_id'][0]: item['partner_id_count'] for item in repair_data}
         for partner in self:
             partner.repair_orders_count = count_map.get(partner.id, 0)

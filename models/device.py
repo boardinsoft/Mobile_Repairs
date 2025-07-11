@@ -5,7 +5,7 @@ from odoo.exceptions import ValidationError
 
 class RepairDeviceBrand(models.Model):
     """Define una marca de dispositivo, como Apple o Samsung."""
-    _name = 'mobile_repair.device.brand'
+    _name = 'mobile.repair.device.brand'
     _description = 'Marca de Dispositivo'
     _order = 'name'
 
@@ -14,7 +14,7 @@ class RepairDeviceBrand(models.Model):
     image = fields.Image(string='Logo', max_width=128, max_height=128)
     
     model_ids = fields.One2many(
-        'mobile_repair.device.model', 'brand_id', string='Modelos'
+        'mobile.repair.device.model', 'brand_id', string='Modelos'
     )
     model_count = fields.Integer(
         string='Cantidad de Modelos', compute='_compute_model_count'
@@ -27,14 +27,14 @@ class RepairDeviceBrand(models.Model):
 
 class RepairDeviceModel(models.Model):
     """Define un modelo específico de dispositivo, como 'iPhone 15'."""
-    _name = 'mobile_repair.device.model'
+    _name = 'mobile.repair.device.model'
     _description = 'Modelo de Dispositivo'
     _order = 'brand_id, name'
     _rec_name = 'display_name'
 
     name = fields.Char(string='Modelo', required=True, index=True)
     brand_id = fields.Many2one(
-        'mobile_repair.device.brand', string='Marca', required=True, ondelete='cascade'
+        'mobile.repair.device.brand', string='Marca', required=True, ondelete='cascade'
     )
     active = fields.Boolean(string='Activo', default=True)
     
@@ -48,7 +48,7 @@ class RepairDeviceModel(models.Model):
     ], string='Sistema Operativo')
     
     display_name = fields.Char(
-        string='Nombre Completo', compute='_compute_display_name', store=True
+        string='Nombre Completo', compute='_compute_display_name', store=True, readonly=True
     )
     
     @api.depends('brand_id.name', 'name')
@@ -61,7 +61,7 @@ class RepairDeviceModel(models.Model):
 
 class RepairDeviceColor(models.Model):
     """Define un color para un dispositivo."""
-    _name = 'mobile_repair.device.color'
+    _name = 'mobile.repair.device.color'
     _description = 'Color de Dispositivo'
     _order = 'name'
 
@@ -73,7 +73,7 @@ class RepairDeviceColor(models.Model):
 
 class RepairDeviceAccessory(models.Model):
     """Define un accesorio que puede venir con un dispositivo."""
-    _name = 'mobile_repair.device.accessory'
+    _name = 'mobile.repair.device.accessory'
     _description = 'Accesorio de Dispositivo'
     _order = 'name'
 
@@ -99,15 +99,15 @@ class RepairDeviceAccessory(models.Model):
 
 class RepairDevice(models.Model):
     """Representa un dispositivo físico único de un cliente."""
-    _name = 'mobile_repair.device'
+    _name = 'mobile.repair.device'
     _description = 'Dispositivo Individual'
     _order = 'create_date desc'
     _rec_name = 'display_name'
 
     # Relaciones principales
-    brand_id = fields.Many2one('mobile_repair.device.brand', string='Marca', required=True, index=True)
+    brand_id = fields.Many2one('mobile.repair.device.brand', string='Marca', required=True, index=True)
     model_id = fields.Many2one(
-        'mobile_repair.device.model', string='Modelo',
+        'mobile.repair.device.model', string='Modelo',
         domain="[('brand_id','=',brand_id)]", required=True, index=True
     )
     
@@ -117,7 +117,7 @@ class RepairDevice(models.Model):
         string='Código', required=True, index=True, copy=False, readonly=True,
         help="Código único generado automáticamente."
     )
-    color_ids = fields.Many2many('mobile_repair.device.color', string='Colores')
+    color_ids = fields.Many2many('mobile.repair.device.color', string='Colores')
     
     # Estado funcional y físico
     powers_on = fields.Boolean(string='Enciende', default=True, help="¿El dispositivo enciende correctamente?")
@@ -134,20 +134,20 @@ class RepairDevice(models.Model):
         ('pin', 'PIN'), ('pattern', 'Patrón')],
         string='Tipo de bloqueo', default='none'
     )
-    has_lock_code = fields.Boolean(string='Tiene código de acceso', help="¿El cliente proporcionó el código de desbloqueo?")
+    lock_code = fields.Char(string='Código de Bloqueo', help="Código de desbloqueo del dispositivo.")
     
     # Accesorios y Notas
-    accessory_ids = fields.Many2many('mobile_repair.device.accessory', string='Accesorios Incluidos')
+    accessory_ids = fields.Many2many('mobile.repair.device.accessory', string='Accesorios Incluidos')
     notes = fields.Text(string='Observaciones')
     
-    display_name = fields.Char(string='Nombre del Dispositivo', compute='_compute_display_name', store=True)
+    display_name = fields.Char(string='Nombre del Dispositivo', compute='_compute_display_name', store=True, readonly=True)
     
-    # --- CORRECCIÓN: Se añade el campo One2many para que @api.depends funcione ---
+    # Relación con órdenes de reparación
     repair_ids = fields.One2many('mobile.repair.order', 'device_id', string='Órdenes de Reparación')
     
-    # --- CORRECCIÓN: Se añade store=True para hacer los campos buscables ---
-    repair_count = fields.Integer(string='Reparaciones', compute='_compute_repair_stats', store=True)
-    last_repair_date = fields.Datetime(string='Última Reparación', compute='_compute_repair_stats', store=True)
+    # Estadísticas
+    repair_count = fields.Integer(string='Reparaciones', compute='_compute_repair_stats', store=True, readonly=True)
+    last_repair_date = fields.Datetime(string='Última Reparación', compute='_compute_repair_stats', store=True, readonly=True)
     
     @api.depends('brand_id.name', 'model_id.name', 'color_ids.name', 'device_code')
     def _compute_display_name(self):
@@ -159,7 +159,6 @@ class RepairDevice(models.Model):
                 parts.append(", ".join(device.color_ids.mapped('name')))
             device.display_name = " - ".join(parts) if parts else "Dispositivo sin definir"
     
-    # --- CORRECCIÓN: Se añade @api.depends para que los campos almacenados se actualicen ---
     @api.depends('repair_ids')
     def _compute_repair_stats(self):
         """Calcula estadísticas de reparaciones de forma optimizada."""
@@ -174,15 +173,28 @@ class RepairDevice(models.Model):
     def create(self, vals_list):
         for vals in vals_list:
             if 'device_code' not in vals or not vals['device_code']:
-                vals['device_code'] = self.env['ir.sequence'].next_by_code('mobile_repair.device') or 'Nuevo'
+                vals['device_code'] = self.env['ir.sequence'].next_by_code('mobile.repair.device') or 'Nuevo'
         return super().create(vals_list)
     
     @api.constrains('imei')
     def _check_imei_unique(self):
         for device in self:
-            if device.imei and self.search_count([('imei', '=', device.imei), ('id', '!=', device.id)]) > 0:
-                raise ValidationError(f"Ya existe un dispositivo con IMEI {device.imei}")
+            if device.imei:
+                if not device.imei.isdigit() or len(device.imei) != 15:
+                    raise ValidationError("El IMEI debe contener exactamente 15 dígitos numéricos.")
+                if self.search_count([('imei', '=', device.imei), ('id', '!=', device.id)]) > 0:
+                    raise ValidationError(f"Ya existe un dispositivo con IMEI {device.imei}")
     
+    @api.constrains('lock_type', 'lock_code')
+    def _check_lock_code_format(self):
+        for device in self:
+            if device.lock_type == 'pin' and device.lock_code:
+                if not device.lock_code.isdigit():
+                    raise ValidationError("El PIN debe contener solo números.")
+            elif device.lock_type == 'password' and device.lock_code:
+                if not device.lock_code.isalnum():
+                    raise ValidationError("La contraseña debe ser alfanumérica.")
+
     def action_view_repairs(self):
         self.ensure_one()
         return {

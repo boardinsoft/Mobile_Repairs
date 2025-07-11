@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <record id="view_device_tree" model="ir.ui.view">
-        <field name="name">mobile_repair.device.tree</field>
-        <field name="model">mobile_repair.device</field>
+        <field name="name">mobile.repair.device.tree</field>
+        <field name="model">mobile.repair.device</field>
         <field name="arch" type="xml">
             <list string="Dispositivos" default_order="create_date desc">
                 <field name="device_code"/>
@@ -11,7 +11,7 @@
                 <field name="model_id"/>
                 <field name="color_ids" widget="many2many_tags" options="{'color_field': 'color_code'}" optional="show"/>
                 <field name="physical_state" widget="badge"/>
-                <field name="powers_on" widget="boolean_toggle" optional="show"/>
+                <field name="powers_on" widget="boolean_button" optional="show" decoration-success="powers_on == True" decoration-danger="powers_on == False"/>
                 <field name="imei" optional="hide"/>
                 <field name="repair_count" optional="show"/>
                 <field name="last_repair_date" optional="hide"/>
@@ -20,8 +20,8 @@
     </record>
 
     <record id="view_device_form" model="ir.ui.view">
-        <field name="name">mobile_repair.device.form</field>
-        <field name="model">mobile_repair.device</field>
+        <field name="name">mobile.repair.device.form</field>
+        <field name="model">mobile.repair.device</field>
         <field name="arch" type="xml">
             <form string="Dispositivo">
                 <header>
@@ -37,7 +37,7 @@
                     </div>
                     <group>
                         <group string="Información del Dispositivo">
-                            <field name="device_code" readonly="1"/>
+                            <field name="device_code" invisible="1"/>
                             <field name="brand_id" required="1"/>
                             <field name="model_id" 
                                    domain="[('brand_id','=',brand_id)]" 
@@ -48,9 +48,9 @@
                         </group>
                         <group string="Estado y Seguridad">
                             <field name="physical_state" required="1" widget="radio"/>
-                            <field name="powers_on" widget="boolean_toggle"/>
+                            <field name="powers_on" widget="boolean_field"/>
                             <field name="lock_type"/>
-                            <field name="has_lock_code" invisible="lock_type == 'none'"/>
+                            <field name="lock_code" invisible="lock_type == 'none'"/>
                         </group>
                     </group>
                     <group string="Accesorios Incluidos">
@@ -84,8 +84,8 @@
     </record>
 
     <record id="view_device_kanban" model="ir.ui.view">
-        <field name="name">mobile_repair.device.kanban</field>
-        <field name="model">mobile_repair.device</field>
+        <field name="name">mobile.repair.device.kanban</field>
+        <field name="model">mobile.repair.device</field>
         <field name="arch" type="xml">
             <kanban class="o_kanban_medium_column">
                 <field name="display_name"/>
@@ -111,8 +111,8 @@
     </record>
 
     <record id="view_device_search" model="ir.ui.view">
-        <field name="name">mobile_repair.device.search</field>
-        <field name="model">mobile_repair.device</field>
+        <field name="name">mobile.repair.device.search</field>
+        <field name="model">mobile.repair.device</field>
         <field name="arch" type="xml">
             <search string="Buscar Dispositivos">
                 <field name="brand_id"/>
@@ -133,7 +133,7 @@
 
     <record id="action_mobile_repair_device" model="ir.actions.act_window">
         <field name="name">Dispositivos</field>
-        <field name="res_model">mobile_repair.device</field>
+        <field name="res_model">mobile.repair.device</field>
         <field name="view_mode">kanban,list,form</field>
         <field name="search_view_id" ref="view_device_search"/>
         <field name="help" type="html">
@@ -141,27 +141,33 @@
         </field>
     </record>
 
+    <!-- MARCAS DE DISPOSITIVOS -->
     <record id="view_device_brand_tree" model="ir.ui.view">
-        <field name="name">mobile_repair.device.brand.tree</field>
-        <field name="model">mobile_repair.device.brand</field>
+        <field name="name">mobile.repair.device.brand.tree</field>
+        <field name="model">mobile.repair.device.brand</field>
         <field name="arch" type="xml">
             <list string="Marcas" editable="bottom">
                 <field name="name"/>
                 <field name="model_count"/>
-                <field name="active"/>
+                <field name="active" widget="boolean_button" decoration-success="active == True" decoration-danger="active == False"/>
             </list>
         </field>
     </record>
     
     <record id="view_device_brand_form" model="ir.ui.view">
-        <field name="name">mobile_repair.device.brand.form</field>
-        <field name="model">mobile_repair.device.brand</field>
+        <field name="name">mobile.repair.device.brand.form</field>
+        <field name="model">mobile.repair.device.brand</field>
         <field name="arch" type="xml">
             <form string="Marca">
                 <sheet>
                     <field name="image" widget="image" class="oe_avatar"/>
-                    <div class="oe_title"><h1><field name="name" required="1"/></h1></div>
-                    <group><field name="active"/><field name="model_count"/></group>
+                    <div class="oe_title">
+                        <h1><field name="name" required="1"/></h1>
+                    </div>
+                    <group>
+                        <field name="active" widget="boolean_field"/>
+                        <field name="model_count"/>
+                    </group>
                 </sheet>
             </form>
         </field>
@@ -169,13 +175,14 @@
     
     <record id="action_mobile_repair_device_brand" model="ir.actions.act_window">
         <field name="name">Marcas de Dispositivo</field>
-        <field name="res_model">mobile_repair.device.brand</field>
+        <field name="res_model">mobile.repair.device.brand</field>
         <field name="view_mode">list,form</field>
     </record>
     
+    <!-- MODELOS DE DISPOSITIVOS -->
     <record id="view_device_model_tree" model="ir.ui.view">
-        <field name="name">mobile_repair.device.model.tree</field>
-        <field name="model">mobile_repair.device.model</field>
+        <field name="name">mobile.repair.device.model.tree</field>
+        <field name="model">mobile.repair.device.model</field>
         <field name="arch" type="xml">
             <list string="Modelos" editable="bottom">
                 <field name="brand_id"/>
@@ -183,21 +190,31 @@
                 <field name="operating_system" optional="show"/>
                 <field name="release_year" optional="show"/>
                 <field name="screen_size" optional="show"/>
-                <field name="active"/>
+                <field name="active" widget="boolean_button" decoration-success="active == True" decoration-danger="active == False"/>
             </list>
         </field>
     </record>
     
     <record id="view_device_model_form" model="ir.ui.view">
-        <field name="name">mobile_repair.device.model.form</field>
-        <field name="model">mobile_repair.device.model</field>
+        <field name="name">mobile.repair.device.model.form</field>
+        <field name="model">mobile.repair.device.model</field>
         <field name="arch" type="xml">
             <form string="Modelo de Dispositivo">
                 <sheet>
-                    <div class="oe_title"><h1><field name="display_name" readonly="1"/></h1></div>
+                    <div class="oe_title">
+                        <h1><field name="display_name" readonly="1"/></h1>
+                    </div>
                     <group>
-                        <group><field name="brand_id"/><field name="name"/><field name="active"/></group>
-                        <group><field name="operating_system"/><field name="release_year"/><field name="screen_size"/></group>
+                        <group>
+                            <field name="brand_id"/>
+                            <field name="name"/>
+                            <field name="active" widget="boolean_field"/>
+                        </group>
+                        <group>
+                            <field name="operating_system"/>
+                            <field name="release_year"/>
+                            <field name="screen_size"/>
+                        </group>
                     </group>
                 </sheet>
             </form>
@@ -206,33 +223,46 @@
     
     <record id="action_mobile_repair_device_model" model="ir.actions.act_window">
         <field name="name">Modelos de Dispositivo</field>
-        <field name="res_model">mobile_repair.device.model</field>
+        <field name="res_model">mobile.repair.device.model</field>
         <field name="view_mode">list,form</field>
     </record>
 
+    <!-- COLORES DE DISPOSITIVOS -->
     <record id="view_device_color_tree" model="ir.ui.view">
-        <field name="name">mobile_repair.device.color.tree</field>
-        <field name="model">mobile_repair.device.color</field>
+        <field name="name">mobile.repair.device.color.tree</field>
+        <field name="model">mobile.repair.device.color</field>
         <field name="arch" type="xml">
-            <list string="Colores" editable="bottom"><field name="name"/><field name="color_code" widget="color"/><field name="active"/></list>
+            <list string="Colores" editable="bottom">
+                <field name="name"/>
+                <field name="color_code" widget="color"/>
+                <field name="active" widget="boolean_button" decoration-success="active == True" decoration-danger="active == False"/>
+            </list>
         </field>
     </record>
+    
     <record id="action_mobile_repair_device_color" model="ir.actions.act_window">
         <field name="name">Colores de Dispositivo</field>
-        <field name="res_model">mobile_repair.device.color</field>
+        <field name="res_model">mobile.repair.device.color</field>
         <field name="view_mode">list,form</field>
     </record>
 
+    <!-- ACCESORIOS DE DISPOSITIVOS -->
     <record id="view_device_accessory_tree" model="ir.ui.view">
-        <field name="name">mobile_repair.device.accessory.tree</field>
-        <field name="model">mobile_repair.device.accessory</field>
+        <field name="name">mobile.repair.device.accessory.tree</field>
+        <field name="model">mobile.repair.device.accessory</field>
         <field name="arch" type="xml">
-            <list string="Accesorios" editable="bottom"><field name="name"/><field name="accessory_type"/><field name="color_code" widget="color" readonly="1"/><field name="active"/></list>
+            <list string="Accesorios" editable="bottom">
+                <field name="name"/>
+                <field name="accessory_type"/>
+                <field name="color_code" widget="color" readonly="1"/>
+                <field name="active" widget="boolean_button" decoration-success="active == True" decoration-danger="active == False"/>
+            </list>
         </field>
     </record>
+    
     <record id="action_mobile_repair_device_accessory" model="ir.actions.act_window">
         <field name="name">Accesorios de Dispositivo</field>
-        <field name="res_model">mobile_repair.device.accessory</field>
+        <field name="res_model">mobile.repair.device.accessory</field>
         <field name="view_mode">list,form</field>
     </record>
 
