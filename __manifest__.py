@@ -44,8 +44,8 @@
         'views/device_views.xml',
         'views/repair_problem_views.xml',
         'views/repair_order_views.xml',
-        'views/repair_analytics_views.xml',
         'views/menus.xml',
+        'views/repair_analytics_views.xml',
     ],
     'demo': [
         'demo/demo_data.xml',

@@ -69,7 +69,7 @@
         <menuitem id="menu_repair_reports_technicians"
                   name="Análisis por Técnicos"
                   parent="menu_repair_reports"
-                  action="action_repair_orders_technician_analysis"
+                  action="action_repair_orders_analysis"
                   sequence="10"/>
 
         <menuitem id="menu_repair_reports_states"

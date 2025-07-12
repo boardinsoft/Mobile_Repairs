@@ -136,6 +136,9 @@ class RepairOrder(models.Model):
     problem_count = fields.Integer(string="Problem Count", compute='_compute_problem_count', store=True)
     progress_percentage = fields.Integer(string="Progress Percentage", compute='_compute_progress_percentage', store=True)
     technician_image = fields.Binary(related='technician_id.image_128', string="Technician Avatar", readonly=True)
+    margin = fields.Monetary(string='Margen de Beneficio', compute='_compute_margin', store=True)
+    commission_amount = fields.Monetary(string='Comisiones Pagadas', compute='_compute_commission_amount', store=True)
+    repair_time = fields.Float(string='Tiempo Promedio Reparación (Días)', compute='_compute_repair_time', store=True)
 
     # --- MÉTODOS DE CÓMPUTO ---
 
@@ -157,6 +160,34 @@ class RepairOrder(models.Model):
                 order.progress_percentage = 100
             else:
                 order.progress_percentage = 0
+
+    @api.depends('amount_total', 'order_line.price_unit', 'order_line.product_id.standard_price', 'order_line.product_uom_qty')
+    def _compute_margin(self):
+        for order in self:
+            total_cost = 0.0
+            for line in order.order_line:
+                if line.product_id and line.product_id.standard_price:
+                    total_cost += line.product_id.standard_price * line.product_uom_qty
+            order.margin = order.amount_total - total_cost
+
+    @api.depends('amount_total', 'technician_id')
+    def _compute_commission_amount(self):
+        # This is a placeholder. Commission logic can be complex.
+        # For example, 5% of total amount if technician is assigned.
+        for order in self:
+            if order.technician_id and order.amount_total:
+                order.commission_amount = order.amount_total * 0.05  # Example: 5% commission
+            else:
+                order.commission_amount = 0.0
+
+    @api.depends('date_started', 'date_completed')
+    def _compute_repair_time(self):
+        for order in self:
+            if order.date_started and order.date_completed:
+                time_diff = order.date_completed - order.date_started
+                order.repair_time = time_diff.days + (time_diff.seconds / 86400.0)
+            else:
+                order.repair_time = 0.0
 
     @api.constrains('date_promised', 'date_received')
     def _check_dates(self):
