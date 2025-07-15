@@ -144,83 +144,129 @@ class RepairOrder(models.Model):
 
     @api.depends('problem_ids')
     def _compute_problem_count(self):
+        """Cuenta el número de problemas asociados."""
         for order in self:
-            order.problem_count = len(order.problem_ids)
+            order.problem_count = len(order.problem_ids) if order.problem_ids else 0
 
     @api.depends('state')
     def _compute_progress_percentage(self):
+        """Calcula el porcentaje de progreso basado en el estado."""
         for order in self:
-            if order.state == 'draft':
-                order.progress_percentage = 0
-            elif order.state == 'in_repair':
-                order.progress_percentage = 50
-            elif order.state == 'repaired':
-                order.progress_percentage = 75
-            elif order.state == 'delivered':
-                order.progress_percentage = 100
-            else:
-                order.progress_percentage = 0
+            progress_map = {
+                'draft': 0,
+                'in_repair': 50,
+                'repaired': 75,
+                'delivered': 100,
+                'cancelled': 0
+            }
+            order.progress_percentage = progress_map.get(order.state, 0)
 
-    @api.depends('amount_total', 'order_line.price_unit', 'order_line.product_id.standard_price', 'order_line.product_uom_qty')
+    @api.depends('amount_total', 'order_line', 'order_line.product_id', 'order_line.product_id.standard_price', 'order_line.product_uom_qty')
     def _compute_margin(self):
+        """Calcula el margen de beneficio."""
         for order in self:
+            if not order.order_line or not order.amount_total:
+                order.margin = 0.0
+                continue
+                
             total_cost = 0.0
             for line in order.order_line:
-                if line.product_id and line.product_id.standard_price:
-                    total_cost += line.product_id.standard_price * line.product_uom_qty
+                # Solo calcular costo para líneas con producto y que no sean display_type
+                if line.product_id and not line.display_type and line.product_id.standard_price:
+                    line_cost = line.product_id.standard_price * (line.product_uom_qty or 0.0)
+                    total_cost += line_cost
+            
             order.margin = order.amount_total - total_cost
 
     @api.depends('amount_total', 'technician_id')
     def _compute_commission_amount(self):
-        # This is a placeholder. Commission logic can be complex.
-        # For example, 5% of total amount if technician is assigned.
+        """Calcula el monto de comisiones."""
         for order in self:
-            if order.technician_id and order.amount_total:
-                order.commission_amount = order.amount_total * 0.05  # Example: 5% commission
+            if order.technician_id and order.amount_total > 0:
+                # Ejemplo: 5% de comisión - puedes ajustar según tu lógica de negocio
+                commission_rate = 0.05
+                order.commission_amount = order.amount_total * commission_rate
             else:
                 order.commission_amount = 0.0
 
     @api.depends('date_started', 'date_completed')
     def _compute_repair_time(self):
+        """Calcula el tiempo de reparación en días."""
         for order in self:
             if order.date_started and order.date_completed:
-                time_diff = order.date_completed - order.date_started
-                order.repair_time = time_diff.days + (time_diff.seconds / 86400.0)
+                # Verificar que date_completed sea posterior a date_started
+                if order.date_completed >= order.date_started:
+                    time_diff = order.date_completed - order.date_started
+                    order.repair_time = time_diff.days + (time_diff.seconds / 86400.0)
+                else:
+                    order.repair_time = 0.0
             else:
                 order.repair_time = 0.0
 
     @api.constrains('date_promised', 'date_received')
     def _check_dates(self):
+        """Valida la coherencia de las fechas."""
         for order in self:
-            if order.date_promised and order.date_promised < order.date_received:
-                raise ValidationError('La fecha prometida no puede ser anterior a la fecha de recepción')
+            if order.date_promised and order.date_received:
+                if order.date_promised < order.date_received:
+                    raise ValidationError(
+                        f"En orden {order.name}: La fecha prometida ({order.date_promised.strftime('%d/%m/%Y')}) "
+                        f"no puede ser anterior a la fecha de recepción ({order.date_received.strftime('%d/%m/%Y')})"
+                    )
+
+    @api.constrains('date_started', 'date_completed')
+    def _check_repair_dates(self):
+        """Valida las fechas de reparación."""
+        for order in self:
+            if order.date_started and order.date_completed:
+                if order.date_completed < order.date_started:
+                    raise ValidationError(
+                        f"En orden {order.name}: La fecha de finalización no puede ser anterior a la fecha de inicio"
+                    )
 
     def _compute_picking_count(self):
+        """Cuenta las transferencias de stock asociadas."""
         for order in self:
             order.picking_count = 1 if order.stock_picking_id else 0
 
-    @api.depends('order_line.price_total')
+    @api.depends('order_line', 'order_line.price_subtotal', 'order_line.price_total')
     def _compute_amounts(self):
+        """Calcula los importes totales de la orden."""
         for order in self:
-            order_lines = order.order_line
-            order.amount_untaxed = sum(order_lines.mapped('price_subtotal'))
-            order.amount_total = sum(order_lines.mapped('price_total'))
+            if not order.order_line:
+                order.amount_untaxed = order.amount_tax = order.amount_total = 0.0
+                continue
+                
+            # Filtrar solo líneas que no son de tipo display
+            valid_lines = order.order_line.filtered(lambda l: not l.display_type)
+            order.amount_untaxed = sum(valid_lines.mapped('price_subtotal'))
+            order.amount_total = sum(valid_lines.mapped('price_total'))
             order.amount_tax = order.amount_total - order.amount_untaxed
     
-    @api.depends('sale_order_id.invoice_ids')
+    @api.depends('sale_order_id', 'sale_order_id.invoice_ids')
     def _compute_invoice_id(self):
+        """Obtiene la factura asociada desde la orden de venta."""
         for order in self:
-            order.invoice_id = order.sale_order_id.invoice_ids and order.sale_order_id.invoice_ids[0] or False
+            if order.sale_order_id and order.sale_order_id.invoice_ids:
+                # Tomar la primera factura (la más reciente)
+                order.invoice_id = order.sale_order_id.invoice_ids[0]
+            else:
+                order.invoice_id = False
     
-    @api.depends('invoice_id.payment_state')
+    @api.depends('invoice_id', 'invoice_id.payment_state')
     def _compute_invoiced(self):
+        """Determina si la orden está facturada y pagada."""
         for order in self:
-            order.invoiced = order.invoice_id and order.invoice_id.payment_state in ('paid', 'in_payment')
+            if order.invoice_id and order.invoice_id.payment_state in ('paid', 'in_payment'):
+                order.invoiced = True
+            else:
+                order.invoiced = False
 
-    @api.depends('device_id')
+    @api.depends('device_id', 'device_id.display_name')
     def _compute_device_info(self):
+        """Genera información legible del dispositivo."""
         for record in self:
-            if record.device_id:
+            if record.device_id and record.device_id.display_name:
                 record.device_info = record.device_id.display_name
             else:
                 record.device_info = "Sin dispositivo"
@@ -231,17 +277,48 @@ class RepairOrder(models.Model):
         self.ensure_one()
         if not self.technician_id:
             raise UserError("Debe asignar un técnico antes de iniciar la reparación.")
-        if not self.stock_picking_id: 
+        
+        # Crear picking de stock si hay productos físicos
+        if not self.stock_picking_id and self.order_line.filtered(lambda l: l.product_id and l.product_id.type == 'product'):
             self._create_stock_picking()
-        self.write({'state': 'in_repair', 'date_started': fields.Datetime.now()})
+        
+        # Actualizar estado y fecha de inicio
+        self.write({
+            'state': 'in_repair', 
+            'date_started': fields.Datetime.now()
+        })
+        
+        # Enviar mensaje en el chatter
+        self.message_post(
+            body=f"Reparación iniciada por {self.technician_id.name}",
+            message_type='comment'
+        )
+        
         return True
 
     def action_mark_repaired(self):
         """Marca como reparado (in_repair -> repaired)"""
         self.ensure_one()
+        
+        # Validar el picking de stock si existe
         if self.stock_picking_id and self.stock_picking_id.state == 'assigned':
-            self.stock_picking_id.button_validate()
-        self.write({'state': 'repaired', 'date_completed': fields.Datetime.now()})
+            try:
+                self.stock_picking_id.button_validate()
+            except UserError as e:
+                raise UserError(f"Error al validar transferencia de stock: {e}")
+        
+        # Actualizar estado y fecha de finalización
+        self.write({
+            'state': 'repaired', 
+            'date_completed': fields.Datetime.now()
+        })
+        
+        # Enviar mensaje en el chatter
+        self.message_post(
+            body=f"Reparación completada por {self.technician_id.name or 'Técnico'}",
+            message_type='comment'
+        )
+        
         return True
     
     def action_deliver(self):

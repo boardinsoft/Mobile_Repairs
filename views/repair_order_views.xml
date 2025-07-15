@@ -176,7 +176,6 @@
             <kanban class="o_kanban_mobile" 
                     records_draggable="true" 
                     default_group_by="state" 
-                    quick_create_view="mobile.repair.order.form.quick" 
                     archivable="false"
                     color="color"
                     on_create="quick_create"
@@ -285,8 +284,13 @@
                 <filter string="Reparadas" name="repaired" domain="[('state', '=', 'repaired')]"/>
                 <filter string="Entregadas" name="delivered" domain="[('state', '=', 'delivered')]"/>
                 <separator/>
+                <filter string="Esta Semana" name="this_week" domain="[('date_received', '&gt;=', (context_today() - datetime.timedelta(days=context_today().weekday())).strftime('%Y-%m-%d')), ('date_received', '&lt;=', (context_today() + datetime.timedelta(days=6 - context_today().weekday())).strftime('%Y-%m-%d'))]"/>
+                <filter string="Este Mes" name="this_month" domain="[('date_received', '&gt;=', (context_today().replace(day=1)).strftime('%Y-%m-%d')), ('date_received', '&lt;=', ((context_today().replace(day=1) + datetime.timedelta(days=32)).replace(day=1) - datetime.timedelta(days=1)).strftime('%Y-%m-%d'))]"/>
+                <filter string="Último Trimestre" name="last_quarter" domain="[('date_received', '&gt;=', (context_today() - datetime.timedelta(days=90)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
                 <filter string="Mis Reparaciones" name="my_repairs" domain="[('technician_id', '=', uid)]"/>
                 <filter string="Vencidas" name="overdue" domain="[('date_promised', '&lt;', context_today().strftime('%Y-%m-%d')), ('state', 'in', ['draft', 'in_repair'])]"/>
+                <separator/>
                 <group expand="0" string="Agrupar Por">
                     <filter string="Estado" name="group_by_state" context="{'group_by': 'state'}"/>
                     <filter string="Técnico" name="group_by_technician" context="{'group_by': 'technician_id'}"/>

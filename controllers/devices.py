@@ -19,12 +19,12 @@ class DeviceController(http.Controller):
             
             completed_repairs = RepairOrder.search_count([
                 ('customer_id', '=', customer_id),
-                ('state', 'in', ['ready', 'delivered'])
+                ('state', 'in', ['repaired', 'delivered'])
             ])
             
             pending_repairs = RepairOrder.search_count([
                 ('customer_id', '=', customer_id),
-                ('state', 'in', ['draft', 'in_progress'])
+                ('state', 'in', ['draft', 'in_repair'])
             ])
             
             # Últimas 5 reparaciones
@@ -84,24 +84,24 @@ class DeviceController(http.Controller):
             for order in recent_orders:
                 state_colors = {
                     'draft': 'secondary',
-                    'in_progress': 'warning',
-                    'ready': 'success',
+                    'in_repair': 'warning',
+                    'repaired': 'success',
                     'delivered': 'primary',
                     'cancelled': 'danger'
                 }
                 
                 state_icons = {
                     'draft': '📥',
-                    'in_progress': '🔧',
-                    'ready': '✅',
+                    'in_repair': '🔧',
+                    'repaired': '✅',
                     'delivered': '📦',
                     'cancelled': '❌'
                 }
                 
                 state_labels = {
                     'draft': 'Recibida',
-                    'in_progress': 'En Reparación',
-                    'ready': 'Lista',
+                    'in_repair': 'En Reparación',
+                    'repaired': 'Lista',
                     'delivered': 'Entregada',
                     'cancelled': 'Cancelada'
                 }
